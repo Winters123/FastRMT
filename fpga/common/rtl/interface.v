@@ -2210,6 +2210,7 @@ generate
             .tx_axis_tvalid(tx_axis_tvalid[n +: 1]),
             .tx_axis_tready(tx_axis_tready[n +: 1]),
             .tx_axis_tlast(tx_axis_tlast[n +: 1]),
+            //this is slightly different from NetFPGA since there is 1 bit in tuser
             .tx_axis_tuser(tx_axis_tuser[n +: 1]),
 
             /*
@@ -2227,6 +2228,7 @@ generate
             .rx_axis_tvalid(rx_axis_tvalid[n +: 1]),
             .rx_axis_tready(rx_axis_tready[n +: 1]),
             .rx_axis_tlast(rx_axis_tlast[n +: 1]),
+            //this is slightly different from NetFPGA since there is 1 bit in tuser
             .rx_axis_tuser(rx_axis_tuser[n +: 1]),
 
             /*
