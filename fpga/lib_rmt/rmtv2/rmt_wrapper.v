@@ -141,45 +141,84 @@ reg									stg4_phv_out_valid_r;
 /*=================================================*/
 assign s_axis_tready = !pkt_fifo_nearly_full;
 
-fallthrough_small_fifo #(
-	.WIDTH(C_S_AXIS_DATA_WIDTH + C_S_AXIS_TUSER_WIDTH + C_S_AXIS_DATA_WIDTH/8 + 1),
-	.MAX_DEPTH_BITS(8)
-)
-pkt_fifo
-(
-	.din									({s_axis_tdata, s_axis_tuser, s_axis_tkeep, s_axis_tlast}),
-	.wr_en									(s_axis_tvalid & ~pkt_fifo_nearly_full),
-	.rd_en									(pkt_fifo_rd_en),
-	.dout									({tdata_fifo, tuser_fifo, tkeep_fifo, tlast_fifo}),
-	.full									(),
-	.prog_full								(),
-	.nearly_full							(pkt_fifo_nearly_full),
-	.empty									(pkt_fifo_empty),
-	.reset									(~aresetn),
-	.clk									(clk)
+// fallthrough_small_fifo #(
+// 	.WIDTH(C_S_AXIS_DATA_WIDTH + C_S_AXIS_TUSER_WIDTH + C_S_AXIS_DATA_WIDTH/8 + 1),
+// 	.MAX_DEPTH_BITS(8)
+// )
+// pkt_fifo
+// (
+// 	.din									({s_axis_tdata, s_axis_tuser, s_axis_tkeep, s_axis_tlast}),
+// 	.wr_en									(s_axis_tvalid & ~pkt_fifo_nearly_full),
+// 	.rd_en									(pkt_fifo_rd_en),
+// 	.dout									({tdata_fifo, tuser_fifo, tkeep_fifo, tlast_fifo}),
+// 	.full									(),
+// 	.prog_full								(),
+// 	.nearly_full							(pkt_fifo_nearly_full),
+// 	.empty									(pkt_fifo_empty),
+// 	.reset									(~aresetn),
+// 	.clk									(clk)
+// );
+
+fifo_generator_705b pkt_fifo (
+  .clk(clk),                  // input wire clk
+  .srst(~aresetn),                // input wire srst
+  .din({s_axis_tdata, s_axis_tuser, s_axis_tkeep, s_axis_tlast}),                  // input wire [704 : 0] din
+  .wr_en(s_axis_tvalid & ~pkt_fifo_nearly_full),              // input wire wr_en
+  .rd_en(pkt_fifo_rd_en),              // input wire rd_en
+  .dout({tdata_fifo, tuser_fifo, tkeep_fifo, tlast_fifo}),                // output wire [704 : 0] dout
+  .full(pkt_fifo_nearly_full),                // output wire full
+  .empty(pkt_fifo_empty),              // output wire empty
+  .wr_rst_busy(),  // output wire wr_rst_busy
+  .rd_rst_busy()  // output wire rd_rst_busy
 );
 
-fallthrough_small_fifo #(
-	.WIDTH(PKT_VEC_WIDTH),
-	.MAX_DEPTH_BITS(8)
-)
-phv_fifo
-(
-	// .din			(phv_fifo_in),
-	// .wr_en			(phv_valid),
-	// .din			(stg4_phv_out),
-	// .wr_en			(stg4_phv_out_valid_w),
-	.din			(stg0_phv_out),
-	.wr_en			(stg0_phv_out_valid_w),
-	.rd_en			(phv_fifo_rd_en),
-	.dout			(phv_fifo_out_w),
+// fallthrough_small_fifo #(
+// 	.WIDTH(PKT_VEC_WIDTH),
+// 	.MAX_DEPTH_BITS(8)
+// )
+// phv_fifo
+// (
+// 	// .din			(phv_fifo_in),
+// 	// .wr_en			(phv_valid),
+// 	// .din			(stg4_phv_out),
+// 	// .wr_en			(stg4_phv_out_valid_w),
+// 	.din			(stg0_phv_out),
+// 	.wr_en			(stg0_phv_out_valid_w),
+// 	.rd_en			(phv_fifo_rd_en),
+// 	.dout			(phv_fifo_out_w),
 
-	.full			(),
-	.prog_full		(),
-	.nearly_full	(phv_fifo_nearly_full),
-	.empty			(phv_fifo_empty),
-	.reset			(~aresetn),
-	.clk			(clk)
+// 	.full			(),
+// 	.prog_full		(),
+// 	.nearly_full	(phv_fifo_nearly_full),
+// 	.empty			(phv_fifo_empty),
+// 	.reset			(~aresetn),
+// 	.clk			(clk)
+// );
+
+fifo_generator_512b phv_fifo_1 (
+  .clk(clk),                  // input wire clk
+  .srst(~aresetn),                // input wire srst
+  .din(stg0_phv_out[511:0]),                  // input wire [511 : 0] din
+  .wr_en(stg0_phv_out_valid_w),              // input wire wr_en
+  .rd_en(phv_fifo_rd_en),              // input wire rd_en
+  .dout(phv_fifo_out_w[511:0]),                // output wire [511 : 0] dout
+  .full(),                // output wire full
+  .empty(phv_fifo_empty),              // output wire empty
+  .wr_rst_busy(),  // output wire wr_rst_busy
+  .rd_rst_busy()  // output wire rd_rst_busy
+);
+
+fifo_generator_522b phv_fifo_2 (
+  .clk(clk),                  // input wire clk
+  .srst(~aresetn),                // input wire srst
+  .din(stg0_phv_out[1123:512]),                  // input wire [521 : 0] din
+  .wr_en(stg0_phv_out_valid_w),              // input wire wr_en
+  .rd_en(phv_fifo_rd_en),              // input wire rd_en
+  .dout(phv_fifo_out_w[1123:512]),                // output wire [521 : 0] dout
+  .full(),                // output wire full
+  .empty(),              // output wire empty
+  .wr_rst_busy(),  // output wire wr_rst_busy
+  .rd_rst_busy()  // output wire rd_rst_busy
 );
 
 parser #(
@@ -592,17 +631,5 @@ parse_act_ram
 	.enb		(1'b1) // always set to 1
 );
 
-// debug
-ila_0 
-debug(
-	.clk		(clk),
-
-
-	.probe0		(stg0_phv_in_valid_w),
-	.probe1		(stg0_phv_out_valid),
-	.probe2		(state),
-	.probe3		(stg0_phv_out[(PKT_VEC_WIDTH-1)-:96]),
-	.probe4		(stg0_phv_out[0+:32])
-);
 
 endmodule
