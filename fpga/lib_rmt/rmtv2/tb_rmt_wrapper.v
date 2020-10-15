@@ -33,6 +33,8 @@ wire								    m_axis_tvalid;
 reg										m_axis_tready;
 wire									m_axis_tlast;
 
+assign s_axis_tready = 1'b1;
+
 //clk signal
 localparam CYCLE = 10;
 
@@ -51,13 +53,44 @@ initial begin
 end
 
 initial begin
-    #(2*CYCLE)
+    #(2*CYCLE+CYCLE/2)
     s_axis_tdata <= 512'b0; 
     s_axis_tkeep <= 64'h0;
     s_axis_tuser <= 128'h0;
     s_axis_tvalid <= 1'b0;
     s_axis_tlast <= 1'b0;
     #CYCLE
+    s_axis_tdata <= {64'hffffffffffffffff,64'hffffffffffffffff,256'b0,12'b0100000,116'b0}; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= {64'hefffffffffffffff,64'hffffffffffffffff,384'hfffffffffffffffffffff}; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= {64'hdfffffffffffffff,64'hffffffffffffffff,384'b0}; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= {64'hcfffffffffffffff,64'hffffffffffffffff,384'b0}; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b1;
+    #(CYCLE)
+    s_axis_tdata <= 512'b0; 
+    s_axis_tkeep <= 64'h0;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tlast <= 1'b0;
+    #(3*CYCLE)
+
     s_axis_tdata <= {64'hffffffffffffffff,64'hffffffffffffffff,384'b0}; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h0;
@@ -81,6 +114,7 @@ initial begin
     s_axis_tuser <= 128'h0;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b1;
+
     #(CYCLE)
     s_axis_tdata <= 512'b0; 
     s_axis_tkeep <= 64'h0;

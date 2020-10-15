@@ -611,8 +611,8 @@ always @(posedge clk) begin
 end
 
 parse_act_ram_ip #(
-	.C_INIT_FILE_NAME	("./parse_act_ram_init_file.mif"),
-	.C_LOAD_INIT_FILE	(1)
+	//.C_INIT_FILE_NAME	("./parse_act_ram_init_file.mif"),
+	//.C_LOAD_INIT_FILE	(1)
 )
 parse_act_ram
 (
@@ -631,5 +631,18 @@ parse_act_ram
 	.enb		(1'b1) // always set to 1
 );
 
+// debug
+/*
+ila_0 
+debug(
+	.clk		(clk),
 
+
+	.probe0		(stg0_phv_in_valid_w),
+	.probe1		(stg0_phv_out_valid),
+	.probe2		(state),
+	.probe3		(stg0_phv_out[(PKT_VEC_WIDTH-1)-:96]),
+	.probe4		(stg0_phv_out[0+:32])
+);
+*/
 endmodule

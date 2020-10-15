@@ -129,8 +129,10 @@ end
 cam_top # ( 
 	.C_DEPTH			(16),
 	.C_WIDTH			(256),
-	.C_MEM_INIT			(1),
-	.C_MEM_INIT_FILE	("./cam_init_file.mif")
+	.C_MEM_INIT         (0),
+	.C_MEM_INIT_FILE    ()
+	//.C_MEM_INIT			(1),
+	//.C_MEM_INIT_FILE	("./cam_init_file.mif")
 	//.C_MEM_INIT_FILE	(F:/NYC/project_1/cam_init_file.mif) //currently there is no mem_init
 )
 //TODO remember to change it back.
@@ -158,10 +160,7 @@ cam_0
 
 
 //ram for action
-blk_mem_gen_1 #(
-	.C_INIT_FILE_NAME	("./lkup.mif"),
-	.C_LOAD_INIT_FILE	(1)
-)
+blk_mem_gen_1 
 act_ram_625w_16d
 (
     .addra(action_addr),
