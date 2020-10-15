@@ -133,7 +133,7 @@ cam_top # (
 	.C_MEM_INIT_FILE    ()
 	//.C_MEM_INIT			(1),
 	//.C_MEM_INIT_FILE	("./cam_init_file.mif")
-	//.C_MEM_INIT_FILE	(F:/NYC/project_1/cam_init_file.mif) //currently there is no mem_init
+	//.C_MEM_INIT_FILE	("F:/NYC/project_1/cam_init_file.mif") //currently there is no mem_init
 )
 //TODO remember to change it back.
 cam_0

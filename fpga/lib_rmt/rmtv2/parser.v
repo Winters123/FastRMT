@@ -104,7 +104,7 @@ always @(posedge axis_clk or negedge aresetn) begin
             phv_ready <= 1'b0;
             pkt_hdr_field <= s_axis_tdata<<(1024-C_S_AXIS_DATA_WIDTH);     
         end
-        else if(pkt_seg_cnt < SEG_NUM && s_axis_tvalid) begin
+        else if(pkt_seg_cnt < SEG_NUM-1 && s_axis_tvalid) begin
             pkt_hdr_field[1024-1-C_S_AXIS_DATA_WIDTH*(pkt_seg_cnt+1) -: C_S_AXIS_DATA_WIDTH] <= s_axis_tdata;   
             //here we can start extract values from PHV
             if(pkt_seg_cnt == SEG_NUM-2 || s_axis_tlast) begin
@@ -117,12 +117,8 @@ always @(posedge axis_clk or negedge aresetn) begin
     end
 end
 
+
 //here we extract the 1024b from packet (depend on data_width)
-
-//1) obtain vlan_id and feed it into ram
-//assign vlan_id = s_axis_tdata[C_S_AXIS_DATA_WIDTH-1-116 -: 12];
-
-
 reg [2:0] parse_state;
 localparam IDLE_S   = 3'd0,
            WAIT1_S  = 3'd1,
@@ -139,7 +135,7 @@ always @(posedge axis_clk or negedge aresetn) begin
     else begin
         case(parse_state)
             IDLE_S: begin
-                if(s_axis_tvalid) begin
+                if(s_axis_tvalid && ~s_axis_tvalid_before) begin
                     parse_state <= WAIT1_S;
                 end
                 phv_valid_out_reg <= 1'b0;

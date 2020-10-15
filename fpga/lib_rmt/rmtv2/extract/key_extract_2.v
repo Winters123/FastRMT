@@ -45,8 +45,8 @@ reg [width_2B-1:0]    cont_2B [0:7];
 reg [width_4B-1:0]    cont_4B [0:7];
 reg [width_6B-1:0]    cont_6B [0:7];
 
-reg [PHV_LEN-1:0]     phv_out_delay;
-reg                   phv_valid_out_delay;
+reg [PHV_LEN-1:0]     phv_out_delay[0:1];
+reg                   phv_valid_out_delay[0:1];
 
 reg  [19:0]            com_op[0:4];
 reg  [7:0]             com_op_1;
@@ -175,18 +175,22 @@ always @(posedge clk or negedge rst_n) begin
         key_valid_out <= 1'b0;
         phv_out <= 0;
         phv_valid_out <= 1'b0;
-        phv_out_delay <= 0;
-        phv_valid_out_delay <= 1'b0;
+        phv_out_delay[0] <= 0;
+        phv_out_delay[1] <= 0;
+        phv_valid_out_delay[0] <= 1'b0;
+        phv_valid_out_delay[1] <= 1'b0;
     end
     else begin
         //output PHV
-        phv_out_delay <= phv_in;
-        phv_out <= phv_out_delay;
-        phv_valid_out_delay <= phv_valid_in;
-        phv_valid_out <= phv_valid_out_delay;
+        phv_out_delay[0] <= phv_in;
+        phv_out_delay[1] <= phv_out_delay[0];
+        phv_out <= phv_out_delay[1];
+        phv_valid_out_delay[0] <= phv_valid_in;
+        phv_valid_out_delay[1] <= phv_valid_out_delay[0];
+        phv_valid_out <= phv_valid_out_delay[1];
 
         //extract keys according to key_off
-        if(phv_valid_out_delay) begin
+        if(phv_valid_out_delay[1]) begin
             key_out[KEY_LEN-1                                     -: width_6B] <= cont_6B[key_offset[KEY_OFF-1     -: 3]];
             key_out[KEY_LEN-1- 1*width_6B                         -: width_6B] <= cont_6B[key_offset[KEY_OFF-1-1*3 -: 3]];
             key_out[KEY_LEN-1- 2*width_6B                         -: width_4B] <= cont_4B[key_offset[KEY_OFF-1-2*3 -: 3]];
@@ -211,7 +215,7 @@ always @(posedge clk or negedge rst_n) begin
 
         end
         
-        if(phv_valid_out_delay) begin
+        if(phv_valid_out_delay[1]) begin
             key_valid_out <= 1'b1;    
         end
         else begin
