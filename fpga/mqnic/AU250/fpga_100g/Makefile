@@ -32,5 +32,9 @@ project:
 	vivado -mode tcl -source tcl/create_project.tcl
 
 clean:
-	rm -rf project_synth
-	rm vivado*
+	rm -rfv project_synth
+	rm -rfv vivado*
+	rm -rfv xvlog*
+	rm -rfv xsim.dir
+	rm -rfv tb/xvlog*
+	rm -rfv tb/xsim.dir
