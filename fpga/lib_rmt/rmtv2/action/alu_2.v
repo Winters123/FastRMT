@@ -167,7 +167,10 @@ end
 //ram for key-value
 //2 cycles to get value
 // blk_mem_gen_0 # (
-blk_mem_gen_0 
+// 	.C_INIT_FILE_NAME	("./alu_2.mif"),
+// 	.C_LOAD_INIT_FILE	(1)
+// )
+blk_mem_gen_0
 data_ram_32w_32d
 (
     //store-related

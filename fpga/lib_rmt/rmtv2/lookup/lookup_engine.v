@@ -42,7 +42,6 @@ module lookup_engine #(
 );
 
 /********intermediate variables declared here********/
-wire        busy;
 wire [3:0]  match_addr;
 wire        match;
 
@@ -128,24 +127,25 @@ end
 
 cam_top # ( 
 	.C_DEPTH			(16),
-	.C_WIDTH			(256),
-	.C_MEM_INIT         (0),
-	.C_MEM_INIT_FILE    ()
-	//.C_MEM_INIT			(1),
-	//.C_MEM_INIT_FILE	("./cam_init_file.mif")
-	//.C_MEM_INIT_FILE	("F:/NYC/project_1/cam_init_file.mif") //currently there is no mem_init
+	// .C_WIDTH			(256),
+	.C_WIDTH			(197),
+	.C_MEM_INIT			(1),
+	.C_MEM_INIT_FILE	("./cam_init_file.mif")
 )
 //TODO remember to change it back.
 cam_0
 (
 	.CLK				(clk),
-	.CMP_DIN			({59'b0,extract_key}),
+	// .CMP_DIN			({59'b0,extract_key}),
+	.CMP_DIN			(extract_key),
 	// .CMP_DATA_MASK		(256'h0),
 	//.CMP_DATA_MASK		({256'b0}),
 	.CMP_DATA_MASK		(),
-	.BUSY				(busy),
+	// .BUSY				(busy),
+	.BUSY				(),
 	.MATCH				(match),
 	.MATCH_ADDR			(match_addr),
+
 	//.WE				(lookup_din_en),
 	//.WR_ADDR			(lookup_din_addr),
 	//.DATA_MASK		(lookup_din_mask),  
@@ -160,7 +160,11 @@ cam_0
 
 
 //ram for action
-blk_mem_gen_1 
+// blk_mem_gen_1 #(
+// 	.C_INIT_FILE_NAME	("./llup.mif"),
+// 	.C_LOAD_INIT_FILE	(1)
+// )
+blk_mem_gen_1
 act_ram_625w_16d
 (
     .addra(action_addr),

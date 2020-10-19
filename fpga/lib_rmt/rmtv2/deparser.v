@@ -422,10 +422,11 @@ always @(posedge clk) begin
 	end
 end
 
-parse_act_ram_ip #(
-	// .C_INIT_FILE_NAME	("./parse_act_ram_init_file.mif"),
-	// .C_LOAD_INIT_FILE	(1)
-)
+// parse_act_ram_ip #(
+// 	.C_INIT_FILE_NAME	("./alu_2.mif"),
+// 	.C_LOAD_INIT_FILE	(1)
+// )
+parse_act_ram_ip
 parse_act_ram
 (
 	// write port
