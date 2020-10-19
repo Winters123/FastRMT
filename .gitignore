@@ -4,3 +4,5 @@
 *.vvp
 *.kate-swp
 
+vivado*
+project_synth/
