@@ -1,60 +1,5 @@
 `timescale 1ns / 1ps
 
-`define STATE_REASS_IDX_BITSIZE(idx, bit_size, ed_state, bytes) \
-	STATE_REASS_``idx``_``bit_size: begin \
-		case(parse_action[idx][3:1]) \
-			0 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*0)+:(bit_size)]; \
-			end \
-			1 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*1)+:(bit_size)]; \
-			end \
-			2 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*2)+:(bit_size)]; \
-			end \
-			3 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*3)+:(bit_size)]; \
-			end \
-			4 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*4)+:(bit_size)]; \
-			end \
-			5 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*5)+:(bit_size)]; \
-			end \
-			6 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*6)+:(bit_size)]; \
-			end \
-			7 : begin \
-				pkts_tdata_stored_r[(parse_action_ind[(idx)])*8 +:(bit_size)] = phv_fifo_out_w[(PHV_``bytes``B_START_POS+(bit_size)*7)+:(bit_size)]; \
-			end \
-			default : begin \
-			end \
-		endcase \
-		state_next = (ed_state); \
-	end \
-
-`define STATE_REASSEMBLE_DATA(idx, ed_state) \
-	REASSEMBLE_DATA_``idx: begin \
-		if (parse_action[(idx)][0] == 1'b1) begin \
-			case(parse_action[(idx)][5:4]) \
-				1 : begin \
-					state_next = STATE_REASS_``idx``_16; \
-				end \
-				2 : begin \
-					state_next = STATE_REASS_``idx``_32; \
-				end \
-				3 : begin \
-					state_next = STATE_REASS_``idx``_48; \
-				end \
-				default : begin \
-				end \
-			endcase \
-		end \
-		else begin \
-			state_next = (ed_state); \
-		end \
-	end \
-
 module rmt_wrapper #(
 	// Slave AXI parameters
 	parameter C_S_AXI_DATA_WIDTH = 32,
@@ -74,20 +19,20 @@ module rmt_wrapper #(
 	input									aresetn,	
 
 	// input Slave AXI Stream
-	input [C_S_AXIS_DATA_WIDTH-1:0]			s_axis_tdata,
-	input [((C_S_AXIS_DATA_WIDTH/8))-1:0]	s_axis_tkeep,
-	input [C_S_AXIS_TUSER_WIDTH-1:0]		s_axis_tuser,
-	input									s_axis_tvalid,
-	output									s_axis_tready,
-	input									s_axis_tlast,
+	input [C_S_AXIS_DATA_WIDTH-1:0]				s_axis_tdata,
+	input [((C_S_AXIS_DATA_WIDTH/8))-1:0]		s_axis_tkeep,
+	input [C_S_AXIS_TUSER_WIDTH-1:0]			s_axis_tuser,
+	input										s_axis_tvalid,
+	output										s_axis_tready,
+	input										s_axis_tlast,
 
 	// output Master AXI Stream
-	output reg [C_S_AXIS_DATA_WIDTH-1:0]		m_axis_tdata,
-	output reg [((C_S_AXIS_DATA_WIDTH/8))-1:0]	m_axis_tkeep,
-	output reg [C_S_AXIS_TUSER_WIDTH-1:0]		m_axis_tuser,
-	output reg									m_axis_tvalid,
+	output     [C_S_AXIS_DATA_WIDTH-1:0]		m_axis_tdata,
+	output     [((C_S_AXIS_DATA_WIDTH/8))-1:0]	m_axis_tkeep,
+	output     [C_S_AXIS_TUSER_WIDTH-1:0]		m_axis_tuser,
+	output    									m_axis_tvalid,
 	input										m_axis_tready,
-	output reg									m_axis_tlast
+	output  									m_axis_tlast
 	
 );
 
@@ -98,7 +43,7 @@ localparam PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256;
 //the number of cycles for a PHV
 localparam SEG_NUM = 1024/C_S_AXIS_DATA_WIDTH;
 // pkt fifo
-reg									pkt_fifo_rd_en;
+wire								pkt_fifo_rd_en;
 wire								pkt_fifo_nearly_full;
 wire								pkt_fifo_empty;
 wire [C_S_AXIS_DATA_WIDTH-1:0]		tdata_fifo;
@@ -106,7 +51,7 @@ wire [C_S_AXIS_TUSER_WIDTH-1:0]		tuser_fifo;
 wire [C_S_AXIS_DATA_WIDTH/8-1:0]	tkeep_fifo;
 wire								tlast_fifo;
 // phv fifo
-reg									phv_fifo_rd_en;
+wire								phv_fifo_rd_en;
 wire								phv_fifo_nearly_full;
 wire								phv_fifo_empty;
 wire [PKT_VEC_WIDTH-1:0]			phv_fifo_in;
