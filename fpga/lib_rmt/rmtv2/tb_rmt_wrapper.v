@@ -11,7 +11,7 @@ module tb_rmt_wrapper #(
 	parameter C_S_AXIS_DATA_WIDTH = 512,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	// Master
-	parameter C_M_AXIS_DATA_WIDTH = 256,
+	parameter C_M_AXIS_DATA_WIDTH = 512,
 	// self-defined
 	parameter PHV_ADDR_WIDTH = 4
 )();
@@ -90,31 +90,31 @@ initial begin
     s_axis_tuser <= 128'h0;
     s_axis_tvalid <= 1'b0;
     s_axis_tlast <= 1'b0;
-    #(3*CYCLE)
+    #(6*CYCLE)
 
-    s_axis_tdata <= {64'hffffffffffffffff,64'hffffffffffffffff,384'b0}; 
+    s_axis_tdata <= {64'hffffffffffffffff,64'hffffffffffffffff,159'b0, 8'h11, 72'b0, 16'h0008, 128'b0}; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h0;
-    s_axis_tvalid <= 1'b0;
+    s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
     #CYCLE
     s_axis_tdata <= {64'hefffffffffffffff,64'hffffffffffffffff,384'b0}; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h0;
-    s_axis_tvalid <= 1'b0;
+    s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
     #CYCLE
     s_axis_tdata <= {64'hdfffffffffffffff,64'hffffffffffffffff,384'b0}; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h0;
-    s_axis_tvalid <= 1'b0;
+    s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
     #CYCLE
     s_axis_tdata <= {64'hcfffffffffffffff,64'hffffffffffffffff,384'b0}; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h0;
-    s_axis_tvalid <= 1'b0;
-    s_axis_tlast <= 1'b0;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b1;
 
     #(CYCLE)
     s_axis_tdata <= 512'b0; 
@@ -133,7 +133,7 @@ rmt_wrapper #(
 	.C_BASEADDR(),
 	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
 	.C_S_AXIS_TUSER_WIDTH(),
-	.C_M_AXIS_DATA_WIDTH(),
+	.C_M_AXIS_DATA_WIDTH(C_M_AXIS_DATA_WIDTH),
 	.PHV_ADDR_WIDTH()
 )rmt_wrapper_ins
 (

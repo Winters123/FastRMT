@@ -84,20 +84,56 @@ wire								stg4_phv_out_valid_w;
 reg									stg4_phv_out_valid_r;
 
 
+
+
 //TODO for bug fix
 wire [521:0] high_phv_out;
 wire [511:0] low_phv_out;
 /*=================================================*/
-assign s_axis_tready = !pkt_fifo_nearly_full;
+assign s_axis_tready_f = !pkt_fifo_nearly_full;
 
 assign phv_fifo_out_w = {high_phv_out, low_phv_out};
+
+
+//NOTE: to filter out packets other than UDP/IP.
+wire [C_S_AXIS_DATA_WIDTH-1:0]				s_axis_tdata_f;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		s_axis_tkeep_f;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				s_axis_tuser_f;
+wire										s_axis_tvalid_f;
+wire										s_axis_tready_f;
+wire										s_axis_tlast_f;
+
+pkt_filter #(
+	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+	.C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH)
+)pkt_filter
+(
+	.clk(clk),
+	.aresetn(aresetn),
+
+	// input Slave AXI Stream
+	.s_axis_tdata(s_axis_tdata),
+	.s_axis_tkeep(s_axis_tkeep),
+	.s_axis_tuser(s_axis_tuser),
+	.s_axis_tvalid(s_axis_tvalid),
+	.s_axis_tready(s_axis_tready),
+	.s_axis_tlast(s_axis_tlast),
+
+	// output Master AXI Stream
+	.m_axis_tdata(s_axis_tdata_f),
+	.m_axis_tkeep(s_axis_tkeep_f),
+	.m_axis_tuser(s_axis_tuser_f),
+	.m_axis_tvalid(s_axis_tvalid_f),
+	.m_axis_tready(s_axis_tready_f),
+	.m_axis_tlast(s_axis_tlast_f)
+);
 
 
 fifo_generator_705b pkt_fifo (
   .clk(clk),                  // input wire clk
   .srst(~aresetn),                // input wire srst
-  .din({s_axis_tdata, s_axis_tuser, s_axis_tkeep, s_axis_tlast}),                  // input wire [704 : 0] din
-  .wr_en(s_axis_tvalid & ~pkt_fifo_nearly_full),              // input wire wr_en
+  .din({s_axis_tdata_f, s_axis_tuser_f, s_axis_tkeep_f, s_axis_tlast_f}),                  // input wire [704 : 0] din
+  .wr_en(s_axis_tvalid_f & ~pkt_fifo_nearly_full),              // input wire wr_en
   .rd_en(pkt_fifo_rd_en),              // input wire rd_en
   .dout({tdata_fifo, tuser_fifo, tkeep_fifo, tlast_fifo}),                // output wire [704 : 0] dout
   .full(pkt_fifo_nearly_full),                // output wire full
@@ -144,11 +180,11 @@ phv_parser
 	.axis_clk		(clk),
 	.aresetn		(aresetn),
 	// input slvae axi stream
-	.s_axis_tdata	(s_axis_tdata),
-	.s_axis_tuser	(s_axis_tuser),
-	.s_axis_tkeep	(s_axis_tkeep),
-	.s_axis_tvalid	(s_axis_tvalid & s_axis_tready),
-	.s_axis_tlast	(s_axis_tlast),
+	.s_axis_tdata	(s_axis_tdata_f),
+	.s_axis_tuser	(s_axis_tuser_f),
+	.s_axis_tkeep	(s_axis_tkeep_f),
+	.s_axis_tvalid	(s_axis_tvalid_f & s_axis_tready_f),
+	.s_axis_tlast	(s_axis_tlast_f),
 
 	// output
 	.phv_valid_out	(stg0_phv_in_valid),
