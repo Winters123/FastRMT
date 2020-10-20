@@ -108,7 +108,7 @@ localparam STATE_REASS_0_32 = 15;
 localparam STATE_REASS_0_48 = 16;
 localparam STATE_REASS_1_16 = 17;
 localparam STATE_REASS_1_32 = 18;
-localparam STATE_REASS_1_48 = 18;
+localparam STATE_REASS_1_48 = 19;
 localparam STATE_REASS_2_16 = 20;
 localparam STATE_REASS_2_32 = 21;
 localparam STATE_REASS_2_48 = 22;
@@ -149,7 +149,7 @@ reg [2*(C_AXIS_DATA_WIDTH/8)-1:0]	pkts_tkeep_stored;
 reg [1:0]							pkts_tlast_stored_r;
 reg [1:0]							pkts_tlast_stored;
 
-reg [4:0] state, state_next;
+reg [7:0] state, state_next;
 
 reg [11:0] vlan_id; // vlan id
 wire [259:0] bram_out;
@@ -186,10 +186,10 @@ localparam PHV_6B_START_POS = 20*5+256+16*8+32*8;
 always @(*) begin
 
 	// remember to set depar_out_tdata, tuser, tkeep, tlast, tvalid
-	depar_out_tdata = 0;
-	depar_out_tuser = 0;
-	depar_out_tkeep = 0;
-	depar_out_tlast = 0;
+	depar_out_tdata = pkt_fifo_tdata;
+	depar_out_tuser = pkt_fifo_tuser;
+	depar_out_tkeep = pkt_fifo_tkeep;
+	depar_out_tlast = pkt_fifo_tlast;
 	depar_out_tvalid = 0;
 	// fifo rd signals
 	pkt_fifo_rd_en = 0;
@@ -230,6 +230,7 @@ always @(*) begin
 			pkts_tlast_stored_r[1] = pkt_fifo_tlast;
 
 			pkt_fifo_rd_en = 1;
+			//phv_fifo_rd_en = 1;
 
 			// if (pkt_fifo_tlast) begin
 			// 	state_next = REASSEMBLE_DATA_0;
@@ -385,9 +386,9 @@ always @(*) begin
 		FLUSH_PKT: begin
 			if (!pkt_fifo_empty) begin
 				depar_out_tvalid = pkt_fifo_tdata;
-				depar_out_tuser = pkt_fifo_tuser;
-				depar_out_tkeep = pkt_fifo_tkeep;
-				depar_out_tlast = pkt_fifo_tlast;
+				depar_out_tuser =  pkt_fifo_tuser;
+				depar_out_tkeep =  pkt_fifo_tkeep;
+				depar_out_tlast =  pkt_fifo_tlast;
 				depar_out_tvalid = 1;
 				if(depar_out_tready) begin
 					pkt_fifo_rd_en = 1;

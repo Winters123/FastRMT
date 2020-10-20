@@ -142,38 +142,6 @@ action_engine #(
     .phv_valid_out(phv_out_valid)
 );
 
-/*
-localparam IDLE=0, IN_PROCESSING=1;
 
-reg state, state_next;
-reg stg_ready_next;
-
-always @(*) begin
-	state_next = state;
-	stg_ready_next = stg_ready;
-
-	case (state)
-		IDLE: begin
-			if (phv_in_valid) begin
-				state_next = IN_PROCESSING;
-				stg_ready_next = 0;
-			end
-		end
-		IN_PROCESSING: begin
-			if (phv_out_valid) begin
-			end
-		end
-	endcase
-end
-
-always @(posedge axis_clk) begin
-	if (~aresetn) begin
-		stg_ready <= 1;
-	end
-	else begin
-		state <= state_next;
-		stg_ready <= stg_ready_next;
-	end
-end*/
 
 endmodule

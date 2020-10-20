@@ -64,10 +64,10 @@ module action_engine #(
     input rst_n,
 
     //signals from lookup to ALUs
-    input [PHV_LEN-1:0]       phv_in,
-    input                     phv_valid_in,
-    input [ACT_LEN*25-1:0]    action_in,
-    input                     action_valid_in,
+    input [PHV_LEN-1:0]           phv_in,
+    input                         phv_valid_in,
+    input [ACT_LEN*25-1:0]        action_in,
+    input                         action_valid_in,
 
     //signals output from ALUs
     output reg [PHV_LEN-1:0]      phv_out,
@@ -139,31 +139,6 @@ crossbar #(
 );
 
 
-/*
-`CREATE_ALU_1_VALID(7, 6, 16)
-`CREATE_ALU_1_VALID(6, 6, 16)
-`CREATE_ALU_1_VALID(5, 6, 16)
-`CREATE_ALU_1_VALID(4, 6, 16)
-`CREATE_ALU_1_VALID(3, 6, 16)
-`CREATE_ALU_1_VALID(2, 6, 16)
-`CREATE_ALU_1_VALID(1, 6, 16)
-`CREATE_ALU_1_VALID(0, 6, 16)
-`CREATE_ALU_2(7, 4, 8)
-`CREATE_ALU_1(6, 4, 8)
-`CREATE_ALU_1(5, 4, 8)
-`CREATE_ALU_1(4, 4, 8)
-`CREATE_ALU_1(3, 4, 8)
-`CREATE_ALU_1(2, 4, 8)
-`CREATE_ALU_1(1, 4, 8)
-`CREATE_ALU_1(0, 4, 8)
-`CREATE_ALU_1(7, 2, 0)
-`CREATE_ALU_1(6, 2, 0)
-`CREATE_ALU_1(5, 2, 0)
-`CREATE_ALU_1(4, 2, 0)
-`CREATE_ALU_1(3, 2, 0)
-`CREATE_ALU_1(2, 2, 0)
-`CREATE_ALU_1(1, 2, 0)
-`CREATE_ALU_1(0, 2, 0)*/
 
 //ALU_1
 genvar gen_i;

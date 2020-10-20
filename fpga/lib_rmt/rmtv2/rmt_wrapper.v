@@ -54,7 +54,6 @@ wire								tlast_fifo;
 wire								phv_fifo_rd_en;
 wire								phv_fifo_nearly_full;
 wire								phv_fifo_empty;
-wire [PKT_VEC_WIDTH-1:0]			phv_fifo_in;
 wire [PKT_VEC_WIDTH-1:0]			phv_fifo_out_w;
 wire								phv_valid;
 // 
@@ -83,26 +82,16 @@ wire [PKT_VEC_WIDTH-1:0]			stg4_phv_out;
 wire								stg4_phv_out_valid;
 wire								stg4_phv_out_valid_w;
 reg									stg4_phv_out_valid_r;
+
+
+//TODO for bug fix
+wire [521:0] high_phv_out;
+wire [511:0] low_phv_out;
 /*=================================================*/
 assign s_axis_tready = !pkt_fifo_nearly_full;
 
-// fallthrough_small_fifo #(
-// 	.WIDTH(C_S_AXIS_DATA_WIDTH + C_S_AXIS_TUSER_WIDTH + C_S_AXIS_DATA_WIDTH/8 + 1),
-// 	.MAX_DEPTH_BITS(8)
-// )
-// pkt_fifo
-// (
-// 	.din									({s_axis_tdata, s_axis_tuser, s_axis_tkeep, s_axis_tlast}),
-// 	.wr_en									(s_axis_tvalid & ~pkt_fifo_nearly_full),
-// 	.rd_en									(pkt_fifo_rd_en),
-// 	.dout									({tdata_fifo, tuser_fifo, tkeep_fifo, tlast_fifo}),
-// 	.full									(),
-// 	.prog_full								(),
-// 	.nearly_full							(pkt_fifo_nearly_full),
-// 	.empty									(pkt_fifo_empty),
-// 	.reset									(~aresetn),
-// 	.clk									(clk)
-// );
+assign phv_fifo_out_w = {high_phv_out, low_phv_out};
+
 
 fifo_generator_705b pkt_fifo (
   .clk(clk),                  // input wire clk
@@ -117,28 +106,6 @@ fifo_generator_705b pkt_fifo (
   .rd_rst_busy()  // output wire rd_rst_busy
 );
 
-// fallthrough_small_fifo #(
-// 	.WIDTH(PKT_VEC_WIDTH),
-// 	.MAX_DEPTH_BITS(8)
-// )
-// phv_fifo
-// (
-// 	// .din			(phv_fifo_in),
-// 	// .wr_en			(phv_valid),
-// 	// .din			(stg4_phv_out),
-// 	// .wr_en			(stg4_phv_out_valid_w),
-// 	.din			(stg0_phv_out),
-// 	.wr_en			(stg0_phv_out_valid_w),
-// 	.rd_en			(phv_fifo_rd_en),
-// 	.dout			(phv_fifo_out_w),
-
-// 	.full			(),
-// 	.prog_full		(),
-// 	.nearly_full	(phv_fifo_nearly_full),
-// 	.empty			(phv_fifo_empty),
-// 	.reset			(~aresetn),
-// 	.clk			(clk)
-// );
 
 fifo_generator_512b phv_fifo_1 (
   .clk(clk),                  // input wire clk
@@ -146,7 +113,7 @@ fifo_generator_512b phv_fifo_1 (
   .din(stg0_phv_out[511:0]),                  // input wire [511 : 0] din
   .wr_en(stg0_phv_out_valid_w),              // input wire wr_en
   .rd_en(phv_fifo_rd_en),              // input wire rd_en
-  .dout(phv_fifo_out_w[511:0]),                // output wire [511 : 0] dout
+  .dout(low_phv_out),                // output wire [511 : 0] dout
   .full(),                // output wire full
   .empty(phv_fifo_empty),              // output wire empty
   .wr_rst_busy(),  // output wire wr_rst_busy
@@ -159,7 +126,7 @@ fifo_generator_522b phv_fifo_2 (
   .din(stg0_phv_out[1123:512]),                  // input wire [521 : 0] din
   .wr_en(stg0_phv_out_valid_w),              // input wire wr_en
   .rd_en(phv_fifo_rd_en),              // input wire rd_en
-  .dout(phv_fifo_out_w[1123:512]),                // output wire [521 : 0] dout
+  .dout(high_phv_out),                // output wire [521 : 0] dout
   .full(),                // output wire full
   .empty(),              // output wire empty
   .wr_rst_busy(),  // output wire wr_rst_busy
@@ -184,8 +151,6 @@ phv_parser
 	.s_axis_tlast	(s_axis_tlast),
 
 	// output
-	// .parser_valid	(phv_valid),
-	// .pkt_hdr_vec	(phv_fifo_in)
 	.phv_valid_out	(stg0_phv_in_valid),
 	.phv_out	(stg0_phv_in)
 );
@@ -222,12 +187,13 @@ phv_deparser (
 	.pkt_fifo_tuser			(tuser_fifo),
 	.pkt_fifo_tlast			(tlast_fifo),
 	.pkt_fifo_empty			(pkt_fifo_empty),
-	// output
+	// output from STAGE
 	.pkt_fifo_rd_en			(pkt_fifo_rd_en),
+
 	.phv_fifo_out			(phv_fifo_out_w),
 	.phv_fifo_empty			(phv_fifo_empty),
-	// output
 	.phv_fifo_rd_en			(phv_fifo_rd_en),
+	// output
 	.depar_out_tdata		(m_axis_tdata),
 	.depar_out_tkeep		(m_axis_tkeep),
 	.depar_out_tuser		(m_axis_tuser),
@@ -323,12 +289,12 @@ always @(posedge clk) begin
 	end
 end
 
-assign stg0_phv_in_valid_w = stg0_phv_in_valid & ~stg0_phv_in_valid_r;
-assign stg0_phv_out_valid_w = stg0_phv_out_valid & ~stg0_phv_out_valid_r;
-assign stg1_phv_out_valid_w = stg1_phv_out_valid & ~stg1_phv_out_valid_r;
-assign stg2_phv_out_valid_w = stg2_phv_out_valid & ~stg2_phv_out_valid_r;
-assign stg3_phv_out_valid_w = stg3_phv_out_valid & ~stg3_phv_out_valid_r;
-assign stg4_phv_out_valid_w = stg4_phv_out_valid & ~stg4_phv_out_valid_r;
+assign stg0_phv_in_valid_w = stg0_phv_in_valid ;//& ~stg0_phv_in_valid_r;
+assign stg0_phv_out_valid_w = stg0_phv_out_valid ;//& ~stg0_phv_out_valid_r;
+assign stg1_phv_out_valid_w = stg1_phv_out_valid ;//& ~stg1_phv_out_valid_r;
+assign stg2_phv_out_valid_w = stg2_phv_out_valid ;//& ~stg2_phv_out_valid_r;
+assign stg3_phv_out_valid_w = stg3_phv_out_valid ;//& ~stg3_phv_out_valid_r;
+assign stg4_phv_out_valid_w = stg4_phv_out_valid ;//& ~stg4_phv_out_valid_r;
 
 
 endmodule
