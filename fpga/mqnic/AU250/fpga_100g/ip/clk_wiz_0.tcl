@@ -1,4 +1,4 @@
-create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_0 -dir f:/NYC/rmt_512/rmt_512.srcs/sources_1/ip
+create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name clk_wiz_0
 
 set_property -dict [list \
     CONFIG.USE_PHASE_ALIGNMENT {true} \

@@ -267,10 +267,11 @@ assign phv_out = {val_6B[7], val_6B[6], val_6B[5], val_6B[4], val_6B[3], val_6B[
                  256'b0};
 
 // =============================================================== //
-parse_act_ram_ip #(
-	//.C_INIT_FILE_NAME	("./parse_act_ram_init_file.mif"),
-	//.C_LOAD_INIT_FILE	(1)
-)
+// parse_act_ram_ip #(
+// 	.C_INIT_FILE_NAME	("./parse_act_ram_init_file.mif"),
+// 	.C_LOAD_INIT_FILE	(1)
+// )
+parse_act_ram_ip
 parse_act_ram
 (
 	// write port
