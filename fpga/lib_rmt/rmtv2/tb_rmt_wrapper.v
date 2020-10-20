@@ -124,6 +124,38 @@ initial begin
     s_axis_tlast <= 1'b0;
 
     #(10*CYCLE);
+    s_axis_tdata <= {64'hffffffffffffffff,64'hffffffffffffffff,159'b0, 8'h11, 72'b0, 16'h0008, 128'b0}; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= {64'hefffffffffffffff,64'hffffffffffffffff,384'b0}; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= {64'hdfffffffffffffff,64'hffffffffffffffff,384'b0}; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= {64'hcfffffffffffffff,64'hffffffffffffffff,384'b0}; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b1;
+
+    #(CYCLE)
+    s_axis_tdata <= 512'b0; 
+    s_axis_tkeep <= 64'h0;
+    s_axis_tuser <= 128'h0;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tlast <= 1'b0;
+
+    #(10*CYCLE);
 end
 
 
