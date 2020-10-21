@@ -25,11 +25,22 @@
 # 	#djtgcfg prog -d Atlys --index 0 --file fpga/fpga.bit
 #
 #
+JOBS=$(shell nproc)
 
-.PHONY: project clean
+
+.PHONY: all project clean
+
+all: project run_synth run_impl
+	@echo "hh"
 
 project:
-	vivado -mode tcl -source tcl/create_project.tcl
+	vivado -mode batch -source tcl/create_project.tcl
+
+run_synth:
+	vivado -mode batch -source tcl/run_synth.tcl -tclargs ${JOBS}
+
+run_impl:
+	vivado -mode batch -source tcl/run_impl.tcl -tclargs ${JOBS}
 
 clean:
 	rm -rfv project_synth

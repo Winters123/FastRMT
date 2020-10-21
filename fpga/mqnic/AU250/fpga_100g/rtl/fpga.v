@@ -136,6 +136,7 @@ parameter AXIS_ETH_KEEP_WIDTH = AXIS_ETH_DATA_WIDTH/8;
 
 // Clock and reset
 wire pcie_user_clk;
+wire pcie_user_clk_125;
 wire pcie_user_reset;
 
 //for lower-frequency
@@ -1380,6 +1381,14 @@ assign led[0] = led_int[0]; // red
 assign led[1] = qsfp1_rx_status; // yellow
 assign led[2] = qsfp0_rx_status; // green
 
+clk_wiz_0 
+clk_wiz_250_100
+(
+	.clk_out1(pcie_user_clk_125),     // output clk_out1
+	.reset(pcie_user_reset),
+	.clk_in1(pcie_user_clk)
+);
+
 fpga_core #(
     .AXIS_PCIE_DATA_WIDTH(AXIS_PCIE_DATA_WIDTH),
     .AXIS_PCIE_KEEP_WIDTH(AXIS_PCIE_KEEP_WIDTH),
@@ -1395,7 +1404,7 @@ core_inst (
      * Clock: 250 MHz
      * Synchronous reset
      */
-    .clk_250mhz(pcie_user_clk),
+    .clk_250mhz(pcie_user_clk_125),
     .rst_250mhz(pcie_user_reset),
 
     /*
