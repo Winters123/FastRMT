@@ -60,6 +60,7 @@ lappend SYN_FILES lib/pcie/rtl/pcie_tag_manager.v
 lappend SYN_FILES lib/pcie/rtl/pulse_merge.v
 # RMT-related 
 lappend SYN_FILES lib_rmt/rmtv2/rmt_wrapper.v
+lappend SYN_FILES lib_rmt/rmtv2/pkt_filter.v
 lappend SYN_FILES lib_rmt/rmtv2/parser.v
 lappend SYN_FILES lib_rmt/rmtv2/deparser.v
 lappend SYN_FILES lib_rmt/rmtv2/stage.v
@@ -78,12 +79,17 @@ lappend XDC_FILES lib/axis/syn/axis_async_fifo.tcl
 lappend XDC_FILES lib/axis/syn/sync_reset.tcl
 lappend XDC_FILES lib/eth/syn/ptp_clock_cdc.tcl
 lappend XDC_FILES ../../../common/syn/tdma_ber_ch.tcl
+lappend XDC_FILES lib/axis/syn/axis_async_fifo.tcl
+lappend XDC_FILES lib/axis/syn/sync_reset.tcl
+lappend XDC_FILES lib/eth/syn/ptp_clock_cdc.tcl
+lappend XDC_FILES ../../../common/syn/tdma_ber_ch.tcl
 
 # IP files
 set IP_TCL_FILES [list ip/pcie4_uscale_plus_0.tcl]
 lappend IP_TCL_FILES ip/cmac_usplus_0.tcl
 lappend IP_TCL_FILES ip/cmac_usplus_1.tcl
 lappend IP_TCL_FILES ip/clk_wiz_0.tcl
+#
 
 # IPs for RMT pipeline
 lappend IP_TCL_FILES ip/rmt/blk_mem_gen_0.tcl
@@ -116,5 +122,9 @@ foreach ip_tcl $IP_TCL_FILES {
 #
 add_files [glob rtl/*.coe]
 add_files [glob rtl/*.mif]
+
+# for better simulation
+config_ip_cache -disable_cache
+update_ip_catalog
 
 exit
