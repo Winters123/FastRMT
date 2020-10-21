@@ -2,17 +2,12 @@
 
 module rmt_wrapper #(
 	// Slave AXI parameters
-	parameter C_S_AXI_DATA_WIDTH = 32,
-	parameter C_S_AXI_ADDR_WIDTH = 12,
-	parameter C_BASEADDR = 32'h80000000,
 	// AXI Stream parameters
 	// Slave
-	parameter C_S_AXIS_DATA_WIDTH = 256,
-	parameter C_S_AXIS_TUSER_WIDTH = 128,
+	parameter C_S_AXIS_DATA_WIDTH = 512,
+	parameter C_S_AXIS_TUSER_WIDTH = 128
 	// Master
-	parameter C_M_AXIS_DATA_WIDTH = 256,
 	// self-defined
-	parameter PHV_ADDR_WIDTH = 4
 )
 (
 	input									clk,		// axis clk
@@ -42,6 +37,7 @@ integer idx;
 localparam PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256;
 //the number of cycles for a PHV
 localparam SEG_NUM = 1024/C_S_AXIS_DATA_WIDTH;
+
 // pkt fifo
 wire								pkt_fifo_rd_en;
 wire								pkt_fifo_nearly_full;
@@ -89,10 +85,8 @@ reg									stg4_phv_out_valid_r;
 //TODO for bug fix
 wire [521:0] high_phv_out;
 wire [511:0] low_phv_out;
-/*=================================================*/
-assign s_axis_tready_f = !pkt_fifo_nearly_full;
-
 assign phv_fifo_out_w = {high_phv_out, low_phv_out};
+/*=================================================*/
 
 
 //NOTE: to filter out packets other than UDP/IP.
@@ -102,6 +96,8 @@ wire [C_S_AXIS_TUSER_WIDTH-1:0]				s_axis_tuser_f;
 wire										s_axis_tvalid_f;
 wire										s_axis_tready_f;
 wire										s_axis_tlast_f;
+
+assign s_axis_tready_f = !pkt_fifo_nearly_full;
 
 pkt_filter #(
 	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),

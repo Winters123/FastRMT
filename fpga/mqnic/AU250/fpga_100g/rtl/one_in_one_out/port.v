@@ -1855,20 +1855,8 @@ end
 
 if (TX_RMT_ENABLE) begin
 
-    rmt_wrapper #(
-    	// Slave AXI parameters
-    	.C_S_AXI_DATA_WIDTH(),
-    	.C_S_AXI_ADDR_WIDTH(),
-    	.C_BASEADDR(),
-    	// AXI Stream parameters
-    	// Slave
-    	.C_S_AXIS_DATA_WIDTH(),
-    	.C_S_AXIS_TUSER_WIDTH(),
-    	// Master
-    	.C_M_AXIS_DATA_WIDTH(AXIS_DATA_WIDTH),
-    	// self-defined
-    	.PHV_ADDR_WIDTH()
-    )rmt_wrapper_tx
+    rmt_wrapper
+    rmt_wrapper_tx
     (
     	.clk(clk),		// axis clk
     	.aresetn(rst),	
