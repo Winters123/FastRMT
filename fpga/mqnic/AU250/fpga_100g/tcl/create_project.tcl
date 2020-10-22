@@ -79,10 +79,6 @@ lappend XDC_FILES lib/axis/syn/axis_async_fifo.tcl
 lappend XDC_FILES lib/axis/syn/sync_reset.tcl
 lappend XDC_FILES lib/eth/syn/ptp_clock_cdc.tcl
 lappend XDC_FILES ../../../common/syn/tdma_ber_ch.tcl
-lappend XDC_FILES lib/axis/syn/axis_async_fifo.tcl
-lappend XDC_FILES lib/axis/syn/sync_reset.tcl
-lappend XDC_FILES lib/eth/syn/ptp_clock_cdc.tcl
-lappend XDC_FILES ../../../common/syn/tdma_ber_ch.tcl
 
 # IP files
 set IP_TCL_FILES [list ip/pcie4_uscale_plus_0.tcl]
