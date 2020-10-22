@@ -136,8 +136,10 @@ parameter AXIS_ETH_KEEP_WIDTH = AXIS_ETH_DATA_WIDTH/8;
 
 // Clock and reset
 wire pcie_user_clk;
-wire pcie_user_clk_125;
 wire pcie_user_reset;
+
+//for lower-frequency
+wire pcie_user_clk_wiz;
 
 wire cfgmclk_int;
 
@@ -156,6 +158,15 @@ wire rst_156mhz_int;
 wire mmcm_rst;
 wire mmcm_locked;
 wire mmcm_clkfb;
+
+
+clk_wiz_0 
+clk_wiz_250_125
+(
+	.clk_out1(pcie_user_clk),     // output clk_out1
+	.reset(pcie_user_reset),
+	.clk_in1(pcie_user_clk_wiz)
+);
 
 // MMCM instance
 // 161.13 MHz in, 125 MHz out
@@ -563,7 +574,7 @@ pcie4_uscale_plus_inst (
     .pci_exp_txp(pcie_tx_p),
     .pci_exp_rxn(pcie_rx_n),
     .pci_exp_rxp(pcie_rx_p),
-    .user_clk(pcie_user_clk),
+    .user_clk(pcie_user_clk_wiz),
     .user_reset(pcie_user_reset),
     .user_lnk_up(),
 
@@ -1369,13 +1380,6 @@ assign led[0] = led_int[0]; // red
 assign led[1] = qsfp1_rx_status; // yellow
 assign led[2] = qsfp0_rx_status; // green
 
-clk_wiz_0 
-clk_wiz_250_100
-(
-	.clk_out1(pcie_user_clk_125),     // output clk_out1
-	.reset(pcie_user_reset),
-	.clk_in1(pcie_user_clk)
-);
 
 fpga_core #(
     .AXIS_PCIE_DATA_WIDTH(AXIS_PCIE_DATA_WIDTH),
@@ -1392,7 +1396,7 @@ core_inst (
      * Clock: 250 MHz
      * Synchronous reset
      */
-    .clk_250mhz(pcie_user_clk_125),
+    .clk_250mhz(pcie_user_clk),
     .rst_250mhz(pcie_user_reset),
 
     /*
