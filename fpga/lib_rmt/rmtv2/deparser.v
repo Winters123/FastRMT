@@ -185,13 +185,40 @@ always @(posedge clk or negedge aresetn) begin
                     if(parse_action[i][0]) begin
                         case(parse_action[i][5:4])
                             2'b01: begin
-                                deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 16] <= deparse_phv_stored_r[PHV_2B_START_POS+16*i+:16];
+                                case(parse_action[i][3:1])
+                                    3'd0:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 16] <= deparse_phv_stored_r[PHV_2B_START_POS+16*0+:16];
+                                    3'd1:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 16] <= deparse_phv_stored_r[PHV_2B_START_POS+16*1+:16];
+                                    3'd2:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 16] <= deparse_phv_stored_r[PHV_2B_START_POS+16*2+:16];
+                                    3'd3:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 16] <= deparse_phv_stored_r[PHV_2B_START_POS+16*3+:16];
+                                    3'd4:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 16] <= deparse_phv_stored_r[PHV_2B_START_POS+16*4+:16];
+                                    3'd5:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 16] <= deparse_phv_stored_r[PHV_2B_START_POS+16*5+:16];
+                                    3'd6:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 16] <= deparse_phv_stored_r[PHV_2B_START_POS+16*6+:16];
+                                    3'd7:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 16] <= deparse_phv_stored_r[PHV_2B_START_POS+16*7+:16];
+                                endcase
                             end
                             2'b10: begin
-                                deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 32] <= deparse_phv_stored_r[PHV_4B_START_POS+32*i+:32];
+                                case(parse_action[i][3:1])
+                                    3'd0:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 32] <= deparse_phv_stored_r[PHV_4B_START_POS+32*0+:32];
+                                    3'd1:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 32] <= deparse_phv_stored_r[PHV_4B_START_POS+32*1+:32];
+                                    3'd2:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 32] <= deparse_phv_stored_r[PHV_4B_START_POS+32*2+:32];
+                                    3'd3:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 32] <= deparse_phv_stored_r[PHV_4B_START_POS+32*3+:32];
+                                    3'd4:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 32] <= deparse_phv_stored_r[PHV_4B_START_POS+32*4+:32];
+                                    3'd5:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 32] <= deparse_phv_stored_r[PHV_4B_START_POS+32*5+:32];
+                                    3'd6:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 32] <= deparse_phv_stored_r[PHV_4B_START_POS+32*6+:32];
+                                    3'd7:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 32] <= deparse_phv_stored_r[PHV_4B_START_POS+32*7+:32];
+                                endcase
                             end
                             2'b11: begin
-                                deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 48] <= deparse_phv_stored_r[PHV_6B_START_POS+48*i+:48];
+                                case(parse_action[i[3:1]])
+                                    3'd0:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 48] <= deparse_phv_stored_r[PHV_6B_START_POS+48*0+:48];
+                                    3'd1:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 48] <= deparse_phv_stored_r[PHV_6B_START_POS+48*1+:48];
+                                    3'd2:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 48] <= deparse_phv_stored_r[PHV_6B_START_POS+48*2+:48];
+                                    3'd3:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 48] <= deparse_phv_stored_r[PHV_6B_START_POS+48*3+:48];
+                                    3'd4:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 48] <= deparse_phv_stored_r[PHV_6B_START_POS+48*4+:48];
+                                    3'd5:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 48] <= deparse_phv_stored_r[PHV_6B_START_POS+48*5+:48];
+                                    3'd6:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 48] <= deparse_phv_stored_r[PHV_6B_START_POS+48*6+:48];
+                                    3'd7:  deparse_tdata_stored_r[(parse_action_ind[i])*8 +: 48] <= deparse_phv_stored_r[PHV_6B_START_POS+48*7+:48];
+                                endcase
                             end
                         endcase
                     end
