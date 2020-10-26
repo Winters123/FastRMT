@@ -205,7 +205,7 @@ stage0
 
 
 
-deparser #(
+deparser_2 #(
 	.C_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
 	.C_AXIS_TUSER_WIDTH(),
 	.C_PKT_VEC_WIDTH()
