@@ -180,6 +180,8 @@ always @(posedge clk or negedge aresetn) begin
             REFORM_HDR: begin
                 pkt_fifo_rd_en <= 1'b0;
                 phv_fifo_rd_en <= 1'b1;
+                
+                //TODO what we must change!!!!!!!!!
                 for(i=0; i <= 9; i=i+1) begin
                     //check if its valid
                     if(parse_action[i][0]) begin
