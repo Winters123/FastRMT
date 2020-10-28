@@ -125,6 +125,7 @@ always @(posedge clk or negedge aresetn) begin
         deparse_phv_reg_valid_in <= 10'b0;
         sub_parse_action_valid_in <= 10'b0;
 
+        deparse_phv_stored_r <= 0;
 
         deparse_state <= IDLE_S;
     end
@@ -401,7 +402,7 @@ generate
             (
             	.clk(clk),
             	.aresetn(aresetn),
-                .deparse_phv_reg_in(deparse_phv_stored_r),
+                .deparse_phv_reg_in(deparse_phv_stored_r[1123:356]),
                 .deparse_phv_reg_valid_in(deparse_phv_reg_valid_in[index]),
                 .parse_action(parse_action[index]),
                 .parse_action_valid_in(sub_parse_action_valid_in[index]),
