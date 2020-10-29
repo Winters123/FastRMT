@@ -237,7 +237,7 @@ always @(posedge clk or negedge aresetn) begin
                 sub_parse_action_valid_in <= 10'b0;
                 //retrieve the data
                 if(parse_action[0][0]) begin
-                        case(deparse_phv_select[0][0]) 
+                        case(deparse_phv_select[0]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[0]<<3 +: 16] <= deparse_phv_reg_out[0][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[0]<<3 +: 32] <= deparse_phv_reg_out[0][31:0];
@@ -246,7 +246,7 @@ always @(posedge clk or negedge aresetn) begin
                 end
 
                 if(parse_action[1][0]) begin
-                        case(deparse_phv_select[1][0]) 
+                        case(deparse_phv_select[1]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[1]<<3 +: 16] <= deparse_phv_reg_out[1][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[1]<<3 +: 32] <= deparse_phv_reg_out[1][31:0];
@@ -255,7 +255,7 @@ always @(posedge clk or negedge aresetn) begin
                 end
 
                 if(parse_action[2][0]) begin
-                        case(deparse_phv_select[2][0]) 
+                        case(deparse_phv_select[2]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[2]<<3 +: 16] <= deparse_phv_reg_out[2][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[2]<<3 +: 32] <= deparse_phv_reg_out[2][31:0];
@@ -264,7 +264,7 @@ always @(posedge clk or negedge aresetn) begin
                 end
 
                 if(parse_action[3][0]) begin
-                        case(deparse_phv_select[3][0]) 
+                        case(deparse_phv_select[3]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[3]<<3 +: 16] <= deparse_phv_reg_out[3][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[3]<<3 +: 32] <= deparse_phv_reg_out[3][31:0];
@@ -273,7 +273,7 @@ always @(posedge clk or negedge aresetn) begin
                 end
 
                 if(parse_action[4][0]) begin
-                        case(deparse_phv_select[4][0]) 
+                        case(deparse_phv_select[4]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[4]<<3 +: 16] <= deparse_phv_reg_out[4][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[4]<<3 +: 32] <= deparse_phv_reg_out[4][31:0];
@@ -282,7 +282,7 @@ always @(posedge clk or negedge aresetn) begin
                 end
 
                 if(parse_action[5][0]) begin
-                        case(deparse_phv_select[5][0]) 
+                        case(deparse_phv_select[5]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[5]<<3 +: 16] <= deparse_phv_reg_out[5][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[5]<<3 +: 32] <= deparse_phv_reg_out[5][31:0];
@@ -292,7 +292,7 @@ always @(posedge clk or negedge aresetn) begin
                 end
 
                 if(parse_action[6][0]) begin
-                        case(deparse_phv_select[6][0]) 
+                        case(deparse_phv_select[6]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[6]<<3 +: 16] <= deparse_phv_reg_out[6][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[6]<<3 +: 32] <= deparse_phv_reg_out[6][31:0];
@@ -301,7 +301,7 @@ always @(posedge clk or negedge aresetn) begin
                 end
 
                 if(parse_action[7][0]) begin
-                        case(deparse_phv_select[7][0]) 
+                        case(deparse_phv_select[7]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[7]<<3 +: 16] <= deparse_phv_reg_out[7][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[7]<<3 +: 32] <= deparse_phv_reg_out[7][31:0];
@@ -311,7 +311,7 @@ always @(posedge clk or negedge aresetn) begin
                 end
 
                 if(parse_action[8][0]) begin
-                        case(deparse_phv_select[8][0]) 
+                        case(deparse_phv_select[8]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[8]<<3 +: 16] <= deparse_phv_reg_out[8][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[8]<<3 +: 32] <= deparse_phv_reg_out[8][31:0];
@@ -320,7 +320,7 @@ always @(posedge clk or negedge aresetn) begin
                 end
 
                 if(parse_action[9][0]) begin
-                        case(deparse_phv_select[9][0]) 
+                        case(deparse_phv_select[9]) 
                             
                             2'b01: deparse_tdata_stored_r[parse_action_ind[9]<<3 +: 16] <= deparse_phv_reg_out[9][15:0];
                             2'b10: deparse_tdata_stored_r[parse_action_ind[9]<<3 +: 32] <= deparse_phv_reg_out[9][31:0];
