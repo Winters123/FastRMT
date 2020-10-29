@@ -36,6 +36,7 @@ wire [259:0] bram_out;
 
 wire [15:0]  parse_action [0:9];
 reg  [19:0]  condi_action [0:4];
+reg  [19:0]  condi_action_d[0:4];
 
 reg [47:0] val_6B [0:7];
 reg [31:0] val_4B [0:7];
@@ -86,11 +87,16 @@ assign parse_action[0] = bram_out[244+:16];
 
 
 always @(posedge axis_clk) begin
-    condi_action[0] <= bram_out[0+:20];
-    condi_action[1] <= bram_out[20+:20];
-    condi_action[2] <= bram_out[40+:20];
-    condi_action[3] <= bram_out[60+:20];
-    condi_action[4] <= bram_out[80+:20];
+    condi_action_d[0] <= bram_out[0+:20];
+    condi_action_d[1] <= bram_out[20+:20];
+    condi_action_d[2] <= bram_out[40+:20];
+    condi_action_d[3] <= bram_out[60+:20];
+    condi_action_d[4] <= bram_out[80+:20];
+    condi_action[0] <= condi_action_d[0];
+    condi_action[1] <= condi_action_d[1];
+    condi_action[2] <= condi_action_d[2];
+    condi_action[3] <= condi_action_d[3];
+    condi_action[4] <= condi_action_d[4];
 end
 
 
