@@ -76,13 +76,14 @@ localparam PHV_6B_START_POS = 20*5+256+16*8+32*8;
 reg  [9:0]  deparse_state;
 
 localparam  IDLE_S = 10'd0,
-            BUF_HDR_0 = 10'd7,
-            BUF_HDR_1 = 10'd1,
-            WAIT_ONE = 10'd2,
-            REFORM_HDR = 10'd3,
-            FLUSH_PKT_0 = 10'd4,
-            FLUSH_PKT_1 = 10'd5,
-            FLUSH_PKT = 10'd6;
+            BUF_HDR_0 = 10'd1,
+            BUF_HDR_1 = 10'd2,
+            WAIT_ONE = 10'd3,
+            WAIT_SUB = 10'd4,
+            REFORM_HDR = 10'd5,
+            FLUSH_PKT_0 = 10'd6,
+            FLUSH_PKT_1 = 10'd7,
+            FLUSH_PKT = 10'd8;
 
 
 (* MAX_FANOUT  = 50 *)reg [2*C_AXIS_DATA_WIDTH-1:0]		 deparse_tdata_stored_r;
@@ -103,7 +104,6 @@ genvar index;
 localparam C_PARSE_ACTION_LEN = 6;
 
 reg [9:0]                    deparse_phv_reg_valid_in;
-reg [C_PARSE_ACTION_LEN-1:0] sub_parse_action[0:9];
 reg [9:0]                    sub_parse_action_valid_in;
 
 wire [47:0]                  deparse_phv_reg_out[0:9];
@@ -204,7 +204,7 @@ always @(posedge clk or negedge aresetn) begin
                 deparse_phv_reg_valid_in <= 10'b0;
                 sub_parse_action_valid_in <= 10'b1111111111;
 
-                deparse_state <= REFORM_HDR;
+                deparse_state <= WAIT_SUB;
 
             end
 
@@ -215,6 +215,15 @@ always @(posedge clk or negedge aresetn) begin
                 deparse_phv_reg_valid_in <= 10'b0;
                 sub_parse_action_valid_in <= 10'b1111111111;
 
+
+                deparse_state <= WAIT_SUB;
+            end
+
+            WAIT_SUB: begin
+                pkt_fifo_rd_en <= 1'b0;
+                //TODO push the inputs to sub_deparser
+                deparse_phv_reg_valid_in <= 10'b0;
+                sub_parse_action_valid_in <= 10'b0;
 
                 deparse_state <= REFORM_HDR;
             end
