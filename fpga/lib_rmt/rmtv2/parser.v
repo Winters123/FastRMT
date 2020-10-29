@@ -35,7 +35,8 @@ wire [11:0] vlan_id;
 wire [259:0] bram_out;
 
 wire [15:0]  parse_action [0:9];
-wire [19:0]  condi_action [0:4];
+reg  [19:0]  condi_action [0:4];
+reg  [19:0]  condi_action_d[0:4];
 
 reg [47:0] val_6B [0:7];
 reg [31:0] val_4B [0:7];
@@ -52,6 +53,24 @@ reg          phv_ready;
 
 reg [1023:0] pkt_hdr_field;
 
+
+/**
+divide and conquar (below)
+*/
+
+genvar gen_i;
+
+localparam C_PARSE_ACTION_LEN = 13;
+
+reg [9:0]                    pkt_hdr_field_valid;
+reg [9:0]                    parse_action_valid_in;
+
+wire [47:0]                  val_out[0:9];
+wire [1:0]                   val_out_select[0:9];
+wire [2:0]                   val_seq_select[0:9];
+wire [9:0]                   val_valid_out;
+
+
 //get vlan_id from 1st segment.
 assign vlan_id = s_axis_tdata[116 +: 12];
 
@@ -66,11 +85,20 @@ assign parse_action[2] = bram_out[212+:16];
 assign parse_action[1] = bram_out[228+:16];
 assign parse_action[0] = bram_out[244+:16];
 
-assign condi_action[0] = bram_out[0+:20];
-assign condi_action[1] = bram_out[20+:20];
-assign condi_action[2] = bram_out[40+:20];
-assign condi_action[3] = bram_out[60+:20];
-assign condi_action[4] = bram_out[80+:20];
+
+always @(posedge axis_clk) begin
+    condi_action_d[0] <= bram_out[0+:20];
+    condi_action_d[1] <= bram_out[20+:20];
+    condi_action_d[2] <= bram_out[40+:20];
+    condi_action_d[3] <= bram_out[60+:20];
+    condi_action_d[4] <= bram_out[80+:20];
+    condi_action[0] <= condi_action_d[0];
+    condi_action[1] <= condi_action_d[1];
+    condi_action[2] <= condi_action_d[2];
+    condi_action[3] <= condi_action_d[3];
+    condi_action[4] <= condi_action_d[4];
+end
+
 
 /**** here we parse everything (8 containers & 5 conditions) ****/
 
@@ -102,10 +130,11 @@ always @(posedge axis_clk or negedge aresetn) begin
         //the 1st segment of the packet
         if(s_axis_tvalid && ~s_axis_tvalid_before) begin
             phv_ready <= 1'b0;
-            pkt_hdr_field <= s_axis_tdata<<(1024-C_S_AXIS_DATA_WIDTH);     
+            //pkt_hdr_field <= s_axis_tdata<<(1024-C_S_AXIS_DATA_WIDTH);    
+            pkt_hdr_field <= s_axis_tdata;     
         end
         else if(pkt_seg_cnt < SEG_NUM-1 && s_axis_tvalid) begin
-            pkt_hdr_field[1024-1-C_S_AXIS_DATA_WIDTH*(pkt_seg_cnt+1) -: C_S_AXIS_DATA_WIDTH] <= s_axis_tdata;   
+            pkt_hdr_field[1024-1 -: C_S_AXIS_DATA_WIDTH] <= s_axis_tdata;   
             //here we can start extract values from PHV
             if(pkt_seg_cnt == SEG_NUM-2 || s_axis_tlast) begin
                 phv_ready <= 1'b1;
@@ -120,6 +149,7 @@ end
 
 //here we extract the 1024b from packet (depend on data_width)
 reg [2:0] parse_state;
+
 localparam IDLE_S   = 3'd0,
            WAIT1_S  = 3'd1,
            WAIT2_S  = 3'd2,
@@ -130,6 +160,10 @@ always @(posedge axis_clk or negedge aresetn) begin
     if(~aresetn) begin
         phv_valid_out_reg <= 1'b0;
         //phv_out <= 1024'b0;
+        for(idx=0; idx<10; idx = idx+1) begin
+            parse_action_valid_in[idx] <= 1'b0;
+            pkt_hdr_field_valid[idx] <= 1'b0;
+        end
         parse_state <= IDLE_S;
     end
     else begin
@@ -145,115 +179,80 @@ always @(posedge axis_clk or negedge aresetn) begin
                     val_4B[idx] <= 32'b0;
                     val_6B[idx] <= 48'b0;
                 end
+                for(idx=0; idx<10; idx = idx+1) begin
+                    parse_action_valid_in[idx] <= 1'b0;
+                    pkt_hdr_field_valid[idx] <= 1'b0;
+                end
             end
 
             WAIT1_S: begin
-                parse_state <= PHVGEN_S;
+                parse_state <= WAIT2_S;
+                for(idx=0; idx<10; idx = idx+1) begin
+                    parse_action_valid_in[idx] <= 1'b1;
+                    pkt_hdr_field_valid[idx] <= 1'b1;
+                end
             end 
 
             WAIT2_S: begin
+                for(idx=0; idx<10; idx = idx+1) begin
+                    parse_action_valid_in[idx] <= 1'b0;
+                    pkt_hdr_field_valid[idx] <= 1'b0;
+                end
                 parse_state <= PHVGEN_S;
             end
 
             PHVGEN_S: begin
-                for (idx=0; idx<10; idx=idx+1) begin
-				    if (parse_action[idx][0] == 1'b1) begin
-				    	case(parse_action[idx][5:4])
-				    		1 : begin
-				    			case(parse_action[idx][3:1])
-				    				0 : begin
-				    					val_2B[0] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:16];
-				    				end
-				    				1 : begin
-				    					val_2B[1] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:16];
-				    				end
-				    				2 : begin
-				    					val_2B[2] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:16];
-				    				end
-				    				3 : begin
-				    					val_2B[3] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:16];
-				    				end
-				    				4 : begin
-				    					val_2B[4] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:16];
-				    				end
-				    				5 : begin
-				    					val_2B[5] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:16];
-				    				end
-				    				6 : begin
-				    					val_2B[6] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:16];
-				    				end
-				    				7 : begin
-				    					val_2B[7] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:16];
-				    				end
-				    			endcase
-				    		end
-				    		2 : begin
-				    			case(parse_action[idx][3:1])
-				    				0 : begin
-				    					val_4B[0] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:32];
-				    				end
-				    				1 : begin
-				    					val_4B[1] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:32];
-				    				end
-				    				2 : begin
-				    					val_4B[2] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:32];
-				    				end
-				    				3 : begin
-				    					val_4B[3] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:32];
-				    				end
-				    				4 : begin
-				    					val_4B[4] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:32];
-				    				end
-				    				5 : begin
-				    					val_4B[5] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:32];
-				    				end
-				    				6 : begin
-				    					val_4B[6] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:32];
-				    				end
-				    				7 : begin
-				    					val_4B[7] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:32];
-				    				end
-				    			endcase
-				    		end
-				    		3 : begin
-				    			case(parse_action[idx][3:1])
-				    				0 : begin
-				    					val_6B[0] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:48];
-				    				end
-				    				1 : begin
-				    					val_6B[1] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:48];
-				    				end
-				    				2 : begin
-				    					val_6B[2] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:48];
-				    				end
-				    				3 : begin
-				    					val_6B[3] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:48];
-				    				end
-				    				4 : begin
-				    					val_6B[4] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:48];
-				    				end
-				    				5 : begin
-				    					val_6B[5] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:48];
-				    				end
-				    				6 : begin
-				    					val_6B[6] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:48];
-				    				end
-				    				7 : begin
-				    					val_6B[7] <= pkt_hdr_field[(parse_action[idx][12:6])*8 +:48];
-				    				end
-				    			endcase
-				    		end
-				    	endcase
-				    end
-			    end // end parsing actions
+                case(val_out_select[0])
+                    2'b01: val_2B[val_seq_select[0]] <= val_out[0][15:0];
+                    2'b10: val_4B[val_seq_select[0]] <= val_out[0][31:0];
+                    2'b11: val_6B[val_seq_select[0]] <= val_out[0][47:0];
+                endcase
+                case(val_out_select[1])
+                    2'b01: val_2B[val_seq_select[1]] <= val_out[1][15:0];
+                    2'b10: val_4B[val_seq_select[1]] <= val_out[1][31:0];
+                    2'b11: val_6B[val_seq_select[1]] <= val_out[1][47:0];
+                endcase
+                case(val_out_select[2])
+                    2'b01: val_2B[val_seq_select[2]] <= val_out[2][15:0];
+                    2'b10: val_4B[val_seq_select[2]] <= val_out[2][31:0];
+                    2'b11: val_6B[val_seq_select[2]] <= val_out[2][47:0];
+                endcase
+                case(val_out_select[3])
+                    2'b01: val_2B[val_seq_select[3]] <= val_out[3][15:0];
+                    2'b10: val_4B[val_seq_select[3]] <= val_out[3][31:0];
+                    2'b11: val_6B[val_seq_select[3]] <= val_out[3][47:0];
+                endcase
+                case(val_out_select[4])
+                    2'b01: val_2B[val_seq_select[4]] <= val_out[4][15:0];
+                    2'b10: val_4B[val_seq_select[4]] <= val_out[4][31:0];
+                    2'b11: val_6B[val_seq_select[4]] <= val_out[4][47:0];
+                endcase
+                case(val_out_select[5])
+                    2'b01: val_2B[val_seq_select[5]] <= val_out[5][15:0];
+                    2'b10: val_4B[val_seq_select[5]] <= val_out[5][31:0];
+                    2'b11: val_6B[val_seq_select[5]] <= val_out[5][47:0];
+                endcase
+                case(val_out_select[6])
+                    2'b01: val_2B[val_seq_select[6]] <= val_out[6][15:0];
+                    2'b10: val_4B[val_seq_select[6]] <= val_out[6][31:0];
+                    2'b11: val_6B[val_seq_select[6]] <= val_out[6][47:0];
+                endcase
+                case(val_out_select[7])
+                    2'b01: val_2B[val_seq_select[7]] <= val_out[7][15:0];
+                    2'b10: val_4B[val_seq_select[7]] <= val_out[7][31:0];
+                    2'b11: val_6B[val_seq_select[7]] <= val_out[7][47:0];
+                endcase
+                case(val_out_select[8])
+                    2'b01: val_2B[val_seq_select[8]] <= val_out[8][15:0];
+                    2'b10: val_4B[val_seq_select[8]] <= val_out[8][31:0];
+                    2'b11: val_6B[val_seq_select[8]] <= val_out[8][47:0];
+                endcase
+                case(val_out_select[9])
+                    2'b01: val_2B[val_seq_select[9]] <= val_out[9][15:0];
+                    2'b10: val_4B[val_seq_select[9]] <= val_out[9][31:0];
+                    2'b11: val_6B[val_seq_select[9]] <= val_out[9][47:0];
+                endcase
                 phv_valid_out_reg <= 1'b1;
-                // phv_out <= {val_6B[7], val_6B[6], val_6B[5], val_6B[4], val_6B[3], val_6B[2], val_6B[1], val_6B[0],
-				// 			val_4B[7], val_4B[6], val_4B[5], val_4B[4], val_4B[3], val_4B[2], val_4B[1], val_4B[0],
-				// 			val_2B[7], val_2B[6], val_2B[5], val_2B[4], val_2B[3], val_2B[2], val_2B[1], val_2B[0],
-				// 			condi_action[0], condi_action[1], condi_action[2], condi_action[3], condi_action[4],
-				// 			//{115{1'b0}}, vlan_id, 1'b0, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
-                //             //corundum currently doesn't have metadata
-                //             256'b0};
                 parse_state <= IDLE_S;
             end
         endcase
@@ -265,6 +264,38 @@ assign phv_out = {val_6B[7], val_6B[6], val_6B[5], val_6B[4], val_6B[3], val_6B[
 				 val_2B[7], val_2B[6], val_2B[5], val_2B[4], val_2B[3], val_2B[2], val_2B[1], val_2B[0],
 				 condi_action[0], condi_action[1], condi_action[2], condi_action[3], condi_action[4],
                  256'b0};
+
+
+
+generate
+    for(gen_i = 0; gen_i < 10; gen_i = gen_i + 1)
+        begin: sub_op
+            sub_parser #(
+                //for 100g MAC, the AXIS width is 512b
+	            .PARSE_ACT_RAM_WIDTH(),
+                .C_PARSE_ACTION_LEN(),
+                .HDR_FIELD_LEN(),
+                .VAL_LEN()
+            )sub_parser(
+                .axis_clk(axis_clk),
+	            .aresetn(aresetn),
+
+	            .pkt_hdr_field(pkt_hdr_field),
+                .pkt_hdr_field_valid(pkt_hdr_field_valid[gen_i]),
+
+                .parse_action(parse_action[gen_i][12:0]),
+                .parse_action_valid_in(parse_action_valid_in[gen_i]),
+
+	            .val_valid_out(val_valid_out[gen_i]),
+	            .val_out(val_out[gen_i]),
+                .val_out_select(val_out_select[gen_i]),
+                .val_seq_select(val_seq_select[gen_i])
+            );
+        end
+
+endgenerate
+
+
 
 // =============================================================== //
 // parse_act_ram_ip #(
@@ -289,3 +320,5 @@ parse_act_ram
 );
 
 endmodule
+
+
