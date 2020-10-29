@@ -4,3 +4,10 @@
 *.vvp
 *.kate-swp
 
+vivado*
+project_synth/
+
+xsim.dir/
+xvlog*
+
+tb_demo.v
