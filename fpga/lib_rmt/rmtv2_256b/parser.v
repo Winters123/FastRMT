@@ -11,8 +11,15 @@
 `define PROT_TCP		8'h06
 `define PROT_UDP		8'h11
 
+`define SUB_PARSE(idx) \
+	case(sub_parse_val_out_type[idx]) \
+		2'b01: val_2B[sub_parse_val_out_seq[idx]] = sub_parse_val_out[idx][15:0]; \
+		2'b10: val_4B[sub_parse_val_out_seq[idx]] = sub_parse_val_out[idx][31:0]; \
+		2'b11: val_6B[sub_parse_val_out_seq[idx]] = sub_parse_val_out[idx][47:0]; \
+	endcase \
 
-module packet_header_parser #(
+
+module parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 256,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	parameter PKT_HDR_LEN = (6+4+2)*8*8+20*5+256, // check with the doc
@@ -50,12 +57,12 @@ reg [C_S_AXIS_TUSER_WIDTH-1:0] tuser_1st;
 
 /****** store all or at-most 4 pkt segments ******/
 reg if_last_d1; // indicate whether the last valid packet 
+// 
 always @(posedge axis_clk) begin
 	if (~aresetn) begin
 		if_last_d1 <= 0;
 	end
 	else begin
-		//1 if it is the last of the pkt segment.
 		if_last_d1 <= s_axis_tvalid & s_axis_tlast;
 	end
 end
@@ -68,7 +75,6 @@ always @(posedge axis_clk) begin
 	else if (if_last_d1) begin
 		pkt_cnt <= 0;
 	end
-	//pkt_cnt can equal to 5 at most.
 	else if (pkt_cnt > C_VALID_NUM_HDR_PKTS) begin
 		pkt_cnt <= pkt_cnt;
 	end
@@ -78,7 +84,6 @@ always @(posedge axis_clk) begin
 end
 
 // hdr_window, #pkt_cnt 
-//window is zero if the current segment is above 4.
 wire hdr_window = s_axis_tvalid && pkt_cnt<=C_VALID_NUM_HDR_PKTS;
 // store into pkts
 always @(posedge axis_clk) begin
@@ -108,20 +113,10 @@ assign w_pkts = {pkts[3], pkts[2], pkts[1], pkts[0]};
 
 
 
-localparam WAIT_FOR_PKTS=0, START_PARSING=1, WAIT_BRAM_OUT_1=2;
-localparam STATE_PARSE_0=3, STATE_PARSE_0_16=4, STATE_PARSE_0_32=5, STATE_PARSE_0_48=6;
-localparam STATE_PARSE_1=7, STATE_PARSE_1_16=8, STATE_PARSE_1_32=9, STATE_PARSE_1_48=10;
-localparam STATE_PARSE_2=11, STATE_PARSE_2_16=12, STATE_PARSE_2_32=13, STATE_PARSE_2_48=14;
-localparam STATE_PARSE_3=15, STATE_PARSE_3_16=16, STATE_PARSE_3_32=17, STATE_PARSE_3_48=18;
-localparam STATE_PARSE_4=19, STATE_PARSE_4_16=20, STATE_PARSE_4_32=21, STATE_PARSE_4_48=22;
-localparam STATE_PARSE_5=23, STATE_PARSE_5_16=24, STATE_PARSE_5_32=25, STATE_PARSE_5_48=26;
-localparam STATE_PARSE_6=27, STATE_PARSE_6_16=28, STATE_PARSE_6_32=29, STATE_PARSE_6_48=30;
-localparam STATE_PARSE_7=31, STATE_PARSE_7_16=32, STATE_PARSE_7_32=33, STATE_PARSE_7_48=34;
-localparam STATE_PARSE_8=35, STATE_PARSE_8_16=36, STATE_PARSE_8_32=37, STATE_PARSE_8_48=38;
-localparam STATE_PARSE_9=39, STATE_PARSE_9_16=40, STATE_PARSE_9_32=41, STATE_PARSE_9_48=42;
-localparam WAIT_BRAM_OUT_2=43;
+localparam WAIT_FOR_PKTS=0, START_PARSING=1;
+localparam WAIT_BRAM_OUT_1=2, BEGIN_SUB_PARSE=3, FINISH_SUB_PARSE=4;
 wire [259:0] bram_out;
-reg [5:0] state, state_next;
+reg [3:0] state, state_next;
 
 // common headers
 reg [11:0] vlan_id; // vlan id
@@ -151,6 +146,13 @@ assign cond_action[2] = bram_out[40+:20];
 assign cond_action[3] = bram_out[60+:20];
 assign cond_action[4] = bram_out[80+:20];
 
+reg [9:0] sub_parse_act_valid;
+reg [15:0] sub_parse_act [0:9];
+wire [47:0] sub_parse_val_out [0:9];
+wire [9:0] sub_parse_val_out_valid;
+wire [1:0] sub_parse_val_out_type [0:9];
+wire [2:0] sub_parse_val_out_seq [0:9];
+
 reg [47:0] val_6B [0:7];
 reg [31:0] val_4B [0:7];
 reg [15:0] val_2B [0:7];
@@ -167,6 +169,8 @@ always@(*) begin
 	val_2B[0]=0;val_2B[1]=0;val_2B[2]=0;val_2B[3]=0;val_2B[4]=0;val_2B[5]=0;val_2B[6]=0;val_2B[7]=0;
 	val_4B[0]=0;val_4B[1]=0;val_4B[2]=0;val_4B[3]=0;val_4B[4]=0;val_4B[5]=0;val_4B[6]=0;val_4B[7]=0;
 	val_6B[0]=0;val_6B[1]=0;val_6B[2]=0;val_6B[3]=0;val_6B[4]=0;val_6B[5]=0;val_6B[6]=0;val_6B[7]=0;
+	// 
+	sub_parse_act_valid = 10'b0;
 
 	case (state) 
 		WAIT_FOR_PKTS: begin
@@ -178,111 +182,48 @@ always@(*) begin
 			eth_type_r = w_pkts[128+:16]; // 144
 			// 
 			ip_prot_r = w_pkts[216+:8]; // 240
-			
-			//the time when addr is feeded
+			//
 			vlan_id = w_pkts[116+:12];
 	
 			state_next = WAIT_BRAM_OUT_1;
 		end
 		WAIT_BRAM_OUT_1: begin
 			// empty cycle
-			state_next = WAIT_BRAM_OUT_2;
+			state_next = BEGIN_SUB_PARSE;
 		end
-		WAIT_BRAM_OUT_2: begin
-			for (idx=0; idx<10; idx=idx+1) begin
-				if (parse_action[idx][0] == 1'b1) begin
-					case(parse_action[idx][5:4])
-						1 : begin
-							case(parse_action[idx][3:1])
-								0 : begin
-									val_2B[0] = w_pkts[(parse_action[idx][12:6])*8 +:16];
-								end
-								1 : begin
-									val_2B[1] = w_pkts[(parse_action[idx][12:6])*8 +:16];
-								end
-								2 : begin
-									val_2B[2] = w_pkts[(parse_action[idx][12:6])*8 +:16];
-								end
-								3 : begin
-									val_2B[3] = w_pkts[(parse_action[idx][12:6])*8 +:16];
-								end
-								4 : begin
-									val_2B[4] = w_pkts[(parse_action[idx][12:6])*8 +:16];
-								end
-								5 : begin
-									val_2B[5] = w_pkts[(parse_action[idx][12:6])*8 +:16];
-								end
-								6 : begin
-									val_2B[6] = w_pkts[(parse_action[idx][12:6])*8 +:16];
-								end
-								7 : begin
-									val_2B[7] = w_pkts[(parse_action[idx][12:6])*8 +:16];
-								end
-							endcase
-						end
-						2 : begin
-							case(parse_action[idx][3:1])
-								0 : begin
-									val_4B[0] = w_pkts[(parse_action[idx][12:6])*8 +:32];
-								end
-								1 : begin
-									val_4B[1] = w_pkts[(parse_action[idx][12:6])*8 +:32];
-								end
-								2 : begin
-									val_4B[2] = w_pkts[(parse_action[idx][12:6])*8 +:32];
-								end
-								3 : begin
-									val_4B[3] = w_pkts[(parse_action[idx][12:6])*8 +:32];
-								end
-								4 : begin
-									val_4B[4] = w_pkts[(parse_action[idx][12:6])*8 +:32];
-								end
-								5 : begin
-									val_4B[5] = w_pkts[(parse_action[idx][12:6])*8 +:32];
-								end
-								6 : begin
-									val_4B[6] = w_pkts[(parse_action[idx][12:6])*8 +:32];
-								end
-								7 : begin
-									val_4B[7] = w_pkts[(parse_action[idx][12:6])*8 +:32];
-								end
-							endcase
-						end
-						3 : begin
-							case(parse_action[idx][3:1])
-								0 : begin
-									val_6B[0] = w_pkts[(parse_action[idx][12:6])*8 +:48];
-								end
-								1 : begin
-									val_6B[1] = w_pkts[(parse_action[idx][12:6])*8 +:48];
-								end
-								2 : begin
-									val_6B[2] = w_pkts[(parse_action[idx][12:6])*8 +:48];
-								end
-								3 : begin
-									val_6B[3] = w_pkts[(parse_action[idx][12:6])*8 +:48];
-								end
-								4 : begin
-									val_6B[4] = w_pkts[(parse_action[idx][12:6])*8 +:48];
-								end
-								5 : begin
-									val_6B[5] = w_pkts[(parse_action[idx][12:6])*8 +:48];
-								end
-								6 : begin
-									val_6B[6] = w_pkts[(parse_action[idx][12:6])*8 +:48];
-								end
-								7 : begin
-									val_6B[7] = w_pkts[(parse_action[idx][12:6])*8 +:48];
-								end
-							endcase
-						end
-					endcase
-				end
-			end // end parsing actions
+		BEGIN_SUB_PARSE: begin
 
+			sub_parse_act_valid = 10'b1111111111;
 
-			state_next = WAIT_FOR_PKTS;
+			sub_parse_act[0] = parse_action[0];
+			sub_parse_act[1] = parse_action[1];
+			sub_parse_act[2] = parse_action[2];
+			sub_parse_act[3] = parse_action[3];
+			sub_parse_act[4] = parse_action[4];
+			sub_parse_act[5] = parse_action[5];
+			sub_parse_act[6] = parse_action[6];
+			sub_parse_act[7] = parse_action[7];
+			sub_parse_act[8] = parse_action[8];
+			sub_parse_act[9] = parse_action[9];
+
+			state_next = FINISH_SUB_PARSE;
+		end
+		FINISH_SUB_PARSE: begin
 			parser_valid_r = 1;
+			state_next = WAIT_FOR_PKTS;
+
+			`SUB_PARSE(0)
+			`SUB_PARSE(1)
+			`SUB_PARSE(2)
+			`SUB_PARSE(3)
+			`SUB_PARSE(4)
+			`SUB_PARSE(5)
+			`SUB_PARSE(6)
+			`SUB_PARSE(7)
+			`SUB_PARSE(8)
+			`SUB_PARSE(9)
+
+
 			pkt_hdr_vec_r ={val_6B[7], val_6B[6], val_6B[5], val_6B[4], val_6B[3], val_6B[2], val_6B[1], val_6B[0],
 							val_4B[7], val_4B[6], val_4B[5], val_4B[4], val_4B[3], val_4B[2], val_4B[1], val_4B[0],
 							val_2B[7], val_2B[6], val_2B[5], val_2B[4], val_2B[3], val_2B[2], val_2B[1], val_2B[0],
@@ -314,6 +255,32 @@ always@(posedge axis_clk) begin
 		parser_valid <= parser_valid_r;
 	end
 end
+
+// =============================================================== //
+generate
+	genvar index;
+	for (index=0; index<10; index=index+1) begin:
+		sub_op
+		sub_parser #(
+			.PKTS_HDR_LEN(),
+			.PARSE_ACT_LEN(),
+			.VAL_OUT_LEN()
+		)
+		sub_parser (
+			.clk				(axis_clk),
+			.aresetn			(aresetn),
+
+			.parse_act_valid	(sub_parse_act_valid[index]),
+			.parse_act			(sub_parse_act[index]),
+
+			.pkts_hdr			(w_pkts),
+			.val_out_valid		(sub_parse_val_out_valid[index]),
+			.val_out			(sub_parse_val_out[index]),
+			.val_out_type		(sub_parse_val_out_type[index]),
+			.val_out_seq		(sub_parse_val_out_seq[index])
+		);
+	end
+endgenerate
 
 // =============================================================== //
 parse_act_ram_ip #(
