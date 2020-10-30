@@ -5,7 +5,7 @@ module deparser #(
 	parameter	C_AXIS_DATA_WIDTH = 256,
 	parameter	C_AXIS_TUSER_WIDTH = 128,
 	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256,
-    parameter   
+    parameter   DEPARSER_ID = 5
 )
 (
 	input									clk,
@@ -455,7 +455,7 @@ always @(posedge clk or negedge aresetn) begin
     else begin
         case(c_state)
             IDLE_C: begin
-                if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == PARSER_ID)begin
+                if(mod_id[2:0] == DEPARSER_ID)begin
                     c_wr_en <= 1'b1;
                     c_index <= c_s_axis_tdata[384+:8];
 
