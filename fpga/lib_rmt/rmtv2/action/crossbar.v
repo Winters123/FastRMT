@@ -2,12 +2,12 @@
 //	Module name: crossbar.v
 //	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
 //	Last edited time: 2020/09/24
-//	Function outline: crossbar used exclusived for RMT
+//	Function outline: crossbar used exclusively for RMT
 /****************************************************/
 
 `timescale 1ns / 1ps
 module crossbar #(
-    parameter STAGE = 0,
+    parameter STAGE_ID = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter ACT_LEN = 25,
     parameter width_2B = 16,

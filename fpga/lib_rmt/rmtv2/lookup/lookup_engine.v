@@ -8,10 +8,12 @@
 `timescale 1ns / 1ps
 
 module lookup_engine #(
-    parameter STAGE = 0,
+    parameter STAGE_ID = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter KEY_LEN = 48*2+32*2+16*2+5,
-    parameter ACT_LEN = 25
+    parameter ACT_LEN = 625,
+    parameter LOOKUP_ID = 2,
+    parameter C_S_AXIS_DATA_WIDTH = 512
 )
 (
     input clk,
@@ -24,7 +26,7 @@ module lookup_engine #(
     input [PHV_LEN-1:0]           phv_in,
 
     //output to the action engine
-    output reg [ACT_LEN*25-1:0]   action,
+    output reg [ACT_LEN-1:0]   action,
     output reg                    action_valid,
     output reg [PHV_LEN-1:0]      phv_out, 
 
@@ -35,9 +37,22 @@ module lookup_engine #(
     input                         lookup_din_en,
 
     //control channel (action ram)
-    input [ACT_LEN*25-1:0]        action_data_in,
+    input [ACT_LEN-1:0]        action_data_in,
     input                         action_en,
-    input [3:0]                   action_addr
+    input [3:0]                   action_addr,
+
+    //control path
+    input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
+	input [C_S_AXIS_TUSER_WIDTH-1:0]		c_s_axis_tuser,
+	input [C_S_AXIS_DATA_WIDTH/8-1:0]		c_s_axis_tkeep,
+	input									c_s_axis_tvalid,
+	input									c_s_axis_tlast,
+
+    output [C_S_AXIS_DATA_WIDTH-1:0]		c_m_axis_tdata,
+	output [C_S_AXIS_TUSER_WIDTH-1:0]		c_m_axis_tuser,
+	output [C_S_AXIS_DATA_WIDTH/8-1:0]		c_m_axis_tkeep,
+	output									c_m_axis_tvalid,
+	output									c_m_axis_tlast
 
 );
 
@@ -119,7 +134,174 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 
-//TODO control channel (maybe future?)
+/****control path for 512b*****/
+wire [7:0]          mod_id; //module ID
+//4'b0 for tcam entry;
+//4'b2 for action table entry;
+wire [3:0]          resv; //recog between tcam and action
+
+
+reg  [7:0]          c_index_cam; //table index(addr)
+reg                 c_wr_en_cam; //enable table write(wena)
+reg [KEY_LEN-1:0]   cam_entry_tmp;
+reg [KEY_LEN-1:0]   cam_mask_tmp;
+reg                 cam_entry_compl_flag;
+reg                 cam_mask_compl_flag;
+reg                 cam_conti_flag;
+
+reg  [7:0]          c_index_act;
+reg                 c_wr_en_act;
+reg  [ACT_LEN-1:0]  act_entry_tmp;
+reg                 entry_compl_flag;
+reg  [9:0]          act_entry_cursor;
+
+
+reg [2:0]           c_state;
+
+
+assign mod_id = c_s_axis_tdata[368+:8];
+assign resv = c_s_axis_tdate[380+:4];
+
+localparam IDLE_C = 1,
+           CAM_TMP_ENTRY = 2,
+           CAM_TMP_MASK = 3,
+           ACT_TMP_ENTRY = 4;
+
+always @(posedge clk or negedge rst_n) begin
+    if(~rst_n) begin
+        c_index_cam <= 0;
+        c_wr_en_cam <= 0;
+        cam_entry_tmp <= 0;
+        cam_mask_tmp <= 0;
+        cam_entry_compl_flag <= 0;
+        cam_entry_compl_flag <= 0;
+        cam_conti_flag <= 1'b0;
+
+        c_index_act <= 0;
+        c_wr_en_act <= 0;
+
+        act_entry_tmp <= 0;
+        entry_compl_flag <= 0;
+
+        c_m_axis_tdata <= 0;
+        c_m_axis_tuser <= 0;
+        c_m_axis_tkeep <= 0;
+        c_m_axis_tvalid <= 0;
+        c_m_axis_tlast <= 0;
+
+        c_state <= IDLE_C;
+    end
+    else begin
+        case(c_state)
+            IDLE_C: begin
+                case({c_s_axis_tvalid, mod_id[7:3], mod_id[2:0], resv})
+                    //TCAM ENTRY
+                    {1, STAGE_ID, LOOKUP_ID, 4'b0}: begin
+                        c_index_cam = c_s_axis_tdata[384+:8];
+                        c_m_axis_tdata <= 0;
+                        c_m_axis_tuser <= 0;
+                        c_m_axis_tkeep <= 0;
+                        c_m_axis_tvalid <= 0;
+                        c_m_axis_tlast <= 0;
+                        
+                        c_state <= CAM_TMP_ENTRY;
+                    end
+                    //ACTION ENTRY
+                    {1, STAGE_ID, LOOKUP_ID, 4'b2}: begin
+                        c_m_axis_tdata <= 0;
+                        c_m_axis_tuser <= 0;
+                        c_m_axis_tkeep <= 0;
+                        c_m_axis_tvalid <= 0;
+                        c_m_axis_tlast <= 0;
+                        c_index_act = c_s_axis_tdata[384+:8];
+                        entry_tmp[0+:C_S_AXIS_DATA_WIDTH] <= c_s_axis_tdata;
+                        act_entry_cursor <= C_S_AXIS_DATA_WIDTH;
+                        c_state <= ACT_TMP_ENTRY;
+                    end
+                    default: begin
+                        c_index_cam <= 0;
+                        c_wr_en_cam <= 0;
+                        cam_entry_tmp <= 0;
+                        cam_mask_tmp <= 0;
+                        cam_entry_compl_flag <= 0;
+                        cam_entry_compl_flag <= 0;
+                        cam_conti_flag <= 1'b0;
+
+                        c_index_act <= 0;
+                        c_wr_en_act <= 0;
+
+                        act_entry_tmp <= 0;
+                        entry_compl_flag <= 0;
+                        c_m_axis_tdata <= c_s_axis_tdata;
+                        c_m_axis_tuser <= c_s_axis_tuser;
+                        c_m_axis_tkeep <= c_s_axis_tkeep;
+                        c_m_axis_tvalid <= c_s_axis_tvalid;
+                        c_m_axis_tlast <= c_s_axis_tlast;
+
+                        c_state <= IDLE_C;
+                    end
+                endcase 
+            end
+
+            //write cam entry to entry_tmp
+            CAM_TMP_ENTRY: begin
+                c_wr_en_cam <= 1'b0;
+                if(cam_conti_flag) begin
+                    c_index_cam <= c_index_cam + 1;
+                end
+                else begin
+                    c_index_cam <= c_index_cam;
+                end
+                if(c_s_axis_tvalid) begin
+                    cam_entry_tmp <= c_s_axis_tdata[196:0];
+                    cam_entry_compl_flag <= 1'b1;
+                    c_state <= CAM_TMP_MASK;
+                end
+                else c_state <= IDLE_C;
+                
+            end
+            CAM_TMP_MASK: begin
+                if(c_s_axis_tvalid) begin
+                    cam_mask_tmp <= c_s_axis_tdata[196:0];
+                    cam_mask_compl_flag <= 1'b1; 
+                    cam_entry_compl_flag <= 1'b0;
+                    //ready to write
+                    c_wr_en_cam <= 1'b1;
+                    //whether to flush or finished?
+                    if(c_s_axis_tlast == 0) begin
+                        c_state <= CAM_TMP_ENTRY;
+                        cam_conti_flag <= 1'b1;
+                    end 
+                    else c_state <= IDLE_C;
+                end
+            end
+            ACT_TMP_ENTRY: begin
+                //write RAM
+                if((act_entry_cursor+C_S_AXIS_DATA_WIDTH) >= ACT_LEN) begin
+                    entry_compl_flag <= 1'b1;
+                    c_wr_en_act <= 1'b1;
+                    act_entry_tmp[act_entry_cursor +: (ACT_LEN-act_entry_cursor)] <= \
+                        c_s_axis_tdata[0+:(ACT_LEN-act_entry_cursor)];
+                    if(c_s_axis_tlast) begin
+                        c_state <= IDLE_C;
+                    end
+                    else begin
+                        act_entry_cursor <= 10'b0;
+                        c_state <= ACT_TMP_ENTRY;
+                    end
+                end
+                else begin
+                    act_entry_tmp[act_entry_cursor +: C_S_AXIS_DATA_WIDTH] <= c_s_axis_tdata;
+                    //this is a flush packet
+                    if(act_entry_cursor == 0) begin
+                        c_index_act <= c_index_act + 1;
+                    end
+                end
+            end
+        endcase
+
+    end
+end
 
 
 
@@ -136,12 +318,8 @@ cam_top # (
 cam_0
 (
 	.CLK				(clk),
-	// .CMP_DIN			({59'b0,extract_key}),
 	.CMP_DIN			(extract_key),
-	// .CMP_DATA_MASK		(256'h0),
-	//.CMP_DATA_MASK		({256'b0}),
 	.CMP_DATA_MASK		(),
-	// .BUSY				(busy),
 	.BUSY				(),
 	.MATCH				(match),
 	.MATCH_ADDR			(match_addr),
@@ -151,10 +329,10 @@ cam_0
 	//.DATA_MASK		(lookup_din_mask),  
 	//.DIN				(lookup_din),
 
-    .WE                 (),
-    .WR_ADDR            (),
-    .DATA_MASK          (),  //TODO du we need ternary matching?
-    .DIN                (),
+    .WE                 (c_wr_en_cam),
+    .WR_ADDR            (c_index_cam),
+    .DATA_MASK          (act_entry_tmp),  //TODO do we need ternary matching?
+    .DIN                (act_entry_tmp),
 	.EN					(1'b1)
 );
 
@@ -167,11 +345,11 @@ cam_0
 blk_mem_gen_1
 act_ram_625w_16d
 (
-    .addra(action_addr),
+    .addra(c_wr_en_act),
     .clka(clk),
-    .dina(action_data_in),
+    .dina(act_entry_tmp),
     .ena(1'b1),
-    .wea(action_en),
+    .wea(c_wr_en_act),
 
     .addrb(match_addr),
     .clkb(clk),

@@ -6,7 +6,7 @@
 /****************************************************/
 `timescale 1ns / 1ps
 module alu_3 #(
-    parameter STAGE = 0,
+    parameter STAGE_ID = 0,
     parameter ACTION_LEN = 25,
     parameter META_LEN = 256,
     parameter COMP_LEN = 100

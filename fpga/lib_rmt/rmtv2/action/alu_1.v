@@ -8,7 +8,7 @@
 `timescale 1ns / 1ps
 
 module alu_1 #(
-    parameter STAGE = 0,
+    parameter STAGE_ID = 0,
     parameter ACTION_LEN = 25,
     parameter DATA_WIDTH = 48  //data width of the ALU
 )
@@ -29,7 +29,7 @@ module alu_1 #(
 );
 
 /*
-8 operations to support:
+4 operations to support:
 
 1,2. add/sub:   0001/0010
               extract 2 operands from pkt header, add(sub) and write back.
@@ -92,12 +92,5 @@ always @(posedge clk) begin
 	end
 end
 
-// ila_0
-// debug (
-// 	.clk		(clk),
-// 	.probe0		(action_valid),
-// 	.probe1		(state),
-// 	.probe2		(container_out_valid)
-// );
 
 endmodule

@@ -4,7 +4,8 @@ module deparser #(
 	//in corundum with 100g ports, data width is 512b
 	parameter	C_AXIS_DATA_WIDTH = 256,
 	parameter	C_AXIS_TUSER_WIDTH = 128,
-	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256
+	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256,
+    parameter   
 )
 (
 	input									clk,
@@ -13,7 +14,7 @@ module deparser #(
 	input [C_AXIS_DATA_WIDTH-1:0]			pkt_fifo_tdata,
 	input [C_AXIS_DATA_WIDTH/8-1:0]			pkt_fifo_tkeep,
 	input [C_AXIS_TUSER_WIDTH-1:0]			pkt_fifo_tuser,
-	// input									pkt_fifo_tvalid,
+	// input								pkt_fifo_tvalid,
 	input									pkt_fifo_tlast,
 	input									pkt_fifo_empty,
 	output reg							    pkt_fifo_rd_en,
@@ -27,7 +28,15 @@ module deparser #(
 	output reg [C_AXIS_TUSER_WIDTH-1:0]		depar_out_tuser,
 	output reg								depar_out_tvalid,
 	output reg								depar_out_tlast,
-	input									depar_out_tready
+	input									depar_out_tready,
+
+    //control path
+    input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
+	input [C_S_AXIS_TUSER_WIDTH-1:0]		c_s_axis_tuser,
+	input [C_S_AXIS_DATA_WIDTH/8-1:0]		c_s_axis_tkeep,
+	input									c_s_axis_tvalid,
+	input									c_s_axis_tlast
+
 );
 
 wire  [11:0]   vlan_id;
@@ -390,7 +399,6 @@ always @(posedge clk or negedge aresetn) begin
                 end
             end
 
-
         endcase
     end
 end
@@ -424,19 +432,76 @@ endgenerate
 
 
 
+/****control path for 512b*****/
+wire [7:0]          mod_id; //module ID
+reg  [7:0]          c_index; //table index(addr)
+reg                 c_wr_en; //enable table write(wen)
+reg  [259:0]        entry_reg;
+
+reg [2:0]           c_state;
+
+localparam IDLE_C = 1,
+           WRITE_C = 2;
+
+assign mod_id = c_s_axis_tdata[368+:8];
+
+always @(posedge clk or negedge aresetn) begin
+    if(~aresetn) begin
+        c_wr_en <= 1'b0;
+        c_index <= 4'b0;
+
+        c_state <= IDLE_C;
+    end
+    else begin
+        case(c_state)
+            IDLE_C: begin
+                if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == PARSER_ID)begin
+                    c_wr_en <= 1'b1;
+                    c_index <= c_s_axis_tdata[384+:8];
+
+                    c_state <= WRITE_C;
+
+                end
+                else begin
+                    c_wr_en <= 1'b0;
+                    c_index <= 4'b0; 
+
+                    c_state <= IDLE_C;
+                end
+            end
+            //support full table flush
+            WRITE_C: begin
+                if(c_s_axis_tlast) begin
+                    c_wr_en <= 1'b0;
+                    c_index <= 4'b0;
+                    c_state <= IDLE_C;
+                end
+                else begin
+                    c_wr_en <= 1'b1;
+                    c_index <= c_index + 4'b1;
+                    c_state <= WRITE_C;
+                end
+            end
+        endcase
+
+    end
+end
+
+
+
 parse_act_ram_ip
 parse_act_ram
 (
 	// write port
 	.clka		(clk),
-	.addra		(),
-	.dina		(),
-	.ena		(),
-	.wea		(),
+	.addra		(c_index[3:0]),
+	.dina		(c_s_axis_tdata[259:0]),
+	.ena		(1'b1),
+	.wea		(c_wr_en),
 
 	//
 	.clkb		(clk),
-	.addrb		(vlan_id[7:4]),
+	.addrb		(vlan_id[7:4]), // TODO: note that we may change due to little or big endian
 	.doutb		(bram_out),
 	.enb		(1'b1) // always set to 1
 );

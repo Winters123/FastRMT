@@ -10,8 +10,8 @@ module rmt_wrapper #(
 	// self-defined
 )
 (
-	input									clk,		// axis clk
-	input									aresetn,	
+	input										clk,		// axis clk
+	input										aresetn,	
 
 	// input Slave AXI Stream
 	input [C_S_AXIS_DATA_WIDTH-1:0]				s_axis_tdata,

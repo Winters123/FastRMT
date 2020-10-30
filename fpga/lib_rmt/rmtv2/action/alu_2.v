@@ -8,7 +8,7 @@
 `timescale 1ns / 1ps
 
 module alu_2 #(
-    parameter STAGE = 0,
+    parameter STAGE_ID = 0,
     parameter ACTION_LEN = 25,
     parameter DATA_WIDTH = 32  //data width of the ALU
 )
@@ -25,7 +25,21 @@ module alu_2 #(
 
     //output to form PHV
     output reg [DATA_WIDTH-1:0]       container_out,
-    output reg                        container_out_valid
+    output reg                        container_out_valid,
+
+    //control path
+    input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
+	input [C_S_AXIS_TUSER_WIDTH-1:0]		c_s_axis_tuser,
+	input [C_S_AXIS_DATA_WIDTH/8-1:0]		c_s_axis_tkeep,
+	input									c_s_axis_tvalid,
+	input									c_s_axis_tlast,
+
+    output [C_S_AXIS_DATA_WIDTH-1:0]		c_m_axis_tdata,
+	output [C_S_AXIS_TUSER_WIDTH-1:0]		c_m_axis_tuser,
+	output [C_S_AXIS_DATA_WIDTH/8-1:0]		c_m_axis_tkeep,
+	output									c_m_axis_tvalid,
+	output									c_m_axis_tlast
+
 );
 
 /********intermediate variables declared here********/
@@ -54,7 +68,7 @@ reg							container_out_valid_next;
 assign load_addr = operand_2_in[4:0];
 
 /*
-8 operations to support:
+6 operations to support:
 
 1,2. add/sub:   0001/0010
               extract 2 operands from pkt header, add(sub) and write back.

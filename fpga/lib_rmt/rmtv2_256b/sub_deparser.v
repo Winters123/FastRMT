@@ -65,7 +65,7 @@ always @(*) begin
 					3'd7: val_out_nxt[31:0] = phv_in[PHV_4B_START_POS+32*7 +: 32];
 				endcase
 			end
-			// 2B
+			// 6B
 			3'b111: begin
 				val_out_type_nxt = 2'b11;
 				case(parse_act[3:1])

@@ -5,60 +5,11 @@
 //	Function outline: the action execution engine in RMT
 /****************************************************/
 
-`define CREATE_ALU_1(idx, byte_size, ind) \
-        alu_1 #( \
-            .STAGE(STAGE), \
-            .ACTION_LEN(), \
-            .DATA_WIDTH((byte_size*8)) \
-        )alu_1_``byte_size``B_``idx( \
-            .clk(clk), \
-            .rst_n(rst_n), \
-            .action_in(alu_in_action[((idx)+(ind)+1+1)*ACT_LEN-1 -: ACT_LEN]), \
-            .action_valid(alu_in_action_valid), \
-            .operand_1_in(alu_in_``byte_size``B_1[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
-            .operand_2_in(alu_in_``byte_size``B_2[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
-            .container_out(output_``byte_size``B[idx]), \
-            .container_out_valid() \
-        ); \
-
-`define CREATE_ALU_1_VALID(idx, byte_size, ind) \
-        alu_1 #( \
-            .STAGE(STAGE), \
-            .ACTION_LEN(), \
-            .DATA_WIDTH((byte_size*8)) \
-        )alu_1_``byte_size``B_``idx( \
-            .clk(clk), \
-            .rst_n(rst_n), \
-            .action_in(alu_in_action[((idx)+(ind)+1+1)*ACT_LEN-1 -: ACT_LEN]), \
-            .action_valid(alu_in_action_valid), \
-            .operand_1_in(alu_in_``byte_size``B_1[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
-            .operand_2_in(alu_in_``byte_size``B_2[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
-            .container_out(output_``byte_size``B[idx]), \
-            .container_out_valid(phv_valid_bit[idx]) \
-        ); \
-
-`define CREATE_ALU_2(idx, byte_size, ind) \
-        alu_2 #( \
-            .STAGE(STAGE), \
-            .ACTION_LEN(), \
-            .DATA_WIDTH((byte_size*8)) \
-        )alu_2_``byte_size``B_``idx( \
-            .clk(clk), \
-            .rst_n(rst_n), \
-            .action_in(alu_in_action[((idx)+(ind)+1+1)*ACT_LEN-1 -: ACT_LEN]), \
-            .action_valid(alu_in_action_valid), \
-            .operand_1_in(alu_in_``byte_size``B_1[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
-            .operand_2_in(alu_in_``byte_size``B_2[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
-            .operand_3_in(alu_in_``byte_size``B_3[(idx+1) * byte_size * 8-1 -: byte_size*8]), \
-            .container_out(output_``byte_size``B[idx]), \
-            .container_out_valid() \
-        ); \
-
-
 module action_engine #(
-    parameter STAGE = 0,
+    parameter STAGE_ID = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
-    parameter ACT_LEN = 25
+    parameter ACT_LEN = 25,
+    parameter ACT_ID = 3
 )(
     input clk,
     input rst_n,
@@ -109,7 +60,7 @@ wire [355:0]				output_md;
 
 //crossbar
 crossbar #(
-    .STAGE(STAGE),
+    .STAGE_ID(STAGE_ID),
     .PHV_LEN(),
     .ACT_LEN(),
     .width_2B(),
@@ -146,7 +97,7 @@ generate
     //initialize 8 6B containers 
     for(gen_i = 7; gen_i >= 0; gen_i = gen_i - 1) begin
         alu_1 #(
-            .STAGE(STAGE),
+            .STAGE_ID(STAGE_ID),
             .ACTION_LEN(),
             .DATA_WIDTH(width_6B)
         )alu_1_6B(
@@ -162,7 +113,7 @@ generate
         );
 
         alu_1 #(
-            .STAGE(STAGE),
+            .STAGE_ID(STAGE_ID),
             .ACTION_LEN(),
             .DATA_WIDTH(width_2B)
         )alu_1_2B(
@@ -180,7 +131,7 @@ generate
 endgenerate
 
 alu_2 #(
-    .STAGE(STAGE),
+    .STAGE_ID(STAGE_ID),
     .ACTION_LEN(),
     .DATA_WIDTH(width_4B)  //data width of the ALU
 )alu_2_0(
@@ -200,7 +151,7 @@ alu_2 #(
 generate
     for(gen_i = 6; gen_i >= 0; gen_i = gen_i - 1) begin
 		alu_1 #(
-		    .STAGE(STAGE),
+		    .STAGE_ID(STAGE_ID),
 		    .ACTION_LEN(),
 		    .DATA_WIDTH(width_4B)
 		)alu_1_4B(
@@ -217,67 +168,10 @@ generate
     end
 endgenerate
 
-// alu_1 #(
-//     .STAGE(STAGE),
-//     .ACTION_LEN(),
-//     .DATA_WIDTH(width_6B)
-// )alu_1_6B_7(
-//     .clk(clk),
-//     .rst_n(rst_n),
-//     .action_in(alu_in_action[(7+8+8+1+1)*ACT_LEN-1 -: ACT_LEN]),
-//     .action_valid(alu_in_action_valid),
-//     .operand_1_in(alu_in_6B_1[8 * width_6B -1 -: width_6B]),
-//     .operand_2_in(alu_in_6B_2[8 * width_6B -1 -: width_6B]),
-//     .container_out(output_6B[7]),
-//     .container_out_valid(phv_valid_bit)
-// );
-
-// alu_1 #(
-//     .STAGE(STAGE),
-//     .ACTION_LEN(),
-//     .DATA_WIDTH(width_6B)
-// )alu_1_6B_6(
-//     .clk(clk),
-//     .rst_n(rst_n),
-//     .action_in(alu_in_action[(6+8+8+1+1)*ACT_LEN-1 -: ACT_LEN]),
-//     .action_valid(alu_in_action_valid),
-//     .operand_1_in(alu_in_6B_1[7 * width_6B -1 -: width_6B]),
-//     .operand_2_in(alu_in_6B_2[7 * width_6B -1 -: width_6B]),
-//     .container_out(output_6B[6]),
-//     .container_out_valid()
-// );
-
-// assign output_6B[6] = alu_in_6B_1[7 * width_6B-1 -: width_6B];
-// assign output_6B[5] = alu_in_6B_1[6 * width_6B-1 -: width_6B];
-// assign output_6B[4] = alu_in_6B_1[5 * width_6B-1 -: width_6B];
-// assign output_6B[3] = alu_in_6B_1[4 * width_6B-1 -: width_6B];
-// assign output_6B[2] = alu_in_6B_1[3 * width_6B-1 -: width_6B];
-// assign output_6B[1] = alu_in_6B_1[2 * width_6B-1 -: width_6B];
-// assign output_6B[0] = alu_in_6B_1[1 * width_6B-1 -: width_6B];
-// 
-// assign output_4B[7] = alu_in_4B_1[8 * width_4B-1 -: width_4B];
-// assign output_4B[6] = alu_in_4B_1[7 * width_4B-1 -: width_4B];
-// assign output_4B[5] = alu_in_4B_1[6 * width_4B-1 -: width_4B];
-// assign output_4B[4] = alu_in_4B_1[5 * width_4B-1 -: width_4B];
-// assign output_4B[3] = alu_in_4B_1[4 * width_4B-1 -: width_4B];
-// assign output_4B[2] = alu_in_4B_1[3 * width_4B-1 -: width_4B];
-// assign output_4B[1] = alu_in_4B_1[2 * width_4B-1 -: width_4B];
-// assign output_4B[0] = alu_in_4B_1[1 * width_4B-1 -: width_4B];
-// 
-// assign output_2B[7] = alu_in_2B_1[8 * width_2B-1 -: width_2B];
-// assign output_2B[6] = alu_in_2B_1[7 * width_2B-1 -: width_2B];
-// assign output_2B[5] = alu_in_2B_1[6 * width_2B-1 -: width_2B];
-// assign output_2B[4] = alu_in_2B_1[5 * width_2B-1 -: width_2B];
-// assign output_2B[3] = alu_in_2B_1[4 * width_2B-1 -: width_2B];
-// assign output_2B[2] = alu_in_2B_1[3 * width_2B-1 -: width_2B];
-// assign output_2B[1] = alu_in_2B_1[2 * width_2B-1 -: width_2B];
-// assign output_2B[0] = alu_in_2B_1[1 * width_2B-1 -: width_2B];
-// assign output_md = alu_in_phv_remain_data; 
-
 //initialize ALU_3 for matedata
 
 alu_3 #(
-    .STAGE(STAGE),
+    .STAGE_ID(STAGE_ID),
     .ACTION_LEN(),
     .META_LEN(),
     .COMP_LEN()
@@ -323,13 +217,5 @@ always @(posedge clk) begin
 	end
 end
 
-// ila_1 
-// debug1 (
-// 	.clk		(clk),
-// 	.probe0		(phv_valid_in),
-// 	.probe1		(action_valid_in),
-// 	.probe2		(phv_valid_out),
-// 	.probe3		(phv_out[1123 -: 48])
-// );
 
 endmodule

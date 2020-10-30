@@ -5,7 +5,9 @@ module parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 256,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	parameter PKT_HDR_LEN = (6+4+2)*8*8+20*5+256, // check with the doc
-	parameter PARSE_ACT_RAM_WIDTH = 167
+	parameter PARSE_ACT_RAM_WIDTH = 167,
+    parameter STAGE_ID = 0,
+    parameter PARSER_ID = 0
     )(
     input									axis_clk,
 	input									aresetn,
@@ -19,7 +21,20 @@ module parser #(
 
 	// output
 	output   								phv_valid_out,
-	output      [PKT_HDR_LEN-1:0]			phv_out
+	output      [PKT_HDR_LEN-1:0]			phv_out,
+
+    //control path
+    input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
+	input [C_S_AXIS_TUSER_WIDTH-1:0]		c_s_axis_tuser,
+	input [C_S_AXIS_DATA_WIDTH/8-1:0]		c_s_axis_tkeep,
+	input									c_s_axis_tvalid,
+	input									c_s_axis_tlast,
+
+    output [C_S_AXIS_DATA_WIDTH-1:0]		c_m_axis_tdata,
+	output [C_S_AXIS_TUSER_WIDTH-1:0]		c_m_axis_tuser,
+	output [C_S_AXIS_DATA_WIDTH/8-1:0]		c_m_axis_tkeep,
+	output									c_m_axis_tvalid,
+	output									c_m_axis_tlast
 );
 
 // intermediate variables declared here
@@ -297,6 +312,81 @@ endgenerate
 
 
 
+/****control path for 512b*****/
+wire [7:0]          mod_id; //module ID
+reg  [7:0]          c_index; //table index(addr)
+reg                 c_wr_en; //enable table write(wen)
+reg  [259:0]        entry_reg;
+
+reg [2:0]           c_state;
+
+localparam IDLE_C = 1,
+           WRITE_C = 2;
+
+assign mod_id = c_s_axis_tdata[368+:8];
+
+always @(posedge axis_clk or negedge aresetn) begin
+    if(~aresetn) begin
+        c_wr_en <= 1'b0;
+        c_index <= 4'b0;
+
+        c_m_axis_tdata <= 0;
+        c_m_axis_tuser <= 0;
+        c_m_axis_tkeep <= 0;
+        c_m_axis_tvalid <= 0;
+        c_m_axis_tlast <= 0;
+
+        c_state <= IDLE_C;
+    end
+    else begin
+        case(c_state)
+            IDLE_C: begin
+                if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == PARSER_ID)begin
+                    c_wr_en <= 1'b1;
+                    c_index <= c_s_axis_tdata[384+:8];
+
+                    c_m_axis_tdata <= 0;
+                    c_m_axis_tuser <= 0;
+                    c_m_axis_tkeep <= 0;
+                    c_m_axis_tvalid <= 0;
+                    c_m_axis_tlast <= 0;
+
+                    c_state <= WRITE_C;
+
+                end
+                else begin
+                    c_wr_en <= 1'b0;
+                    c_index <= 4'b0; 
+
+                    c_m_axis_tdata <= c_s_axis_tdata;
+                    c_m_axis_tuser <= c_s_axis_tuser;
+                    c_m_axis_tkeep <= c_s_axis_tkeep;
+                    c_m_axis_tvalid <= c_s_axis_tvalid;
+                    c_m_axis_tlast <= c_s_axis_tlast;
+
+                    c_state <= IDLE_C;
+                end
+            end
+            //support full table flush
+            WRITE_C: begin
+                if(c_s_axis_tlast) begin
+                    c_wr_en <= 1'b0;
+                    c_index <= 4'b0;
+                    c_state <= IDLE_C;
+                end
+                else begin
+                    c_wr_en <= 1'b1;
+                    c_index <= c_index + 4'b1;
+                    c_state <= WRITE_C;
+                end
+            end
+        endcase
+
+    end
+end
+
+
+
 // =============================================================== //
 // parse_act_ram_ip #(
 // 	.C_INIT_FILE_NAME	("./parse_act_ram_init_file.mif"),
@@ -307,10 +397,10 @@ parse_act_ram
 (
 	// write port
 	.clka		(axis_clk),
-	.addra		(),
-	.dina		(),
-	.ena		(),
-	.wea		(),
+	.addra		(c_index[3:0]),
+	.dina		(c_s_axis_tdata[259:0]),
+	.ena		(1'b1),
+	.wea		(c_wr_en),
 
 	//
 	.clkb		(axis_clk),
