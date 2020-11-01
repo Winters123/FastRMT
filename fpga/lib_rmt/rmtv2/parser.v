@@ -2,11 +2,10 @@
 `timescale 1ns / 1ps
 module parser #(
     //for 100g MAC, the AXIS width is 512b
-	parameter C_S_AXIS_DATA_WIDTH = 256,
+	parameter C_S_AXIS_DATA_WIDTH = 512,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	parameter PKT_HDR_LEN = (6+4+2)*8*8+20*5+256, // check with the doc
 	parameter PARSE_ACT_RAM_WIDTH = 167,
-    parameter STAGE_ID = 0,
     parameter PARSER_ID = 0
     )(
     input									axis_clk,
@@ -341,7 +340,7 @@ always @(posedge axis_clk or negedge aresetn) begin
     else begin
         case(c_state)
             IDLE_C: begin
-                if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == PARSER_ID)begin
+                if(mod_id[2:0] == PARSER_ID)begin
                     c_wr_en <= 1'b1;
                     c_index <= c_s_axis_tdata[384+:8];
 

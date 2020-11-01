@@ -85,6 +85,7 @@ reg									stg4_phv_out_valid_r;
 //TODO for bug fix
 wire [521:0] high_phv_out;
 wire [511:0] low_phv_out;
+
 assign phv_fifo_out_w = {high_phv_out, low_phv_out};
 /*=================================================*/
 
@@ -96,6 +97,14 @@ wire [C_S_AXIS_TUSER_WIDTH-1:0]				s_axis_tuser_f;
 wire										s_axis_tvalid_f;
 wire										s_axis_tready_f;
 wire										s_axis_tlast_f;
+
+//NOTE: filter control packets from data packets.
+wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_1;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_1;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_1;
+wire										c_s_axis_tvalid_1;
+wire										c_s_axis_tready_1;
+wire										c_s_axis_tlast_1;
 
 assign s_axis_tready_f = !pkt_fifo_nearly_full;
 
@@ -121,7 +130,14 @@ pkt_filter #(
 	.m_axis_tuser(s_axis_tuser_f),
 	.m_axis_tvalid(s_axis_tvalid_f),
 	.m_axis_tready(s_axis_tready_f),
-	.m_axis_tlast(s_axis_tlast_f)
+	.m_axis_tlast(s_axis_tlast_f),
+
+	//control path
+	.c_m_axis_tdata(c_s_axis_tdata_1),
+	.c_m_axis_tkeep(c_s_axis_tkeep_1),
+	.c_m_axis_tuser(c_s_axis_tuser_1),
+	.c_m_axis_tvalid(c_s_axis_tvalid_1),
+	.c_m_axis_tlast(c_s_axis_tlast_1)
 );
 
 
@@ -165,27 +181,79 @@ fifo_generator_522b phv_fifo_2 (
   .rd_rst_busy()  // output wire rd_rst_busy
 );
 
+wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_2;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_2;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_2;
+wire 										c_s_axis_tvalid_2;
+wire 										c_s_axis_tlast_2;
+
+wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_3;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_3;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_3;
+wire 										c_s_axis_tvalid_3;
+wire 										c_s_axis_tlast_3;
+
+
+wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_4;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_4;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_4;
+wire 										c_s_axis_tvalid_4;
+wire 										c_s_axis_tlast_4;
+
+
+wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_5;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_5;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_5;
+wire 										c_s_axis_tvalid_5;
+wire 										c_s_axis_tlast_5;
+
+wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_6;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_6;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_6;
+wire 										c_s_axis_tvalid_6;
+wire 										c_s_axis_tlast_6;
+
 parser #(
     .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH), //for 100g mac exclusively
 	.C_S_AXIS_TUSER_WIDTH(),
 	.PKT_HDR_LEN(),
-	.PARSE_ACT_RAM_WIDTH()
+	.PARSE_ACT_RAM_WIDTH(),
+	.PARSER_ID()
 )
 phv_parser
 (
 	.axis_clk		(clk),
 	.aresetn		(aresetn),
-	// input slvae axi stream
+	//data path
 	.s_axis_tdata	(s_axis_tdata_f),
 	.s_axis_tuser	(s_axis_tuser_f),
 	.s_axis_tkeep	(s_axis_tkeep_f),
 	.s_axis_tvalid	(s_axis_tvalid_f & s_axis_tready_f),
 	.s_axis_tlast	(s_axis_tlast_f),
 
-	// output
 	.phv_valid_out	(stg0_phv_in_valid),
-	.phv_out	(stg0_phv_in)
+	.phv_out	    (stg0_phv_in),
+
+	//control path
+    .c_s_axis_tdata(c_s_axis_tdata_1),
+	.c_s_axis_tuser(c_s_axis_tuser_1),
+	.c_s_axis_tkeep(c_s_axis_tkeep_1),
+	.c_s_axis_tvalid(c_s_axis_tvalid_1),
+	.c_s_axis_tlast(c_s_axis_tlast_1),
+
+    .c_m_axis_tdata(c_s_axis_tdata_2),
+	.c_m_axis_tuser(c_s_axis_tuser_2),
+	.c_m_axis_tkeep(c_s_axis_tkeep_2),
+	.c_m_axis_tvalid(c_s_axis_tvalid_2),
+	.c_m_axis_tlast(c_s_axis_tlast_2)
+
 );
+
+wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_3;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_3;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_3;
+wire 										c_s_axis_tvalid_3;
+wire 										c_s_axis_tlast_3;
 
 stage #(
 	.STAGE(0)
@@ -195,12 +263,24 @@ stage0
 	.axis_clk				(clk),
     .aresetn				(aresetn),
 
-	// input
+	// data path
     .phv_in					(stg0_phv_in),
     .phv_in_valid			(stg0_phv_in_valid_w),
-	// output
     .phv_out				(stg0_phv_out),
-    .phv_out_valid			(stg0_phv_out_valid)
+    .phv_out_valid			(stg0_phv_out_valid),
+
+	//control path
+	.c_s_axis_tdata(c_s_axis_tdata_2),
+	.c_s_axis_tuser(c_s_axis_tuser_2),
+	.c_s_axis_tkeep(c_s_axis_tkeep_2),
+	.c_s_axis_tvalid(c_s_axis_tvalid_2),
+	.c_s_axis_tlast(c_s_axis_tlast_2),
+
+	.c_m_axis_tdata(c_s_axis_tdata_3),
+	.c_m_axis_tuser(c_s_axis_tuser_3),
+	.c_m_axis_tkeep(c_s_axis_tkeep_3),
+	.c_m_axis_tvalid(c_s_axis_tvalid_3),
+	.c_m_axis_tlast(c_s_axis_tlast_3)
 );
 
 
@@ -214,6 +294,7 @@ phv_deparser (
 	.clk					(clk),
 	.aresetn				(aresetn),
 
+	//data plane
 	.pkt_fifo_tdata			(tdata_fifo),
 	.pkt_fifo_tkeep			(tkeep_fifo),
 	.pkt_fifo_tuser			(tuser_fifo),
@@ -233,6 +314,13 @@ phv_deparser (
 	.depar_out_tlast		(m_axis_tlast),
 	// input
 	.depar_out_tready		(m_axis_tready)
+
+	//control path
+	.c_s_axis_tdata(c_s_axis_tdata_3),
+	.c_s_axis_tuser(c_s_axis_tuser_3),
+	.c_s_axis_tkeep(c_s_axis_tkeep_3),
+	.c_s_axis_tvalid(c_s_axis_tvalid_3),
+	.c_s_axis_tlast(c_s_axis_tlast_3)
 );
 
 

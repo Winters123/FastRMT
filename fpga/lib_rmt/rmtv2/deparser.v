@@ -95,12 +95,11 @@ localparam  IDLE_S = 10'd0,
             FLUSH_PKT = 10'd8;
 
 
-(* MAX_FANOUT  = 50 *)reg [2*C_AXIS_DATA_WIDTH-1:0]		 deparse_tdata_stored_r;
-                      reg [2*C_AXIS_TUSER_WIDTH-1:0]	 deparse_tuser_stored_r;
-                      reg [2*(C_AXIS_DATA_WIDTH/8)-1:0]	 deparse_tkeep_stored_r;
-                      reg [1:0]							 deparse_tlast_stored_r;
-
-(* MAX_FANOUT  = 50 *)reg [C_PKT_VEC_WIDTH-1:0]          deparse_phv_stored_r;
+reg [2*C_AXIS_DATA_WIDTH-1:0]		 deparse_tdata_stored_r;
+reg [2*C_AXIS_TUSER_WIDTH-1:0]	     deparse_tuser_stored_r;
+reg [2*(C_AXIS_DATA_WIDTH/8)-1:0]	 deparse_tkeep_stored_r;
+reg [1:0]							 deparse_tlast_stored_r;
+reg [C_PKT_VEC_WIDTH-1:0]            deparse_phv_stored_r;
 
 integer i;
 

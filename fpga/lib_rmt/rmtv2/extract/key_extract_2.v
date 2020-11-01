@@ -8,6 +8,8 @@
 
 `timescale 1ns / 1ps
 module key_extract_2 #(
+    parameter C_S_AXIS_DATA_WIDTH = 512,
+    parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter STAGE_ID = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter KEY_LEN = 48*2+32*2+16*2+5,
@@ -31,6 +33,7 @@ module key_extract_2 #(
     output reg                          phv_valid_out,
     output reg [KEY_LEN-1:0]            key_out,
     output reg                          key_valid_out,
+    output reg [KEY_LEN-1:0]            key_mask_out;
 
     //control path
     input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
@@ -241,88 +244,258 @@ end
 
 /****control path for 512b*****/
 wire [7:0]          mod_id; //module ID
+wire [3:0]          resv;
 reg  [7:0]          c_index; //table index(addr)
-reg                 c_wr_en; //enable table write(wena)
+reg                 c_wr_en_off; //enable table write(wena)
+reg                 c_wr_en_mask;
 
 reg [2:0]           c_state;
 
-assign mod_id = c_s_axis_tdata[368+:8];
+
+/****for 256b exclusively*****/
+reg [C_S_AXIS_DATA_WIDTH-1:0]       c_m_axis_tdata_r;
+reg [C_S_AXIS_TUSER_WIDTH-1:0]      c_m_axis_tuser_r;
+reg [C_S_AXIS_DATA_WIDTH/8-1:0]     c_m_axis_tkeep_r;
+reg                                 c_m_axis_tvalid_r;
+reg                                 c_m_axis_tlast_r;
+
+
 
 localparam IDLE_C = 1,
-           WRITE_C = 2;
+           PARSE_C = 2,
+           WRITE_OFF_C = 3,
+           WRITE_MASK_C = 4;
 
-always @(posedge axis_clk or negedge aresetn) begin
-    if(~aresetn) begin
-        c_wr_en <= 1'b0;
-        c_index <= 4'b0;
-
-        c_m_axis_tdata <= 0;
-        c_m_axis_tuser <= 0;
-        c_m_axis_tkeep <= 0;
-        c_m_axis_tvalid <= 0;
-        c_m_axis_tlast <= 0;
-
-        c_state <= IDLE_C;
-
+generate 
+    if(C_S_AXIS_DATA_WIDTH == 512) begin
+        assign mod_id = c_s_axis_tdata[368+:8];
+        //4'b0 for key offset
+        //4'b1 for key mask
+        assign resv = c_s_axis_tdata[380+:4];
+        always @(posedge axis_clk or negedge aresetn) begin
+            if(~aresetn) begin
+                c_wr_en_off <= 1'b0;
+                c_wr_en_mask <= 1'b0;
+                c_index <= 4'b0;
+        
+                c_m_axis_tdata <= 0;
+                c_m_axis_tuser <= 0;
+                c_m_axis_tkeep <= 0;
+                c_m_axis_tvalid <= 0;
+                c_m_axis_tlast <= 0;
+        
+                c_state <= IDLE_C;
+        
+            end
+            else begin
+                case(c_state)
+                    IDLE_C: begin
+                        if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID)begin
+                            //c_wr_en <= 1'b1;
+                            c_index <= c_s_axis_tdata[384+:8];
+        
+                            c_m_axis_tdata <= 0;
+                            c_m_axis_tuser <= 0;
+                            c_m_axis_tkeep <= 0;
+                            c_m_axis_tvalid <= 0;
+                            c_m_axis_tlast <= 0;
+        
+                            //c_state <= WRITE_C;
+                            if(resv == 4'b0) begin
+                                c_wr_en_off <= 1'b1;
+                                c_state <= WRITE_OFF_C;
+                            end
+                            else begin
+                                c_wr_en_mask <= 1'b1;
+                                c_state <= WRITE_MASK_C;
+                            end
+                        end
+                        else begin
+                            c_wr_en_off <= 1'b0;
+                            c_wr_en_mask <= 1'b0;
+                            c_index <= 4'b0; 
+        
+                            c_m_axis_tdata <= c_s_axis_tdata;
+                            c_m_axis_tuser <= c_s_axis_tuser;
+                            c_m_axis_tkeep <= c_s_axis_tkeep;
+                            c_m_axis_tvalid <= c_s_axis_tvalid;
+                            c_m_axis_tlast <= c_s_axis_tlast;
+        
+                            c_state <= IDLE_C;
+                        end
+                    end
+                    //support full table flush
+                    WRITE_OFF_C: begin
+                        if(c_s_axis_tlast) begin
+                            c_wr_en_off <= 1'b0;
+                            c_index <= 4'b0;
+                            c_state <= IDLE_C;
+                        end
+                        else begin
+                            c_wr_en_off <= 1'b1;
+                            c_index <= c_index + 4'b1;
+                            c_state <= WRITE_OFF_C;
+                        end
+                    end
+                    WRITE_MASK_C: begin
+                        if(!c_s_axis_tvalid) begin
+                            c_wr_en_mask <= 1'b0;
+                            c_index <= 4'b0;
+                            c_state <= IDLE_C;
+                        end
+                        else begin
+                            c_wr_en_mask <= 1'b1;
+                            c_index <= c_index + 4'b1;
+                            c_state <= WRITE_MASK_C;
+                        end
+                    end
+                    default: begin
+                        c_wr_en_off <= 1'b0;
+                        c_wr_en_mask <= 1'b0;
+                        c_index <= 4'b0; 
+                        c_m_axis_tdata <= c_s_axis_tdata;
+                        c_m_axis_tuser <= c_s_axis_tuser;
+                        c_m_axis_tkeep <= c_s_axis_tkeep;
+                        c_m_axis_tvalid <= c_s_axis_tvalid;
+                        c_m_axis_tlast <= c_s_axis_tlast;
+                    end
+                endcase
+        
+            end
+        end
     end
-    else begin
-        case(c_state)
-            IDLE_C: begin
-                if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID)begin
-                    c_wr_en <= 1'b1;
-                    c_index <= c_s_axis_tdata[384+:8];
 
-                    c_m_axis_tdata <= 0;
-                    c_m_axis_tuser <= 0;
-                    c_m_axis_tkeep <= 0;
-                    c_m_axis_tvalid <= 0;
-                    c_m_axis_tlast <= 0;
+    else if(C_S_AXIS_DATA_WIDTH == 256) begin
+        assign mod_id = c_s_axis_tdata[112+:8];
+        //4'b0 for key offset
+        //4'b1 for key mask
+        assign resv = c_s_axis_tdata[124+:4];
+        always @(posedge axis_clk or negedge aresetn) begin
+            if(~aresetn) begin
+                c_wr_en_off <= 1'b0;
+                c_wr_en_mask <= 1'b0;
+                c_index <= 4'b0;
 
-                    c_state <= WRITE_C;
+                c_m_axis_tdata <= 0;
+                c_m_axis_tuser <= 0;
+                c_m_axis_tkeep <= 0;
+                c_m_axis_tvalid <= 0;
+                c_m_axis_tlast <= 0;
 
-                end
-                else begin
-                    c_wr_en <= 1'b0;
-                    c_index <= 4'b0; 
+                c_m_axis_tdata_r  <= 0;
+                c_m_axis_tuser_r  <= 0;
+                c_m_axis_tkeep_r  <= 0;
+                c_m_axis_tvalid_r <= 0;
+                c_m_axis_tlast_r  <= 0;
 
-                    c_m_axis_tdata <= c_s_axis_tdata;
-                    c_m_axis_tuser <= c_s_axis_tuser;
-                    c_m_axis_tkeep <= c_s_axis_tkeep;
-                    c_m_axis_tvalid <= c_s_axis_tvalid;
-                    c_m_axis_tlast <= c_s_axis_tlast;
+                c_state <= IDLE_C;
 
-                    c_state <= IDLE_C;
-                end
             end
-            //support full table flush
-            WRITE_C: begin
-                if(c_s_axis_tlast) begin
-                    c_wr_en <= 1'b0;
-                    c_index <= 4'b0;
-                    c_state <= IDLE_C;
-                end
-                else begin
-                    c_wr_en <= 1'b1;
-                    c_index <= c_index + 4'b1;
-                    c_state <= WRITE_C;
-                end
-            end
-            default: begin
-                c_wr_en <= 1'b0;
-                c_index <= 4'b0; 
-                c_m_axis_tdata <= c_s_axis_tdata;
-                c_m_axis_tuser <= c_s_axis_tuser;
-                c_m_axis_tkeep <= c_s_axis_tkeep;
-                c_m_axis_tvalid <= c_s_axis_tvalid;
-                c_m_axis_tlast <= c_s_axis_tlast;
-            end
-        endcase
 
+            else begin
+                case(c_state)
+                    IDLE_C: begin
+                        c_m_axis_tdata <= c_m_axis_tdata_r;
+                        c_m_axis_tuser <= c_m_axis_tuser_r;
+                        c_m_axis_tkeep <= c_m_axis_tkeep_r;
+                        c_m_axis_tvalid <= c_m_axis_tvalid_r;
+                        c_m_axis_tlast <= c_m_axis_tlast_r;
+
+                        if(c_s_axis_tvalid) begin
+
+                            c_m_axis_tdata_r <= c_s_axis_tdata;
+                            c_m_axis_tuser_r <= c_s_axis_tuser;
+                            c_m_axis_tkeep_r <= c_s_axis_tkeep;
+                            c_m_axis_tvalid_r <= c_s_axis_tvalid;
+                            c_m_axis_tlast_r <= c_s_axis_tlast;
+
+                            c_state <= PARSE_C;
+                        end
+                        
+                        else begin
+                            c_wr_en_off <= 1'b0;
+                            c_wr_en_mask <= 1'b0;
+                            c_index <= 4'b0; 
+                            c_m_axis_tvalid_r <= 1'b0;
+
+                            c_state <= IDLE_C;
+                        end
+                    end
+
+                    PARSE_C: begin
+                        if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID) begin
+                            c_m_axis_tdata <= 0;
+                            c_m_axis_tuser <= 0;
+                            c_m_axis_tkeep <= 0;
+                            c_m_axis_tvalid <= 0;
+                            c_m_axis_tlast <= 0;
+
+                            c_index <= c_s_axis_tdata[128+:8];
+
+                            if(resv == 4'b0) begin
+                                c_wr_en_off <= 1'b1;
+                                c_state <= WRITE_OFF_C;
+                            end
+                            else begin
+                                c_wr_mask <= 1'b1;
+                                c_state <= WRITE_MASK_C;
+                            end
+                        end
+
+                        else begin
+                            c_m_axis_tdata <= c_m_axis_tdata_r;
+                            c_m_axis_tuser <= c_m_axis_tuser_r;
+                            c_m_axis_tkeep <= c_m_axis_tkeep_r;
+                            c_m_axis_tvalid <= c_m_axis_tvalid_r;
+                            c_m_axis_tlast <= c_m_axis_tlast_r;
+                            if(c_s_axis_tvalid) begin
+                                c_m_axis_tdata_r <= c_s_axis_tdata;
+                                c_m_axis_tuser_r <= c_s_axis_tuser;
+                                c_m_axis_tkeep_r <= c_s_axis_tkeep;
+                                c_m_axis_tvalid_r <= c_s_axis_tvalid;
+                                c_m_axis_tlast_r <= c_s_axis_tlast;
+                            end
+                            else begin
+                                c_state <= IDLE_C;
+                                c_m_axis_tvalid_r <= 0;
+                            end
+                        end
+
+                    end
+
+                    WRITE_OFF_C: begin
+                        c_m_axis_tvalid_r <= 1'b0;
+                        if(!c_s_axis_tvalid) begin
+                            c_wr_en_off <= 1'b0;
+                            c_index <= 4'b0;
+                            c_state <= IDLE_C;
+                        end
+                        else begin
+                            c_wr_en_off <= 1'b1;
+                            c_index <= c_index + 4'b1;
+                            c_state <= WRITE_OFF_C;
+                        end
+                    end
+
+                    WRITE_MASK_C: begin
+                        c_m_axis_tvalid_r <= 1'b0;
+                        if(!c_s_axis_tvalid) begin
+                            c_wr_en_mask <= 1'b0;
+                            c_index <= 4'b0;
+                            c_state <= IDLE_C;
+                        end
+                        else begin
+                            c_wr_en_mask <= 1'b1;
+                            c_index <= c_index + 4'b1;
+                            c_state <= WRITE_MASK_C;
+                        end
+                    end
+
+                endcase
+            end
+        end
     end
-end
-
-
-
+endgenerate
 
 //ram for key extract
 //blk_mem_gen_2 act_ram_18w_16d
@@ -331,18 +504,34 @@ end
 // 	.C_LOAD_INIT_FILE	(1)
 // )
 blk_mem_gen_2
-act_ram_18w_16d
+key_ram_18w_16d
 (
     .addra(c_index),
     .clka(clk),
     .dina(c_s_axis_tdata[17:0]),
     .ena(1'b1),
-    .wea(c_wr_en),
+    .wea(c_wr_en_off),
 
     //only [3:0] is needed for addressing
 	.addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
     .clkb(clk),
     .doutb(key_offset),
+    .enb(1'b1)
+);
+
+blk_mem_gen_3
+mask_ram_197w_16d
+(
+    .addra(c_index),
+    .clka(clk),
+    .dina(c_s_axis_tdata[196:0]),
+    .ena(1'b1),
+    .wea(c_wr_en_mask),
+
+    //only [3:0] is needed for addressing
+	.addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
+    .clkb(clk),
+    .doutb(key_mask_out),
     .enb(1'b1)
 );
 

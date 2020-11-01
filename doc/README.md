@@ -81,11 +81,11 @@
   
   * Lookup elements
   
-    Lookup Engine consists of 1 TCAM engine which is 271b wide.
+    Lookup Engine consists of 1 TCAM engine which is 197b wide.
   
   * Control plane
   
-    both lookup table entry and action ram wil be configured using AXI-Lite. 
+    both lookup table entry and action ram wil be configured using `control path`. 
 
 ---
 
