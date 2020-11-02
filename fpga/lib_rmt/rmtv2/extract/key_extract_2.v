@@ -415,6 +415,7 @@ generate
                             c_wr_en_mask <= 1'b0;
                             c_index <= 4'b0; 
                             c_m_axis_tvalid_r <= 1'b0;
+                            c_m_axis_tlast_r <= 1'b0;
 
                             c_state <= IDLE_C;
                         end
@@ -455,7 +456,8 @@ generate
                             end
                             else begin
                                 c_state <= IDLE_C;
-                                c_m_axis_tvalid_r <= 0;
+                                c_m_axis_tvalid_r <= 1'b0;
+                                c_m_axis_tlast_r <= 1'b0;
                             end
                         end
 
@@ -463,7 +465,7 @@ generate
 
                     WRITE_OFF_C: begin
                         c_m_axis_tvalid_r <= 1'b0;
-                        if(!c_s_axis_tvalid) begin
+                        if(c_s_axis_tlast) begin
                             c_wr_en_off <= 1'b0;
                             c_index <= 4'b0;
                             c_state <= IDLE_C;
@@ -477,7 +479,7 @@ generate
 
                     WRITE_MASK_C: begin
                         c_m_axis_tvalid_r <= 1'b0;
-                        if(!c_s_axis_tvalid) begin
+                        if(c_s_axis_tlast) begin
                             c_wr_en_mask <= 1'b0;
                             c_index <= 4'b0;
                             c_state <= IDLE_C;

@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 module tb_key_extract #(
-    parameter C_S_AXIS_DATA_WIDTH = 512,
+    parameter C_S_AXIS_DATA_WIDTH = 256,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter STAGE_ID = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
@@ -98,50 +98,138 @@ initial begin
 
 end
 
+//NOTE: 512 test cases
+// initial begin
+//     #(2*CYCLE); //after the rst_n, start the test
+//     #(5) //posedge of clk    
+//     /*
+//         set up the key extract table
+//     */
+//     c_s_axis_tdata <= {128'b0, 4'b0000, 4'b0, 8'b1, 368'b0};
+//     c_s_axis_tvalid <= 1'b1;
+//     c_s_axis_tkeep <= 64'hffffffffffffffff;
+//     c_s_axis_tuser <= 128'b0;
+//     c_s_axis_tlast <= 1'b0;
+//     #(CYCLE)
 
+//     c_s_axis_tdata <= {494'b0,18'hffff};
+//     c_s_axis_tvalid <= 1'b1;
+//     c_s_axis_tkeep <= 64'hffffffffffffffff;
+//     c_s_axis_tuser <= 128'b0;
+//     c_s_axis_tlast <= 1'b0;
+
+//     #(CYCLE)
+//     c_s_axis_tdata <= {494'b0,18'hffff};
+//     c_s_axis_tvalid <= 1'b1;
+//     c_s_axis_tkeep <= 64'hffffffffffffffff;
+//     c_s_axis_tuser <= 128'b0;
+//     c_s_axis_tlast <= 1'b0;
+
+//     #(CYCLE)
+//     c_s_axis_tdata <= {494'b0,18'hffff};
+//     c_s_axis_tvalid <= 1'b1;
+//     c_s_axis_tkeep <= 64'hffffffffffffffff;
+//     c_s_axis_tuser <= 128'b0;
+//     c_s_axis_tlast <= 1'b1;
+
+//     #(CYCLE)
+//     c_s_axis_tdata <= {494'b0,18'hffff};
+//     c_s_axis_tvalid <= 1'b0;
+//     c_s_axis_tkeep <= 64'hffffffffffffffff;
+//     c_s_axis_tuser <= 128'b0;
+//     c_s_axis_tlast <= 1'b0;
+
+//     #(3*CYCLE)
+//     c_s_axis_tdata <= {128'b0, 4'b0001, 4'b0, 5'b00000, 3'b001, 368'b0};
+//     c_s_axis_tvalid <= 1'b1;
+//     c_s_axis_tkeep <= 64'hffffffffffffffff;
+//     c_s_axis_tuser <= 128'b0;
+//     c_s_axis_tlast <= 1'b0;
+//     #(CYCLE)
+//     c_s_axis_tdata <= {494'b0,18'hffff};
+//     c_s_axis_tvalid <= 1'b1;
+//     c_s_axis_tkeep <= 64'hffffffffffffffff;
+//     c_s_axis_tuser <= 128'b0;
+//     c_s_axis_tlast <= 1'b1;
+
+//     #(CYCLE)
+//     c_s_axis_tdata <= 512'b0;
+//     c_s_axis_tvalid <= 1'b0;
+//     c_s_axis_tkeep <= 64'hffffffffffffffff;
+//     c_s_axis_tuser <= 128'b0;
+//     c_s_axis_tlast <= 1'b0;
+    
+//     #(20*CYCLE);
+
+// end
+
+
+//NOTE: 256 test cases
 initial begin
     #(2*CYCLE); //after the rst_n, start the test
     #(5) //posedge of clk    
     /*
         set up the key extract table
     */
-    c_s_axis_tdata <= {128'b0, 4'b0000, 4'b0, 8'b1, 368'b0};
+    //c_s_axis_tdata <= {128'b0, 4'b0000, 4'b0, 8'b1, 368'b0};
+    c_s_axis_tdata <= {238'b0,18'hffff};
     c_s_axis_tvalid <= 1'b1;
-    c_s_axis_tkeep <= 64'hffffffffffffffff;
+    c_s_axis_tkeep <= 32'hffffffff;
     c_s_axis_tuser <= 128'b0;
     c_s_axis_tlast <= 1'b0;
     #(CYCLE)
 
-    c_s_axis_tdata <= {494'b0,18'hffff};
+    c_s_axis_tdata <= {128'b0, 4'b0, 4'b0, 8'b1, 112'b0};
     c_s_axis_tvalid <= 1'b1;
-    c_s_axis_tkeep <= 64'hffffffffffffffff;
+    c_s_axis_tkeep <= 32'hffffffff;
+    c_s_axis_tuser <= 128'b0;
+    c_s_axis_tlast <= 1'b1;
+    #(CYCLE)
+
+    c_s_axis_tdata <= {238'b0,18'hffff};
+    c_s_axis_tvalid <= 1'b1;
+    c_s_axis_tkeep <= 32'hffffffff;
     c_s_axis_tuser <= 128'b0;
     c_s_axis_tlast <= 1'b1;
 
+    // #(CYCLE)
+    // c_s_axis_tdata <= {494'b0,18'hffff};
+    // c_s_axis_tvalid <= 1'b1;
+    // c_s_axis_tkeep <= 64'hffffffffffffffff;
+    // c_s_axis_tuser <= 128'b0;
+    // c_s_axis_tlast <= 1'b0;
+
+    // #(CYCLE)
+    // c_s_axis_tdata <= {494'b0,18'hffff};
+    // c_s_axis_tvalid <= 1'b1;
+    // c_s_axis_tkeep <= 64'hffffffffffffffff;
+    // c_s_axis_tuser <= 128'b0;
+    // c_s_axis_tlast <= 1'b1;
+
     #(CYCLE)
-    c_s_axis_tdata <= {494'b0,18'hffff};
+    c_s_axis_tdata <= {238'b0,18'hffff};
     c_s_axis_tvalid <= 1'b0;
-    c_s_axis_tkeep <= 64'hffffffffffffffff;
+    c_s_axis_tkeep <= 32'hffffffff;
     c_s_axis_tuser <= 128'b0;
     c_s_axis_tlast <= 1'b0;
 
     #(3*CYCLE)
-    c_s_axis_tdata <= {128'b0, 4'b0001, 4'b0, 5'b00000, 3'b001, 368'b0};
+    c_s_axis_tdata <= {128'b0, 4'b1, 4'b0, 8'b1, 112'b0};
     c_s_axis_tvalid <= 1'b1;
-    c_s_axis_tkeep <= 64'hffffffffffffffff;
+    c_s_axis_tkeep <= 32'hffffffff;
     c_s_axis_tuser <= 128'b0;
     c_s_axis_tlast <= 1'b0;
     #(CYCLE)
     c_s_axis_tdata <= {494'b0,18'hffff};
     c_s_axis_tvalid <= 1'b1;
-    c_s_axis_tkeep <= 64'hffffffffffffffff;
+    c_s_axis_tkeep <= 32'hffffffff;
     c_s_axis_tuser <= 128'b0;
     c_s_axis_tlast <= 1'b1;
 
     #(CYCLE)
-    c_s_axis_tdata <= 512'b0;
+    c_s_axis_tdata <= 256'b0;
     c_s_axis_tvalid <= 1'b0;
-    c_s_axis_tkeep <= 64'hffffffffffffffff;
+    c_s_axis_tkeep <= 32'hffffffff;
     c_s_axis_tuser <= 128'b0;
     c_s_axis_tlast <= 1'b0;
     
