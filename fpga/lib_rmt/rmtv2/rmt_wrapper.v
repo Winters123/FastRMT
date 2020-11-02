@@ -249,11 +249,6 @@ phv_parser
 
 );
 
-wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_3;
-wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_3;
-wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_3;
-wire 										c_s_axis_tvalid_3;
-wire 										c_s_axis_tlast_3;
 
 stage #(
 	.STAGE(0)
@@ -313,7 +308,7 @@ phv_deparser (
 	.depar_out_tvalid		(m_axis_tvalid),
 	.depar_out_tlast		(m_axis_tlast),
 	// input
-	.depar_out_tready		(m_axis_tready)
+	.depar_out_tready		(m_axis_tready),
 
 	//control path
 	.c_s_axis_tdata(c_s_axis_tdata_3),

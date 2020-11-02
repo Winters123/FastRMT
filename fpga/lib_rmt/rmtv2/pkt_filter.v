@@ -57,12 +57,11 @@ wire [15:0]							IP_flag;
 wire [7:0]							UDP_flag;
 wire [15:0]							CONTROL_flag;
 //1 for control, 0 for data;
-reg 								c_swith;
+reg 								c_switch;
 
 assign IP_flag = s_axis_tdata[143:128];
 assign UDP_flag = s_axis_tdata[223:216];
-//choose between 512 or 256
-assign CONTROL_flag = s_axis_tdata[320+:16];
+assign CONTROL_flag = s_axis_tdata[336:320];
 
 
 always @(*) begin
@@ -84,7 +83,7 @@ always @(*) begin
 			if (m_axis_tready && s_axis_tvalid) begin
 				if ((s_axis_tdata[143:128]==`ETH_TYPE_IPV4) && 
 					(s_axis_tdata[223:216]==`IPPROT_UDP)) begin
-					if(CONTROL_flag == `CONTROL_flag) begin
+					if(s_axis_tdata[336:320] == `CONTROL_PORT) begin
 						state_next = FLUSH_CTL;
 						c_switch = 1'b1;
 					end
@@ -92,6 +91,7 @@ always @(*) begin
 						state_next = FLUSH_DATA;
 						c_switch = 1'b0;
 					end
+				end
 				else begin
 					r_tvalid = 0;
 					state_next = DROP_PKT;
@@ -129,6 +129,14 @@ always @(posedge clk or negedge aresetn) begin
 		m_axis_tlast <= 0;
 
 		m_axis_tvalid <= 0;
+
+		c_m_axis_tdata <= 0;
+		c_m_axis_tkeep <= 0;
+		c_m_axis_tuser <= 0;
+		c_m_axis_tlast <= 0;
+
+		c_m_axis_tvalid <= 0;
+
 		s_axis_tready <= 0;
 	end
 	else begin
@@ -142,6 +150,13 @@ always @(posedge clk or negedge aresetn) begin
 
 			m_axis_tvalid <= r_tvalid;
 			s_axis_tready <= r_s_tready;
+			//reset control path output 
+			c_m_axis_tdata <= 0;
+			c_m_axis_tkeep <= 0;
+			c_m_axis_tuser <= 0;
+			c_m_axis_tlast <= 0;
+	
+			c_m_axis_tvalid <= 0;
 		end
 		else begin
 			c_m_axis_tdata <= r_tdata;

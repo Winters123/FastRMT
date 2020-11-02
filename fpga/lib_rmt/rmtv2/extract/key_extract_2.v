@@ -24,16 +24,11 @@ module key_extract_2 #(
     input [PHV_LEN-1:0]                 phv_in,
     input                               phv_valid_in,
 
-    //signals used to config key extract offset
-    input [AXIL_WIDTH-1:0]              key_off_entry_in,
-    input                               key_off_entry_in_valid,
-    input [KEY_OFF_ADDR_WIDTH-1:0]      key_off_entry_addr,
-
     output reg [PHV_LEN-1:0]            phv_out,
     output reg                          phv_valid_out,
     output reg [KEY_LEN-1:0]            key_out,
     output reg                          key_valid_out,
-    output reg [KEY_LEN-1:0]            key_mask_out;
+    output reg [KEY_LEN-1:0]            key_mask_out,
 
     //control path
     input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
@@ -42,11 +37,11 @@ module key_extract_2 #(
 	input									c_s_axis_tvalid,
 	input									c_s_axis_tlast,
 
-    output [C_S_AXIS_DATA_WIDTH-1:0]		c_m_axis_tdata,
-	output [C_S_AXIS_TUSER_WIDTH-1:0]		c_m_axis_tuser,
-	output [C_S_AXIS_DATA_WIDTH/8-1:0]		c_m_axis_tkeep,
-	output									c_m_axis_tvalid,
-	output									c_m_axis_tlast
+    output reg [C_S_AXIS_DATA_WIDTH-1:0]		c_m_axis_tdata,
+	output reg [C_S_AXIS_TUSER_WIDTH-1:0]		c_m_axis_tuser,
+	output reg [C_S_AXIS_DATA_WIDTH/8-1:0]		c_m_axis_tkeep,
+	output reg								    c_m_axis_tvalid,
+	output reg								    c_m_axis_tlast
 );
 
 
@@ -73,6 +68,7 @@ reg  [7:0]             com_op_2;
 wire  [11:0]             vlan_id; 
 
 wire [KEY_OFF-1:0]      key_offset;
+wire [196:0]        key_mask_out_w;
 
 /********intermediate variables declared here********/
 
@@ -144,6 +140,7 @@ always @(posedge clk) begin
     com_op[2]  <= phv_in[255+60  -: 20];
     com_op[3]  <= phv_in[255+40  -: 20];
     com_op[4]  <= phv_in[255+20  -: 20];
+    key_mask_out <= key_mask_out_w;
 end
 
 
@@ -249,6 +246,7 @@ reg  [7:0]          c_index; //table index(addr)
 reg                 c_wr_en_off; //enable table write(wena)
 reg                 c_wr_en_mask;
 
+
 reg [2:0]           c_state;
 
 
@@ -272,8 +270,8 @@ generate
         //4'b0 for key offset
         //4'b1 for key mask
         assign resv = c_s_axis_tdata[380+:4];
-        always @(posedge axis_clk or negedge aresetn) begin
-            if(~aresetn) begin
+        always @(posedge clk or negedge rst_n) begin
+            if(~rst_n) begin
                 c_wr_en_off <= 1'b0;
                 c_wr_en_mask <= 1'b0;
                 c_index <= 4'b0;
@@ -338,7 +336,7 @@ generate
                         end
                     end
                     WRITE_MASK_C: begin
-                        if(!c_s_axis_tvalid) begin
+                        if(c_s_axis_tlast) begin
                             c_wr_en_mask <= 1'b0;
                             c_index <= 4'b0;
                             c_state <= IDLE_C;
@@ -370,8 +368,8 @@ generate
         //4'b0 for key offset
         //4'b1 for key mask
         assign resv = c_s_axis_tdata[124+:4];
-        always @(posedge axis_clk or negedge aresetn) begin
-            if(~aresetn) begin
+        always @(posedge clk or negedge rst_n) begin
+            if(~rst_n) begin
                 c_wr_en_off <= 1'b0;
                 c_wr_en_mask <= 1'b0;
                 c_index <= 4'b0;
@@ -437,7 +435,7 @@ generate
                                 c_state <= WRITE_OFF_C;
                             end
                             else begin
-                                c_wr_mask <= 1'b1;
+                                c_wr_en_mask <= 1'b1;
                                 c_state <= WRITE_MASK_C;
                             end
                         end
@@ -506,7 +504,7 @@ endgenerate
 blk_mem_gen_2
 key_ram_18w_16d
 (
-    .addra(c_index),
+    .addra(c_index[3:0]),
     .clka(clk),
     .dina(c_s_axis_tdata[17:0]),
     .ena(1'b1),
@@ -522,7 +520,7 @@ key_ram_18w_16d
 blk_mem_gen_3
 mask_ram_197w_16d
 (
-    .addra(c_index),
+    .addra(c_index[3:0]),
     .clka(clk),
     .dina(c_s_axis_tdata[196:0]),
     .ena(1'b1),
@@ -531,7 +529,7 @@ mask_ram_197w_16d
     //only [3:0] is needed for addressing
 	.addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
     .clkb(clk),
-    .doutb(key_mask_out),
+    .doutb(key_mask_out_w),
     .enb(1'b1)
 );
 

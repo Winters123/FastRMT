@@ -23,7 +23,7 @@ module lookup_engine #(
     //output from key extractor
     //output from key extractor
     input [KEY_LEN-1:0]           extract_key,
-    input [KEY_LEN-1:0]           extract_mask;
+    input [KEY_LEN-1:0]           extract_mask,
     input                         key_valid,
     input [PHV_LEN-1:0]           phv_in,
 
@@ -40,11 +40,11 @@ module lookup_engine #(
 	input									c_s_axis_tvalid,
 	input									c_s_axis_tlast,
 
-    output [C_S_AXIS_DATA_WIDTH-1:0]		c_m_axis_tdata,
-	output [C_S_AXIS_TUSER_WIDTH-1:0]		c_m_axis_tuser,
-	output [C_S_AXIS_DATA_WIDTH/8-1:0]		c_m_axis_tkeep,
-	output									c_m_axis_tvalid,
-	output									c_m_axis_tlast
+    output reg [C_S_AXIS_DATA_WIDTH-1:0]		c_m_axis_tdata,
+	output reg [C_S_AXIS_TUSER_WIDTH-1:0]		c_m_axis_tuser,
+	output reg [C_S_AXIS_DATA_WIDTH/8-1:0]		c_m_axis_tkeep,
+	output reg 								    c_m_axis_tvalid,
+	output reg 							    	c_m_axis_tlast
 
 );
 
@@ -159,9 +159,6 @@ reg                                 c_m_axis_tvalid_r;
 reg                                 c_m_axis_tlast_r;
 
 
-assign mod_id = c_s_axis_tdata[368+:8];
-assign resv = c_s_axis_tdate[380+:4];
-
 localparam IDLE_C = 1,
            PARSE_C = 2,
            CAM_TMP_ENTRY = 3,
@@ -171,7 +168,7 @@ localparam IDLE_C = 1,
 generate 
     if(C_S_AXIS_DATA_WIDTH == 512) begin
         assign mod_id = c_s_axis_tdata[368+:8];
-        assign resv = c_s_axis_tdate[380+:4];
+        assign resv = c_s_axis_tdata[380+:4];
         always @(posedge clk or negedge rst_n) begin
             if(~rst_n) begin
                 c_index_cam <= 0;
@@ -225,7 +222,7 @@ generate
                                 c_m_axis_tvalid <= 0;
                                 c_m_axis_tlast <= 0;
                                 c_index_act = c_s_axis_tdata[384+:8];
-                                entry_tmp[0+:C_S_AXIS_DATA_WIDTH] <= c_s_axis_tdata;
+                                act_entry_tmp[0+:C_S_AXIS_DATA_WIDTH] <= c_s_axis_tdata;
                                 act_entry_cursor <= C_S_AXIS_DATA_WIDTH;
                                 c_state <= ACT_TMP_ENTRY;
                             end
@@ -291,7 +288,7 @@ generate
                         if((act_entry_cursor+C_S_AXIS_DATA_WIDTH) >= ACT_LEN) begin
                             entry_compl_flag <= 1'b1;
                             c_wr_en_act <= 1'b1;
-                            act_entry_tmp[act_entry_cursor +: (ACT_LEN-act_entry_cursor)] <= \
+                            act_entry_tmp[act_entry_cursor +: (ACT_LEN-act_entry_cursor)] <= 
                                 c_s_axis_tdata[0+:(ACT_LEN-act_entry_cursor)];
                             if(c_s_axis_tlast) begin
                                 c_state <= IDLE_C;
@@ -317,7 +314,7 @@ generate
 
     else begin
         assign mod_id = c_s_axis_tdata[112+:8];
-        assign resv = c_s_axis_tdate[124+:4];
+        assign resv = c_s_axis_tdata[124+:4];
         always @(posedge clk or negedge rst_n) begin
             if(~rst_n) begin
                 c_index_cam <= 0;
@@ -392,7 +389,7 @@ generate
                                 c_m_axis_tvalid <= 0;
                                 c_m_axis_tlast <= 0;
                                 c_index_act = c_s_axis_tdata[384+:8];
-                                entry_tmp[0+:C_S_AXIS_DATA_WIDTH] <= c_s_axis_tdata;
+                                act_entry_tmp[0+:C_S_AXIS_DATA_WIDTH] <= c_s_axis_tdata;
                                 act_entry_cursor <= C_S_AXIS_DATA_WIDTH;
                                 c_state <= ACT_TMP_ENTRY;
                             end
@@ -468,7 +465,7 @@ generate
                         if((act_entry_cursor+C_S_AXIS_DATA_WIDTH) >= ACT_LEN) begin
                             entry_compl_flag <= 1'b1;
                             c_wr_en_act <= 1'b1;
-                            act_entry_tmp[act_entry_cursor +: (ACT_LEN-act_entry_cursor)] <= \
+                            act_entry_tmp[act_entry_cursor +: (ACT_LEN-act_entry_cursor)] <= 
                                 c_s_axis_tdata[0+:(ACT_LEN-act_entry_cursor)];
                             if(c_s_axis_tlast) begin
                                 c_state <= IDLE_C;

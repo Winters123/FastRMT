@@ -68,23 +68,20 @@ wire [PHV_LEN-1:0]           lookup2action_phv;
 
 key_extract_2 #(
     .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
-    .C_S_AXIS_DATA_TUSER(C_S_AXIS_DATA_TUSER),
-    .STAGE(STAGE),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(STAGE_ID),
     .PHV_LEN(),
     .KEY_LEN(),
+    // format of KEY_OFF entry: |--3(6B)--|--3(6B)--|--3(4B)--|--3(4B)--|--3(2B)--|--3(2B)--|
     .KEY_OFF(),
     .AXIL_WIDTH(),
-    .KEY_OFF_ADDR_WIDTH()    
+    .KEY_OFF_ADDR_WIDTH(),
+    .KEY_EX_ID()
 )key_extract(
     .clk(axis_clk),
     .rst_n(aresetn),
     .phv_in(phv_in),
     .phv_valid_in(phv_in_valid),
-
-    //signals used to config key extract offset
-    .key_off_entry_in(),
-    .key_off_entry_in_valid(),
-    .key_off_entry_addr(),
 
     .phv_out(key2lookup_phv),
     .phv_valid_out(key2lookup_key_valid),
