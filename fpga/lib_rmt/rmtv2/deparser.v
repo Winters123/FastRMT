@@ -2,18 +2,18 @@
 
 module deparser #(
 	//in corundum with 100g ports, data width is 512b
-	parameter	C_AXIS_DATA_WIDTH = 256,
-	parameter	C_AXIS_TUSER_WIDTH = 128,
+	parameter	C_S_AXIS_DATA_WIDTH = 512,
+	parameter	C_S_AXIS_TUSER_WIDTH = 128,
 	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256,
-    parameter   DEPARSER_ID = 5
+    parameter   DEPARSER_ID = 3'b101
 )
 (
 	input									clk,
 	input									aresetn,
 
-	input [C_AXIS_DATA_WIDTH-1:0]			pkt_fifo_tdata,
-	input [C_AXIS_DATA_WIDTH/8-1:0]			pkt_fifo_tkeep,
-	input [C_AXIS_TUSER_WIDTH-1:0]			pkt_fifo_tuser,
+	input [C_S_AXIS_DATA_WIDTH-1:0]			pkt_fifo_tdata,
+	input [C_S_AXIS_DATA_WIDTH/8-1:0]		pkt_fifo_tkeep,
+	input [C_S_AXIS_TUSER_WIDTH-1:0]		pkt_fifo_tuser,
 	// input								pkt_fifo_tvalid,
 	input									pkt_fifo_tlast,
 	input									pkt_fifo_empty,
@@ -23,9 +23,9 @@ module deparser #(
 	input									phv_fifo_empty,
 	output reg								phv_fifo_rd_en,
 
-	output reg [C_AXIS_DATA_WIDTH-1:0]		depar_out_tdata,
-	output reg [C_AXIS_DATA_WIDTH/8-1:0]	depar_out_tkeep,
-	output reg [C_AXIS_TUSER_WIDTH-1:0]		depar_out_tuser,
+	output reg [C_S_AXIS_DATA_WIDTH-1:0]	depar_out_tdata,
+	output reg [C_S_AXIS_DATA_WIDTH/8-1:0]	depar_out_tkeep,
+	output reg [C_S_AXIS_TUSER_WIDTH-1:0]	depar_out_tuser,
 	output reg								depar_out_tvalid,
 	output reg								depar_out_tlast,
 	input									depar_out_tready,
@@ -95,12 +95,11 @@ localparam  IDLE_S = 10'd0,
             FLUSH_PKT = 10'd8;
 
 
-(* MAX_FANOUT  = 50 *)reg [2*C_AXIS_DATA_WIDTH-1:0]		 deparse_tdata_stored_r;
-                      reg [2*C_AXIS_TUSER_WIDTH-1:0]	 deparse_tuser_stored_r;
-                      reg [2*(C_AXIS_DATA_WIDTH/8)-1:0]	 deparse_tkeep_stored_r;
-                      reg [1:0]							 deparse_tlast_stored_r;
-
-(* MAX_FANOUT  = 50 *)reg [C_PKT_VEC_WIDTH-1:0]          deparse_phv_stored_r;
+reg [2*C_S_AXIS_DATA_WIDTH-1:0]		 deparse_tdata_stored_r;
+reg [2*C_S_AXIS_TUSER_WIDTH-1:0]	 deparse_tuser_stored_r;
+reg [2*(C_S_AXIS_DATA_WIDTH/8)-1:0]	 deparse_tkeep_stored_r;
+reg [1:0]							 deparse_tlast_stored_r;
+reg [C_PKT_VEC_WIDTH-1:0]            deparse_phv_stored_r;
 
 integer i;
 
@@ -146,9 +145,9 @@ always @(posedge clk or negedge aresetn) begin
                 if(!phv_fifo_empty && !pkt_fifo_empty) begin
                     // deparse_phv_stored_r <= phv_fifo_out;
 
-                    // deparse_tdata_stored_r[C_AXIS_DATA_WIDTH-1:0] <= pkt_fifo_tdata;
-                    // deparse_tuser_stored_r[C_AXIS_TUSER_WIDTH-1:0] <= pkt_fifo_tuser;
-                    // deparse_tkeep_stored_r[(C_AXIS_DATA_WIDTH/8)-1:0] <= pkt_fifo_tkeep;
+                    // deparse_tdata_stored_r[C_S_AXIS_DATA_WIDTH-1:0] <= pkt_fifo_tdata;
+                    // deparse_tuser_stored_r[C_S_AXIS_TUSER_WIDTH-1:0] <= pkt_fifo_tuser;
+                    // deparse_tkeep_stored_r[(C_S_AXIS_DATA_WIDTH/8)-1:0] <= pkt_fifo_tkeep;
                     // deparse_tlast_stored_r[0] <= pkt_fifo_tlast;
 
                     pkt_fifo_rd_en <= 1'b1;
@@ -186,9 +185,9 @@ always @(posedge clk or negedge aresetn) begin
                 deparse_phv_reg_valid_in <= 10'b1111111111;
                 
 
-                deparse_tdata_stored_r[C_AXIS_DATA_WIDTH-1:0] <= pkt_fifo_tdata;
-                deparse_tuser_stored_r[C_AXIS_TUSER_WIDTH-1:0] <= pkt_fifo_tuser;
-                deparse_tkeep_stored_r[(C_AXIS_DATA_WIDTH/8)-1:0] <= pkt_fifo_tkeep;
+                deparse_tdata_stored_r[C_S_AXIS_DATA_WIDTH-1:0] <= pkt_fifo_tdata;
+                deparse_tuser_stored_r[C_S_AXIS_TUSER_WIDTH-1:0] <= pkt_fifo_tuser;
+                deparse_tkeep_stored_r[(C_S_AXIS_DATA_WIDTH/8)-1:0] <= pkt_fifo_tkeep;
                 deparse_tlast_stored_r[0] <= pkt_fifo_tlast;
 
                 pkt_fifo_rd_en <= 1'b1;
@@ -203,9 +202,9 @@ always @(posedge clk or negedge aresetn) begin
             end
 
             BUF_HDR_1: begin
-                deparse_tdata_stored_r[2*C_AXIS_DATA_WIDTH-1:C_AXIS_DATA_WIDTH] <= pkt_fifo_tdata;
-                deparse_tuser_stored_r[2*C_AXIS_TUSER_WIDTH-1:C_AXIS_TUSER_WIDTH] <= pkt_fifo_tuser;
-                deparse_tkeep_stored_r[2*(C_AXIS_DATA_WIDTH/8)-1:C_AXIS_DATA_WIDTH/8] <= pkt_fifo_tkeep;
+                deparse_tdata_stored_r[2*C_S_AXIS_DATA_WIDTH-1:C_S_AXIS_DATA_WIDTH] <= pkt_fifo_tdata;
+                deparse_tuser_stored_r[2*C_S_AXIS_TUSER_WIDTH-1:C_S_AXIS_TUSER_WIDTH] <= pkt_fifo_tuser;
+                deparse_tkeep_stored_r[2*(C_S_AXIS_DATA_WIDTH/8)-1:C_S_AXIS_DATA_WIDTH/8] <= pkt_fifo_tkeep;
                 deparse_tlast_stored_r[1] <= pkt_fifo_tlast;
 
                 pkt_fifo_rd_en <= 1'b0;
@@ -344,9 +343,9 @@ always @(posedge clk or negedge aresetn) begin
             FLUSH_PKT_0: begin
                 phv_fifo_rd_en <= 1'b0;
 
-                depar_out_tdata <= deparse_tdata_stored_r[C_AXIS_DATA_WIDTH-1:0];
-                depar_out_tuser <= deparse_tuser_stored_r[C_AXIS_TUSER_WIDTH-1:0];
-                depar_out_tkeep <= deparse_tkeep_stored_r[C_AXIS_DATA_WIDTH/8-1:0];
+                depar_out_tdata <= deparse_tdata_stored_r[C_S_AXIS_DATA_WIDTH-1:0];
+                depar_out_tuser <= deparse_tuser_stored_r[C_S_AXIS_TUSER_WIDTH-1:0];
+                depar_out_tkeep <= deparse_tkeep_stored_r[C_S_AXIS_DATA_WIDTH/8-1:0];
 			    depar_out_tlast <= deparse_tlast_stored_r[0];
 			    depar_out_tvalid = 1'b1;
 
@@ -361,9 +360,9 @@ always @(posedge clk or negedge aresetn) begin
             end
 
             FLUSH_PKT_1: begin
-                depar_out_tdata <= deparse_tdata_stored_r[(C_AXIS_DATA_WIDTH*1)+:C_AXIS_DATA_WIDTH];
-                depar_out_tuser <= deparse_tuser_stored_r[(C_AXIS_TUSER_WIDTH*1)+:C_AXIS_TUSER_WIDTH];
-                depar_out_tkeep <= deparse_tkeep_stored_r[(C_AXIS_DATA_WIDTH/8*1)+:(C_AXIS_DATA_WIDTH/8)];
+                depar_out_tdata <= deparse_tdata_stored_r[(C_S_AXIS_DATA_WIDTH*1)+:C_S_AXIS_DATA_WIDTH];
+                depar_out_tuser <= deparse_tuser_stored_r[(C_S_AXIS_TUSER_WIDTH*1)+:C_S_AXIS_TUSER_WIDTH];
+                depar_out_tkeep <= deparse_tkeep_stored_r[(C_S_AXIS_DATA_WIDTH/8*1)+:(C_S_AXIS_DATA_WIDTH/8)];
 			    depar_out_tlast <= deparse_tlast_stored_r[1];
 			    depar_out_tvalid = 1'b1;
 
@@ -411,8 +410,8 @@ generate
         begin: sub_op
             sub_deparser #(
             	//in corundum with 100g ports, data width is 512b
-            	.C_AXIS_DATA_WIDTH(C_AXIS_DATA_WIDTH),
-            	.C_AXIS_TUSER_WIDTH(),
+            	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+            	.C_S_AXIS_TUSER_WIDTH(),
             	.C_PKT_VEC_WIDTH(),
                 .C_PARSE_ACTION_LEN(C_PARSE_ACTION_LEN)
             )sub_deparser
@@ -455,7 +454,7 @@ always @(posedge clk or negedge aresetn) begin
     else begin
         case(c_state)
             IDLE_C: begin
-                if(mod_id[2:0] == DEPARSER_ID)begin
+                if(c_s_axis_tvalid && mod_id[2:0] == DEPARSER_ID)begin
                     c_wr_en <= 1'b1;
                     c_index <= c_s_axis_tdata[384+:8];
 
@@ -471,7 +470,7 @@ always @(posedge clk or negedge aresetn) begin
             end
             //support full table flush
             WRITE_C: begin
-                if(c_s_axis_tlast) begin
+                if(c_s_axis_tlast && c_s_axis_tvalid) begin
                     c_wr_en <= 1'b0;
                     c_index <= 4'b0;
                     c_state <= IDLE_C;

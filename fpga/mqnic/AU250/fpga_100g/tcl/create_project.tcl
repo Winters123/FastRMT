@@ -93,6 +93,7 @@ lappend IP_TCL_FILES ip/clk_wiz_0.tcl
 lappend IP_TCL_FILES ip/rmt/blk_mem_gen_0.tcl
 lappend IP_TCL_FILES ip/rmt/blk_mem_gen_1.tcl
 lappend IP_TCL_FILES ip/rmt/blk_mem_gen_2.tcl
+lappend IP_TCL_FILES ip/rmt/blk_mem_gen_3.tcl
 lappend IP_TCL_FILES ip/rmt/fifo_generator_512b.tcl
 lappend IP_TCL_FILES ip/rmt/fifo_generator_522b.tcl
 lappend IP_TCL_FILES ip/rmt/fifo_generator_705b.tcl
