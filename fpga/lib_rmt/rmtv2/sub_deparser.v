@@ -2,8 +2,8 @@
 
 module sub_deparser #(
 	//in corundum with 100g ports, data width is 512b
-	parameter	C_AXIS_DATA_WIDTH = 256,
-	parameter	C_AXIS_TUSER_WIDTH = 128,
+	parameter	C_S_AXIS_DATA_WIDTH = 256,
+	parameter	C_S_AXIS_TUSER_WIDTH = 128,
 	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256,
     parameter   C_PARSE_ACTION_LEN = 6  //parse_action[5:0]
 )
