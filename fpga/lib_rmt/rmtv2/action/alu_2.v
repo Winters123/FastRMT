@@ -25,20 +25,8 @@ module alu_2 #(
 
     //output to form PHV
     output reg [DATA_WIDTH-1:0]       container_out,
-    output reg                        container_out_valid,
+    output reg                        container_out_valid
 
-    //control path
-    input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
-	input [C_S_AXIS_TUSER_WIDTH-1:0]		c_s_axis_tuser,
-	input [C_S_AXIS_DATA_WIDTH/8-1:0]		c_s_axis_tkeep,
-	input									c_s_axis_tvalid,
-	input									c_s_axis_tlast,
-
-    output [C_S_AXIS_DATA_WIDTH-1:0]		c_m_axis_tdata,
-	output [C_S_AXIS_TUSER_WIDTH-1:0]		c_m_axis_tuser,
-	output [C_S_AXIS_DATA_WIDTH/8-1:0]		c_m_axis_tkeep,
-	output									c_m_axis_tvalid,
-	output									c_m_axis_tlast
 
 );
 
