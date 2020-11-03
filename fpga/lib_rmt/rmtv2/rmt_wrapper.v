@@ -213,7 +213,6 @@ wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_6;
 wire 										c_s_axis_tvalid_6;
 wire 										c_s_axis_tlast_6;
 
-
 parser #(
     .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH), //for 100g mac exclusively
 	.C_S_AXIS_TUSER_WIDTH(),
