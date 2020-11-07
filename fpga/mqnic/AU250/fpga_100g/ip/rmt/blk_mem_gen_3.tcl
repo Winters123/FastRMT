@@ -15,8 +15,8 @@ set_property -dict [list \
 	CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
 	CONFIG.Port_B_Clock {100} \
 	CONFIG.Port_B_Enable_Rate {100} \
-] [get_ips blk_mem_gen_2]
+] [get_ips blk_mem_gen_3]
 
-set_property generate_synth_checkpoint false [get_files blk_mem_gen_2.xci]
-reset_target all [get_ips blk_mem_gen_2]
-generate_target all [get_ips blk_mem_gen_2]
+set_property generate_synth_checkpoint false [get_files blk_mem_gen_3.xci]
+reset_target all [get_ips blk_mem_gen_3]
+generate_target all [get_ips blk_mem_gen_3]

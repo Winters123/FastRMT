@@ -114,9 +114,25 @@ localparam C_PARSE_ACTION_LEN = 6;
 reg [9:0]                    deparse_phv_reg_valid_in;
 reg [9:0]                    sub_parse_action_valid_in;
 
-wire [47:0]                  deparse_phv_reg_out[0:9];
+//output from sub_deparser
+wire [47:0]                  dp_val_BE[0:9];
 wire [1:0]                   deparse_phv_select[0:9];
 wire [9:0]                   valid_out;
+
+//BE LE switching
+
+wire [47:0]                 dp_val_LE[0:9];
+
+assign dp_val_LE[0] = {dp_val_BE[0][7:0], dp_val_BE[0][15:8], dp_val_BE[0][23:16], dp_val_BE[0][31:24], dp_val_BE[0][39:32], dp_val_BE[0][47:40]};
+assign dp_val_LE[1] = {dp_val_BE[1][7:0], dp_val_BE[1][15:8], dp_val_BE[1][23:16], dp_val_BE[1][31:24], dp_val_BE[1][39:32], dp_val_BE[1][47:40]};
+assign dp_val_LE[2] = {dp_val_BE[2][7:0], dp_val_BE[2][15:8], dp_val_BE[2][23:16], dp_val_BE[2][31:24], dp_val_BE[2][39:32], dp_val_BE[2][47:40]};
+assign dp_val_LE[3] = {dp_val_BE[3][7:0], dp_val_BE[3][15:8], dp_val_BE[3][23:16], dp_val_BE[3][31:24], dp_val_BE[3][39:32], dp_val_BE[3][47:40]};
+assign dp_val_LE[4] = {dp_val_BE[4][7:0], dp_val_BE[4][15:8], dp_val_BE[4][23:16], dp_val_BE[4][31:24], dp_val_BE[4][39:32], dp_val_BE[4][47:40]};
+assign dp_val_LE[5] = {dp_val_BE[5][7:0], dp_val_BE[5][15:8], dp_val_BE[5][23:16], dp_val_BE[5][31:24], dp_val_BE[5][39:32], dp_val_BE[5][47:40]};
+assign dp_val_LE[6] = {dp_val_BE[6][7:0], dp_val_BE[6][15:8], dp_val_BE[6][23:16], dp_val_BE[6][31:24], dp_val_BE[6][39:32], dp_val_BE[6][47:40]};
+assign dp_val_LE[7] = {dp_val_BE[7][7:0], dp_val_BE[7][15:8], dp_val_BE[7][23:16], dp_val_BE[7][31:24], dp_val_BE[7][39:32], dp_val_BE[7][47:40]};
+assign dp_val_LE[8] = {dp_val_BE[8][7:0], dp_val_BE[8][15:8], dp_val_BE[8][23:16], dp_val_BE[8][31:24], dp_val_BE[8][39:32], dp_val_BE[8][47:40]};
+assign dp_val_LE[9] = {dp_val_BE[9][7:0], dp_val_BE[9][15:8], dp_val_BE[9][23:16], dp_val_BE[9][31:24], dp_val_BE[9][39:32], dp_val_BE[9][47:40]};
 
 
 always @(posedge clk or negedge aresetn) begin
@@ -247,54 +263,54 @@ always @(posedge clk or negedge aresetn) begin
                 if(parse_action[0][0]) begin
                         case(deparse_phv_select[0]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[0]<<3 +: 16] <= deparse_phv_reg_out[0][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[0]<<3 +: 32] <= deparse_phv_reg_out[0][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[0]<<3 +: 48] <= deparse_phv_reg_out[0][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[0]<<3 +: 16] <= dp_val_BE[0][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[0]<<3 +: 32] <= dp_val_BE[0][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[0]<<3 +: 48] <= dp_val_BE[0][47:0];
                         endcase
                 end
 
                 if(parse_action[1][0]) begin
                         case(deparse_phv_select[1]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[1]<<3 +: 16] <= deparse_phv_reg_out[1][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[1]<<3 +: 32] <= deparse_phv_reg_out[1][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[1]<<3 +: 48] <= deparse_phv_reg_out[1][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[1]<<3 +: 16] <= dp_val_BE[1][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[1]<<3 +: 32] <= dp_val_BE[1][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[1]<<3 +: 48] <= dp_val_BE[1][47:0];
                         endcase
                 end
 
                 if(parse_action[2][0]) begin
                         case(deparse_phv_select[2]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[2]<<3 +: 16] <= deparse_phv_reg_out[2][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[2]<<3 +: 32] <= deparse_phv_reg_out[2][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[2]<<3 +: 48] <= deparse_phv_reg_out[2][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[2]<<3 +: 16] <= dp_val_BE[2][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[2]<<3 +: 32] <= dp_val_BE[2][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[2]<<3 +: 48] <= dp_val_BE[2][47:0];
                         endcase
                 end
 
                 if(parse_action[3][0]) begin
                         case(deparse_phv_select[3]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[3]<<3 +: 16] <= deparse_phv_reg_out[3][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[3]<<3 +: 32] <= deparse_phv_reg_out[3][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[3]<<3 +: 48] <= deparse_phv_reg_out[3][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[3]<<3 +: 16] <= dp_val_BE[3][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[3]<<3 +: 32] <= dp_val_BE[3][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[3]<<3 +: 48] <= dp_val_BE[3][47:0];
                         endcase
                 end
 
                 if(parse_action[4][0]) begin
                         case(deparse_phv_select[4]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[4]<<3 +: 16] <= deparse_phv_reg_out[4][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[4]<<3 +: 32] <= deparse_phv_reg_out[4][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[4]<<3 +: 48] <= deparse_phv_reg_out[4][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[4]<<3 +: 16] <= dp_val_BE[4][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[4]<<3 +: 32] <= dp_val_BE[4][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[4]<<3 +: 48] <= dp_val_BE[4][47:0];
                         endcase
                 end
 
                 if(parse_action[5][0]) begin
                         case(deparse_phv_select[5]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[5]<<3 +: 16] <= deparse_phv_reg_out[5][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[5]<<3 +: 32] <= deparse_phv_reg_out[5][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[5]<<3 +: 48] <= deparse_phv_reg_out[5][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[5]<<3 +: 16] <= dp_val_BE[5][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[5]<<3 +: 32] <= dp_val_BE[5][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[5]<<3 +: 48] <= dp_val_BE[5][47:0];
                         endcase
 
                 end
@@ -302,18 +318,18 @@ always @(posedge clk or negedge aresetn) begin
                 if(parse_action[6][0]) begin
                         case(deparse_phv_select[6]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[6]<<3 +: 16] <= deparse_phv_reg_out[6][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[6]<<3 +: 32] <= deparse_phv_reg_out[6][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[6]<<3 +: 48] <= deparse_phv_reg_out[6][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[6]<<3 +: 16] <= dp_val_BE[6][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[6]<<3 +: 32] <= dp_val_BE[6][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[6]<<3 +: 48] <= dp_val_BE[6][47:0];
                         endcase
                 end
 
                 if(parse_action[7][0]) begin
                         case(deparse_phv_select[7]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[7]<<3 +: 16] <= deparse_phv_reg_out[7][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[7]<<3 +: 32] <= deparse_phv_reg_out[7][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[7]<<3 +: 48] <= deparse_phv_reg_out[7][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[7]<<3 +: 16] <= dp_val_BE[7][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[7]<<3 +: 32] <= dp_val_BE[7][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[7]<<3 +: 48] <= dp_val_BE[7][47:0];
                         endcase
                     
                 end
@@ -321,18 +337,18 @@ always @(posedge clk or negedge aresetn) begin
                 if(parse_action[8][0]) begin
                         case(deparse_phv_select[8]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[8]<<3 +: 16] <= deparse_phv_reg_out[8][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[8]<<3 +: 32] <= deparse_phv_reg_out[8][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[8]<<3 +: 48] <= deparse_phv_reg_out[8][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[8]<<3 +: 16] <= dp_val_BE[8][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[8]<<3 +: 32] <= dp_val_BE[8][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[8]<<3 +: 48] <= dp_val_BE[8][47:0];
                         endcase
                 end
 
                 if(parse_action[9][0]) begin
                         case(deparse_phv_select[9]) 
                             
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[9]<<3 +: 16] <= deparse_phv_reg_out[9][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[9]<<3 +: 32] <= deparse_phv_reg_out[9][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[9]<<3 +: 48] <= deparse_phv_reg_out[9][47:0];
+                            2'b01: deparse_tdata_stored_r[parse_action_ind[9]<<3 +: 16] <= dp_val_BE[9][15:0];
+                            2'b10: deparse_tdata_stored_r[parse_action_ind[9]<<3 +: 32] <= dp_val_BE[9][31:0];
+                            2'b11: deparse_tdata_stored_r[parse_action_ind[9]<<3 +: 48] <= dp_val_BE[9][47:0];
                         endcase
                 end
 
@@ -422,7 +438,7 @@ generate
                 .deparse_phv_reg_valid_in(deparse_phv_reg_valid_in[index]),
                 .parse_action(parse_action[index]),
                 .parse_action_valid_in(sub_parse_action_valid_in[index]),
-                .deparse_phv_reg_out(deparse_phv_reg_out[index]),
+                .deparse_phv_reg_out(dp_val_BE[index]),
                 .deparse_phv_select(deparse_phv_select[index]),
                 .valid_out(valid_out[index])
             );
@@ -433,6 +449,7 @@ endgenerate
 
 /****control path for 512b*****/
 wire [7:0]          mod_id; //module ID
+wire [15:0]         control_flag; //dst udp port num
 reg  [7:0]          c_index; //table index(addr)
 reg                 c_wr_en; //enable table write(wen)
 reg  [259:0]        entry_reg;
@@ -443,6 +460,74 @@ localparam IDLE_C = 1,
            WRITE_C = 2;
 
 assign mod_id = c_s_axis_tdata[368+:8];
+assign control_flag = c_s_axis_tdata[335:320];
+//LE to BE switching
+wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
+assign c_s_axis_tdata_swapped = {	c_s_axis_tdata[0+:8],
+									c_s_axis_tdata[8+:8],
+									c_s_axis_tdata[16+:8],
+									c_s_axis_tdata[24+:8],
+									c_s_axis_tdata[32+:8],
+									c_s_axis_tdata[40+:8],
+									c_s_axis_tdata[48+:8],
+									c_s_axis_tdata[56+:8],
+									c_s_axis_tdata[64+:8],
+									c_s_axis_tdata[72+:8],
+									c_s_axis_tdata[80+:8],
+									c_s_axis_tdata[88+:8],
+									c_s_axis_tdata[96+:8],
+									c_s_axis_tdata[104+:8],
+									c_s_axis_tdata[112+:8],
+									c_s_axis_tdata[120+:8],
+									c_s_axis_tdata[128+:8],
+									c_s_axis_tdata[136+:8],
+									c_s_axis_tdata[144+:8],
+									c_s_axis_tdata[152+:8],
+									c_s_axis_tdata[160+:8],
+									c_s_axis_tdata[168+:8],
+									c_s_axis_tdata[176+:8],
+									c_s_axis_tdata[184+:8],
+									c_s_axis_tdata[192+:8],
+									c_s_axis_tdata[200+:8],
+									c_s_axis_tdata[208+:8],
+									c_s_axis_tdata[216+:8],
+									c_s_axis_tdata[224+:8],
+									c_s_axis_tdata[232+:8],
+									c_s_axis_tdata[240+:8],
+									c_s_axis_tdata[248+:8],
+                                    c_s_axis_tdata[256+:8],
+                                    c_s_axis_tdata[264+:8],
+                                    c_s_axis_tdata[272+:8],
+                                    c_s_axis_tdata[280+:8],
+                                    c_s_axis_tdata[288+:8],
+                                    c_s_axis_tdata[296+:8],
+                                    c_s_axis_tdata[304+:8],
+                                    c_s_axis_tdata[312+:8],
+                                    c_s_axis_tdata[320+:8],
+                                    c_s_axis_tdata[328+:8],
+                                    c_s_axis_tdata[336+:8],
+                                    c_s_axis_tdata[344+:8],
+                                    c_s_axis_tdata[352+:8],
+                                    c_s_axis_tdata[360+:8],
+                                    c_s_axis_tdata[368+:8],
+                                    c_s_axis_tdata[376+:8],
+                                    c_s_axis_tdata[384+:8],
+                                    c_s_axis_tdata[392+:8],
+                                    c_s_axis_tdata[400+:8],
+                                    c_s_axis_tdata[408+:8],
+                                    c_s_axis_tdata[416+:8],
+                                    c_s_axis_tdata[424+:8],
+                                    c_s_axis_tdata[432+:8],
+                                    c_s_axis_tdata[440+:8],
+                                    c_s_axis_tdata[448+:8],
+                                    c_s_axis_tdata[456+:8],
+                                    c_s_axis_tdata[464+:8],
+                                    c_s_axis_tdata[472+:8],
+                                    c_s_axis_tdata[480+:8],
+                                    c_s_axis_tdata[488+:8],
+                                    c_s_axis_tdata[496+:8],
+                                    c_s_axis_tdata[504+:8]
+                                };
 
 always @(posedge clk or negedge aresetn) begin
     if(~aresetn) begin
@@ -454,7 +539,7 @@ always @(posedge clk or negedge aresetn) begin
     else begin
         case(c_state)
             IDLE_C: begin
-                if(c_s_axis_tvalid && mod_id[2:0] == DEPARSER_ID)begin
+                if(c_s_axis_tvalid && mod_id[2:0] == DEPARSER_ID && control_flag == 16'hf1f2)begin
                     c_wr_en <= 1'b1;
                     c_index <= c_s_axis_tdata[384+:8];
 
@@ -494,7 +579,7 @@ parse_act_ram
 	// write port
 	.clka		(clk),
 	.addra		(c_index[3:0]),
-	.dina		(c_s_axis_tdata[259:0]),
+	.dina		(c_s_axis_tdata_swapped[511 -: 260]),
 	.ena		(1'b1),
 	.wea		(c_wr_en),
 

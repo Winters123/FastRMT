@@ -242,13 +242,13 @@ end
 /****control path for 512b*****/
 wire [7:0]          mod_id; //module ID
 wire [3:0]          resv;
+wire [15:0]         control_flag; //dst udp port num
 reg  [7:0]          c_index; //table index(addr)
 reg                 c_wr_en_off; //enable table write(wena)
 reg                 c_wr_en_mask;
 
 
 reg [2:0]           c_state;
-
 
 /****for 256b exclusively*****/
 reg [C_S_AXIS_DATA_WIDTH-1:0]       c_m_axis_tdata_r;
@@ -270,6 +270,75 @@ generate
         //4'b0 for key offset
         //4'b1 for key mask
         assign resv = c_s_axis_tdata[380+:4];
+        assign control_flag = c_s_axis_tdata[335:320];
+        //LE to BE switching
+        wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
+
+		assign c_s_axis_tdata_swapped = {	c_s_axis_tdata[0+:8],
+											c_s_axis_tdata[8+:8],
+											c_s_axis_tdata[16+:8],
+											c_s_axis_tdata[24+:8],
+											c_s_axis_tdata[32+:8],
+											c_s_axis_tdata[40+:8],
+											c_s_axis_tdata[48+:8],
+											c_s_axis_tdata[56+:8],
+											c_s_axis_tdata[64+:8],
+											c_s_axis_tdata[72+:8],
+											c_s_axis_tdata[80+:8],
+											c_s_axis_tdata[88+:8],
+											c_s_axis_tdata[96+:8],
+											c_s_axis_tdata[104+:8],
+											c_s_axis_tdata[112+:8],
+											c_s_axis_tdata[120+:8],
+											c_s_axis_tdata[128+:8],
+											c_s_axis_tdata[136+:8],
+											c_s_axis_tdata[144+:8],
+											c_s_axis_tdata[152+:8],
+											c_s_axis_tdata[160+:8],
+											c_s_axis_tdata[168+:8],
+											c_s_axis_tdata[176+:8],
+											c_s_axis_tdata[184+:8],
+											c_s_axis_tdata[192+:8],
+											c_s_axis_tdata[200+:8],
+											c_s_axis_tdata[208+:8],
+											c_s_axis_tdata[216+:8],
+											c_s_axis_tdata[224+:8],
+											c_s_axis_tdata[232+:8],
+											c_s_axis_tdata[240+:8],
+											c_s_axis_tdata[248+:8],
+                                            c_s_axis_tdata[256+:8],
+                                            c_s_axis_tdata[264+:8],
+                                            c_s_axis_tdata[272+:8],
+                                            c_s_axis_tdata[280+:8],
+                                            c_s_axis_tdata[288+:8],
+                                            c_s_axis_tdata[296+:8],
+                                            c_s_axis_tdata[304+:8],
+                                            c_s_axis_tdata[312+:8],
+                                            c_s_axis_tdata[320+:8],
+                                            c_s_axis_tdata[328+:8],
+                                            c_s_axis_tdata[336+:8],
+                                            c_s_axis_tdata[344+:8],
+                                            c_s_axis_tdata[352+:8],
+                                            c_s_axis_tdata[360+:8],
+                                            c_s_axis_tdata[368+:8],
+                                            c_s_axis_tdata[376+:8],
+                                            c_s_axis_tdata[384+:8],
+                                            c_s_axis_tdata[392+:8],
+                                            c_s_axis_tdata[400+:8],
+                                            c_s_axis_tdata[408+:8],
+                                            c_s_axis_tdata[416+:8],
+                                            c_s_axis_tdata[424+:8],
+                                            c_s_axis_tdata[432+:8],
+                                            c_s_axis_tdata[440+:8],
+                                            c_s_axis_tdata[448+:8],
+                                            c_s_axis_tdata[456+:8],
+                                            c_s_axis_tdata[464+:8],
+                                            c_s_axis_tdata[472+:8],
+                                            c_s_axis_tdata[480+:8],
+                                            c_s_axis_tdata[488+:8],
+                                            c_s_axis_tdata[496+:8],
+                                            c_s_axis_tdata[504+:8]
+                                            };
         always @(posedge clk or negedge rst_n) begin
             if(~rst_n) begin
                 c_wr_en_off <= 1'b0;
@@ -288,7 +357,8 @@ generate
             else begin
                 case(c_state)
                     IDLE_C: begin
-                        if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID)begin
+                        if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID &&
+                         control_flag == 16'hf1f2)begin
                             //c_wr_en <= 1'b1;
                             c_index <= c_s_axis_tdata[384+:8];
         
@@ -324,24 +394,24 @@ generate
                     end
                     //support full table flush
                     WRITE_OFF_C: begin
-                        if(c_s_axis_tlast) begin
+                        if(c_s_axis_tvalid && c_s_axis_tlast) begin
                             c_wr_en_off <= 1'b0;
                             c_index <= 8'b0;
                             c_state <= IDLE_C;
                         end
-                        else begin
+                        else if(c_s_axis_tvalid) begin
                             c_wr_en_off <= 1'b1;
                             c_index <= c_index + 8'b1;
                             c_state <= WRITE_OFF_C;
                         end
                     end
                     WRITE_MASK_C: begin
-                        if(c_s_axis_tlast) begin
+                        if(c_s_axis_tvalid && c_s_axis_tlast) begin
                             c_wr_en_mask <= 1'b0;
                             c_index <= 8'b0;
                             c_state <= IDLE_C;
                         end
-                        else begin
+                        else if(c_s_axis_tvalid) begin
                             c_wr_en_mask <= 1'b1;
                             c_index <= c_index + 8'b1;
                             c_state <= WRITE_MASK_C;
@@ -361,6 +431,43 @@ generate
         
             end
         end
+        //ram for key extract
+        //blk_mem_gen_2 act_ram_18w_16d
+        // blk_mem_gen_2 #(
+        // 	.C_INIT_FILE_NAME	("./key_extract.mif"),
+        // 	.C_LOAD_INIT_FILE	(1)
+        // )
+        blk_mem_gen_2
+        key_ram_18w_16d
+        (
+            .addra(c_index[3:0]),
+            .clka(clk),
+            .dina(c_s_axis_tdata_swapped[511 -: 18]),
+            .ena(1'b1),
+            .wea(c_wr_en_off),
+
+            //only [3:0] is needed for addressing
+            .addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
+            .clkb(clk),
+            .doutb(key_offset),
+            .enb(1'b1)
+        );
+
+        blk_mem_gen_3
+        mask_ram_197w_16d
+        (
+            .addra(c_index[3:0]),
+            .clka(clk),
+            .dina(c_s_axis_tdata_swapped[511 -: 197]),
+            .ena(1'b1),
+            .wea(c_wr_en_mask),
+
+            //only [3:0] is needed for addressing
+            .addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
+            .clkb(clk),
+            .doutb(key_mask_out_w),
+            .enb(1'b1)
+        );
     end
 
     else if(C_S_AXIS_DATA_WIDTH == 256) begin
@@ -368,6 +475,41 @@ generate
         //4'b0 for key offset
         //4'b1 for key mask
         assign resv = c_s_axis_tdata[124+:4];
+        assign control_flag = c_s_axis_tdata[64:16];
+		wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
+		assign c_s_axis_tdata_swapped = {	c_s_axis_tdata[0+:8],
+											c_s_axis_tdata[8+:8],
+											c_s_axis_tdata[16+:8],
+											c_s_axis_tdata[24+:8],
+											c_s_axis_tdata[32+:8],
+											c_s_axis_tdata[40+:8],
+											c_s_axis_tdata[48+:8],
+											c_s_axis_tdata[56+:8],
+											c_s_axis_tdata[64+:8],
+											c_s_axis_tdata[72+:8],
+											c_s_axis_tdata[80+:8],
+											c_s_axis_tdata[88+:8],
+											c_s_axis_tdata[96+:8],
+											c_s_axis_tdata[104+:8],
+											c_s_axis_tdata[112+:8],
+											c_s_axis_tdata[120+:8],
+											c_s_axis_tdata[128+:8],
+											c_s_axis_tdata[136+:8],
+											c_s_axis_tdata[144+:8],
+											c_s_axis_tdata[152+:8],
+											c_s_axis_tdata[160+:8],
+											c_s_axis_tdata[168+:8],
+											c_s_axis_tdata[176+:8],
+											c_s_axis_tdata[184+:8],
+											c_s_axis_tdata[192+:8],
+											c_s_axis_tdata[200+:8],
+											c_s_axis_tdata[208+:8],
+											c_s_axis_tdata[216+:8],
+											c_s_axis_tdata[224+:8],
+											c_s_axis_tdata[232+:8],
+											c_s_axis_tdata[240+:8],
+											c_s_axis_tdata[248+:8]};
+
         always @(posedge clk or negedge rst_n) begin
             if(~rst_n) begin
                 c_wr_en_off <= 1'b0;
@@ -422,7 +564,8 @@ generate
                     end
 
                     PARSE_C: begin
-                        if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID) begin
+                        if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID && 
+                           control_flag == 16'hf1f2 && c_s_axis_tvalid) begin
                             c_m_axis_tdata <= 0;
                             c_m_axis_tuser <= 0;
                             c_m_axis_tkeep <= 0;
@@ -455,7 +598,7 @@ generate
                                 c_m_axis_tlast_r <= c_s_axis_tlast;
                             end
                             else begin
-                                c_state <= IDLE_C;
+                                //c_state <= IDLE_C;
                                 c_m_axis_tvalid_r <= 1'b0;
                                 c_m_axis_tlast_r <= 1'b0;
                             end
@@ -465,12 +608,12 @@ generate
 
                     WRITE_OFF_C: begin
                         c_m_axis_tvalid_r <= 1'b0;
-                        if(c_s_axis_tlast) begin
+                        if(c_s_axis_tvalid && c_s_axis_tlast) begin
                             c_wr_en_off <= 1'b0;
                             c_index <= 8'b0;
                             c_state <= IDLE_C;
                         end
-                        else begin
+                        else if(c_s_axis_tvalid) begin
                             c_wr_en_off <= 1'b1;
                             c_index <= c_index + 8'b1;
                             c_state <= WRITE_OFF_C;
@@ -479,12 +622,12 @@ generate
 
                     WRITE_MASK_C: begin
                         c_m_axis_tvalid_r <= 1'b0;
-                        if(c_s_axis_tlast) begin
+                        if(c_s_axis_tvalid && c_s_axis_tlast) begin
                             c_wr_en_mask <= 1'b0;
                             c_index <= 8'b0;
                             c_state <= IDLE_C;
                         end
-                        else begin
+                        else if (c_s_axis_tvalid) begin
                             c_wr_en_mask <= 1'b1;
                             c_index <= c_index + 8'b1;
                             c_state <= WRITE_MASK_C;
@@ -494,45 +637,46 @@ generate
                 endcase
             end
         end
+
+        //ram for key extract
+        //blk_mem_gen_2 act_ram_18w_16d
+        // blk_mem_gen_2 #(
+        // 	.C_INIT_FILE_NAME	("./key_extract.mif"),
+        // 	.C_LOAD_INIT_FILE	(1)
+        // )
+        blk_mem_gen_2
+        key_ram_18w_16d
+        (
+            .addra(c_index[3:0]),
+            .clka(clk),
+            .dina(c_s_axis_tdata_swapped[238+:18]),
+            .ena(1'b1),
+            .wea(c_wr_en_off),
+
+            //only [3:0] is needed for addressing
+            .addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
+            .clkb(clk),
+            .doutb(key_offset),
+            .enb(1'b1)
+        );
+
+        blk_mem_gen_3
+        mask_ram_197w_16d
+        (
+            .addra(c_index[3:0]),
+            .clka(clk),
+            .dina(c_s_axis_tdata_swapped[59+:197]),
+            .ena(1'b1),
+            .wea(c_wr_en_mask),
+
+            //only [3:0] is needed for addressing
+            .addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
+            .clkb(clk),
+            .doutb(key_mask_out_w),
+            .enb(1'b1)
+        );
     end
 endgenerate
 
-//ram for key extract
-//blk_mem_gen_2 act_ram_18w_16d
-// blk_mem_gen_2 #(
-// 	.C_INIT_FILE_NAME	("./key_extract.mif"),
-// 	.C_LOAD_INIT_FILE	(1)
-// )
-blk_mem_gen_2
-key_ram_18w_16d
-(
-    .addra(c_index[3:0]),
-    .clka(clk),
-    .dina(c_s_axis_tdata[17:0]),
-    .ena(1'b1),
-    .wea(c_wr_en_off),
-
-    //only [3:0] is needed for addressing
-	.addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
-    .clkb(clk),
-    .doutb(key_offset),
-    .enb(1'b1)
-);
-
-blk_mem_gen_3
-mask_ram_197w_16d
-(
-    .addra(c_index[3:0]),
-    .clka(clk),
-    .dina(c_s_axis_tdata[196:0]),
-    .ena(1'b1),
-    .wea(c_wr_en_mask),
-
-    //only [3:0] is needed for addressing
-	.addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
-    .clkb(clk),
-    .doutb(key_mask_out_w),
-    .enb(1'b1)
-);
 
 endmodule

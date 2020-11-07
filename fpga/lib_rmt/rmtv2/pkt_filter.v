@@ -52,16 +52,12 @@ reg									r_tlast;
 reg									r_s_tready;
 
 reg [1:0] state, state_next;
-
-wire [15:0]							IP_flag;
-wire [7:0]							UDP_flag;
-wire [15:0]							CONTROL_flag;
 //1 for control, 0 for data;
 reg 								c_switch;
 
 assign IP_flag = s_axis_tdata[143:128];
 assign UDP_flag = s_axis_tdata[223:216];
-assign CONTROL_flag = s_axis_tdata[336:320];
+assign CONTROL_flag = s_axis_tdata[335:320];
 
 
 always @(*) begin
@@ -74,7 +70,7 @@ always @(*) begin
 	r_tvalid = s_axis_tvalid;
 	r_s_tready = m_axis_tready;
 
-	c_switch = 1'b0;
+	//c_switch = 1'b0;
 
 	state_next = state;
 
@@ -83,7 +79,7 @@ always @(*) begin
 			if (m_axis_tready && s_axis_tvalid) begin
 				if ((s_axis_tdata[143:128]==`ETH_TYPE_IPV4) && 
 					(s_axis_tdata[223:216]==`IPPROT_UDP)) begin
-					if(s_axis_tdata[336:320] == `CONTROL_PORT) begin
+					if(s_axis_tdata[335:320] == `CONTROL_PORT) begin
 						state_next = FLUSH_CTL;
 						c_switch = 1'b1;
 					end
@@ -96,6 +92,10 @@ always @(*) begin
 					r_tvalid = 0;
 					state_next = DROP_PKT;
 				end
+			end
+
+			else begin
+				c_switch = 1'b0;
 			end
 
 		end

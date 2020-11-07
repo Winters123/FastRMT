@@ -27,7 +27,6 @@ module alu_2 #(
     output reg [DATA_WIDTH-1:0]       container_out,
     output reg                        container_out_valid
 
-
 );
 
 /********intermediate variables declared here********/

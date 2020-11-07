@@ -161,7 +161,7 @@ initial begin
 end
 
 
-pkt_filter #(
+pkt_filter_1 #(
 	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
 	.C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH)
 )pkt_filter

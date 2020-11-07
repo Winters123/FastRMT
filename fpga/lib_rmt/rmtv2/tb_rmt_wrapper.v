@@ -53,7 +53,8 @@ initial begin
 end
 
 initial begin
-    #(3*CYCLE+CYCLE/2)
+    #(3*CYCLE+CYCLE/2);
+    #(40* CYCLE)
     m_axis_tready <= 1'b1;
     s_axis_tdata <= 512'b0; 
     s_axis_tkeep <= 64'h0;
@@ -156,6 +157,74 @@ initial begin
     s_axis_tlast <= 1'b0;
 
     #(40*CYCLE);
+end
+
+//NOTE: 512 test cases
+initial begin
+    #(2*CYCLE); //after the rst_n, start the test
+    #(5) //posedge of clk    
+    /*
+        set up the key extract table
+    */
+    s_axis_tdata <= {128'b0, 4'b0010, 4'b0, 8'b10, 368'b0};
+    s_axis_tdata[143:128] <= 16'h0008;
+    s_axis_tdata[223:216] <= 8'h11;
+    s_axis_tdata[335:320] <= 16'hf1f2;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'b0;
+    s_axis_tlast <= 1'b0;
+    #(CYCLE)
+
+    s_axis_tdata <= {494'b0,18'hffff};
+    s_axis_tvalid <= 1'b1;
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'b0;
+    s_axis_tlast <= 1'b0;
+
+    #(CYCLE)
+    s_axis_tdata <= {494'b0,18'hffff};
+    s_axis_tvalid <= 1'b1;
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'b0;
+    s_axis_tlast <= 1'b0;
+
+    #(CYCLE)
+    s_axis_tdata <= {494'b0,18'hffff};
+    s_axis_tvalid <= 1'b1;
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'b0;
+    s_axis_tlast <= 1'b1;
+
+    #(CYCLE)
+    s_axis_tdata <= {494'b0,18'hffff};
+    s_axis_tvalid <= 1'b0;
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'b0;
+    s_axis_tlast <= 1'b0;
+
+    #(3*CYCLE)
+    s_axis_tdata <= {128'b0, 4'b0001, 4'b0, 5'b00000, 3'b001, 368'b0};
+    s_axis_tvalid <= 1'b1;
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'b0;
+    s_axis_tlast <= 1'b0;
+    #(CYCLE)
+    s_axis_tdata <= {494'b0,18'hffff};
+    s_axis_tvalid <= 1'b1;
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'b0;
+    s_axis_tlast <= 1'b1;
+
+    #(CYCLE)
+    s_axis_tdata <= 512'b0;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'b0;
+    s_axis_tlast <= 1'b0;
+    
+    #(20*CYCLE);
+
 end
 
 
