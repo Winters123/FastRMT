@@ -286,11 +286,11 @@ generate
                                 act_entry_tmp <= 0;
                                 continous_flag <= 0;
 
-                                c_m_axis_tdata <= 0;
-                                c_m_axis_tuser <= 0;
-                                c_m_axis_tkeep <= 0;
-                                c_m_axis_tvalid <= 0;
-                                c_m_axis_tlast <= 0;
+                                c_m_axis_tdata <= c_s_axis_tdata;
+                                c_m_axis_tuser <= c_s_axis_tuser;
+                                c_m_axis_tkeep <= c_s_axis_tkeep;
+                                c_m_axis_tvalid <= c_s_axis_tvalid;
+                                c_m_axis_tlast <= c_s_axis_tlast;
 
                                 c_state <= IDLE_C;
                             end
@@ -326,6 +326,11 @@ generate
                             c_index_cam <= c_index_cam + 8'b1;
                             c_state <= CAM_TMP_ENTRY;
                         end
+                        else begin
+                            c_wr_en_cam <= c_wr_en_cam;
+                            c_index_cam <= c_index_cam;
+                            c_state <= c_state;
+                        end
                     end
 
                     ACT_TMP_ENTRY_WAIT: begin
@@ -345,7 +350,7 @@ generate
                         end
                         else begin
                             c_wr_en_act <= 1'b0;
-                            //c_state <= IDLE_C;
+                            c_state <= c_state;
                         end
                     end
 
@@ -358,6 +363,11 @@ generate
                                 continous_flag <= 1'b1;
                                 c_state <= ACT_TMP_ENTRY_WAIT;
                             end
+                        end
+                        else begin
+                            c_state <= c_state;
+                            act_entry_tmp <= act_entry_tmp;
+                            c_wr_en_act <= c_wr_en_act;
                         end
                     end
 
@@ -519,16 +529,35 @@ generate
                             c_m_axis_tvalid <= 0;
                             c_m_axis_tlast <= 0;
 
-                            if(resv == 4'b0) begin
+                            if(resv == 4'b0 && c_s_axis_tvalid) begin
                                 c_index_cam <= c_s_axis_tdata[128+:8];
                                 c_wr_en_cam <= 1'b1;
                                 c_state <= CAM_TMP_ENTRY;
                             end
-                            else begin
+                            else if (c_s_axis_tvalid)begin
                                 c_index_act <= c_s_axis_tdata[128+:8];
                                 c_wr_en_act <= 1'b0;
                                 c_state <= ACT_TMP_ENTRY_WAIT;
                             end
+                            else begin
+                                c_state <= PARSE_C;
+                                c_wr_en_act <= c_wr_en_act;
+                                c_index_act <= c_index_act;
+                            end
+                        end
+                        //if I don't know if I should send it, then I should hold it.
+                        else if(!c_s_axis_tvalid) begin
+                            c_m_axis_tdata <= c_m_axis_tdata;
+                            c_m_axis_tuser <= c_m_axis_tuser;
+                            c_m_axis_tkeep <= c_m_axis_tkeep;
+                            c_m_axis_tvalid <= 0;
+                            c_m_axis_tlast <= 0;
+
+                            c_m_axis_tdata_r <= c_m_axis_tdata_r;
+                            c_m_axis_tuser_r <= c_m_axis_tuser_r;
+                            c_m_axis_tkeep_r <= c_m_axis_tkeep_r;
+                            c_m_axis_tvalid_r <= c_m_axis_tvalid_r;
+                            c_m_axis_tlast_r <= c_m_axis_tlast_r;
                         end
 
                         else begin
@@ -537,18 +566,19 @@ generate
                             c_m_axis_tkeep <= c_m_axis_tkeep_r;
                             c_m_axis_tvalid <= c_m_axis_tvalid_r;
                             c_m_axis_tlast <= c_m_axis_tlast_r;
-                            if(c_s_axis_tvalid) begin
-                                c_m_axis_tdata_r <= c_s_axis_tdata;
-                                c_m_axis_tuser_r <= c_s_axis_tuser;
-                                c_m_axis_tkeep_r <= c_s_axis_tkeep;
-                                c_m_axis_tvalid_r <= c_s_axis_tvalid;
-                                c_m_axis_tlast_r <= c_s_axis_tlast;
-                            end
-                            else begin
-                                //c_state <= IDLE_C;
-                                c_m_axis_tvalid_r <= 1'b0;
-                                c_m_axis_tlast_r <= 1'b0;
-                            end
+
+                            c_m_axis_tdata_r <= c_s_axis_tdata;
+                            c_m_axis_tuser_r <= c_s_axis_tuser;
+                            c_m_axis_tkeep_r <= c_s_axis_tkeep;
+                            c_m_axis_tvalid_r <= c_s_axis_tvalid;
+                            c_m_axis_tlast_r <= c_s_axis_tlast;
+                            
+                            if(c_s_axis_tvalid && c_s_axis_tlast) c_state <= IDLE_C;
+                            // else begin
+                            //     //c_state <= IDLE_C;
+                            //     c_m_axis_tvalid_r <= 1'b0;
+                            //     c_m_axis_tlast_r <= 1'b0;
+                            // end
                         end
 
                     end
@@ -561,10 +591,15 @@ generate
                             c_index_cam <= 8'b0;
                             c_state <= IDLE_C;
                         end
-                        else begin
+                        else if(c_s_axis_tvalid) begin
                             c_wr_en_cam <= 1'b1;
                             c_index_cam <= c_index_cam + 8'b1;
                             c_state <= CAM_TMP_ENTRY;
+                        end
+                        else begin
+                            c_wr_en_cam <= c_wr_en_cam;
+                            c_index_cam <= c_index_cam;
+                            c_state <= c_state;
                         end
                     end
 
@@ -577,8 +612,11 @@ generate
                             if(continous_flag) c_index_act <= c_index_act + 8'b1;
                             c_state <= ACT_TMP_ENTRY_WAIT_2;
                         end
-                        else begin
+                        else if (c_s_axis_tvalid && c_s_axis_tlast) begin
                             c_state <= IDLE_C;
+                        end
+                        else begin
+                            c_state <= ACT_TMP_ENTRY_WAIT;
                         end
                     end
 
@@ -586,6 +624,9 @@ generate
                         if(c_s_axis_tvalid && ~c_s_axis_tlast) begin
                             act_entry_tmp[113+:256] <= c_s_axis_tdata_swapped;
                             c_state <= ACT_TMP_ENTRY;
+                        end
+                        else if (c_s_axis_tvalid && c_s_axis_tlast) begin
+                            c_state <= IDLE_C;
                         end
                         else begin
                             act_entry_tmp[113+:256] <= act_entry_tmp[113+:256];

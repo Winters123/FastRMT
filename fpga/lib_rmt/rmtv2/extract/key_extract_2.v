@@ -564,8 +564,9 @@ generate
                     end
 
                     PARSE_C: begin
-                        if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID && 
-                           control_flag == 16'hf1f2 && c_s_axis_tvalid) begin
+                        // if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID && 
+                        //    control_flag == 16'hf1f2 && c_s_axis_tvalid) begin
+                        if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID && c_s_axis_tvalid) begin
                             c_m_axis_tdata <= 0;
                             c_m_axis_tuser <= 0;
                             c_m_axis_tkeep <= 0;
@@ -583,6 +584,20 @@ generate
                                 c_state <= WRITE_MASK_C;
                             end
                         end
+                        //if I don't know if I should send it, then I should hold it.
+                        else if(!c_s_axis_tvalid) begin
+                            c_m_axis_tdata <= c_m_axis_tdata;
+                            c_m_axis_tuser <= c_m_axis_tuser;
+                            c_m_axis_tkeep <= c_m_axis_tkeep;
+                            c_m_axis_tvalid <= 0;
+                            c_m_axis_tlast <= 0;
+
+                            c_m_axis_tdata_r <= c_m_axis_tdata_r;
+                            c_m_axis_tuser_r <= c_m_axis_tuser_r;
+                            c_m_axis_tkeep_r <= c_m_axis_tkeep_r;
+                            c_m_axis_tvalid_r <= c_m_axis_tvalid_r;
+                            c_m_axis_tlast_r <= c_m_axis_tlast_r;
+                        end
 
                         else begin
                             c_m_axis_tdata <= c_m_axis_tdata_r;
@@ -590,18 +605,19 @@ generate
                             c_m_axis_tkeep <= c_m_axis_tkeep_r;
                             c_m_axis_tvalid <= c_m_axis_tvalid_r;
                             c_m_axis_tlast <= c_m_axis_tlast_r;
-                            if(c_s_axis_tvalid) begin
-                                c_m_axis_tdata_r <= c_s_axis_tdata;
-                                c_m_axis_tuser_r <= c_s_axis_tuser;
-                                c_m_axis_tkeep_r <= c_s_axis_tkeep;
-                                c_m_axis_tvalid_r <= c_s_axis_tvalid;
-                                c_m_axis_tlast_r <= c_s_axis_tlast;
-                            end
-                            else begin
-                                //c_state <= IDLE_C;
-                                c_m_axis_tvalid_r <= 1'b0;
-                                c_m_axis_tlast_r <= 1'b0;
-                            end
+
+                            c_m_axis_tdata_r <= c_s_axis_tdata;
+                            c_m_axis_tuser_r <= c_s_axis_tuser;
+                            c_m_axis_tkeep_r <= c_s_axis_tkeep;
+                            c_m_axis_tvalid_r <= c_s_axis_tvalid;
+                            c_m_axis_tlast_r <= c_s_axis_tlast;
+                            
+                            if(c_s_axis_tvalid && c_s_axis_tlast) c_state <= IDLE_C;
+                            // else begin
+                            //     //c_state <= IDLE_C;
+                            //     c_m_axis_tvalid_r <= 1'b0;
+                            //     c_m_axis_tlast_r <= 1'b0;
+                            // end
                         end
 
                     end
@@ -618,6 +634,11 @@ generate
                             c_index <= c_index + 8'b1;
                             c_state <= WRITE_OFF_C;
                         end
+                        else begin
+                            c_wr_en_off <= c_wr_en_off;
+                            c_index <= c_index;
+                            c_state <= c_state;
+                        end
                     end
 
                     WRITE_MASK_C: begin
@@ -631,6 +652,11 @@ generate
                             c_wr_en_mask <= 1'b1;
                             c_index <= c_index + 8'b1;
                             c_state <= WRITE_MASK_C;
+                        end
+                        else begin
+                            c_wr_en_mask <= c_wr_en_mask;
+                            c_index <= c_index;
+                            c_state <= c_state;
                         end
                     end
 

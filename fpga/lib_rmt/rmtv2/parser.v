@@ -477,8 +477,10 @@ always @(posedge axis_clk or negedge aresetn) begin
                     c_state <= IDLE_C;
                 end
                 else begin
-                    c_wr_en <= 1'b1;
-                    c_index <= c_index + 4'b1;
+                    if (c_s_axis_tvalid) begin
+                        c_wr_en <= 1'b1;
+                        c_index <= c_index + 4'b1;
+                    end
                     c_state <= WRITE_C;
                 end
             end

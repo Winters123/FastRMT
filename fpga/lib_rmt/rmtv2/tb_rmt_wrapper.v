@@ -170,6 +170,13 @@ initial begin
     s_axis_tdata[143:128] <= 16'h0008;
     s_axis_tdata[223:216] <= 8'h11;
     s_axis_tdata[335:320] <= 16'hf1f2;
+    //mod id
+    s_axis_tdata[368+:8] <= 8'h0;
+    //resv
+    s_axis_tdata[380+:4] <= 4'b0;
+    //index
+    s_axis_tdata[384+:8] <= 8'h0;
+
     s_axis_tvalid <= 1'b1;
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'b0;
@@ -177,6 +184,14 @@ initial begin
     #(CYCLE)
 
     s_axis_tdata <= {494'b0,18'hffff};
+    s_axis_tvalid <= 1'b0;
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'b0;
+    s_axis_tlast <= 1'b0;
+
+    #CYCLE
+
+    s_axis_tdata <= {494'b0,18'heeeffff};
     s_axis_tvalid <= 1'b1;
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'b0;
@@ -205,6 +220,13 @@ initial begin
 
     #(3*CYCLE)
     s_axis_tdata <= {128'b0, 4'b0001, 4'b0, 5'b00000, 3'b001, 368'b0};
+    s_axis_tdata[143:128] <= 16'h0008;
+    s_axis_tdata[223:216] <= 8'h11;
+    s_axis_tdata[335:320] <= 16'hf1f2;
+    //mod id
+    s_axis_tdata[368+:8] <= 8'b01;
+    //resv
+    s_axis_tdata[380+:4] <= 4'b1;
     s_axis_tvalid <= 1'b1;
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'b0;
