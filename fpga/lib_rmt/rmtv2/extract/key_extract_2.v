@@ -205,6 +205,9 @@ always @(posedge clk or negedge rst_n) begin
 
         //extract keys according to key_off
         if(phv_valid_out_delay[1]) begin
+            //optimize for `if`
+            key_valid_out <= 1'b1; 
+
             key_out[KEY_LEN-1                                     -: width_6B] <= cont_6B[key_offset[KEY_OFF-1     -: 3]];
             key_out[KEY_LEN-1- 1*width_6B                         -: width_6B] <= cont_6B[key_offset[KEY_OFF-1-1*3 -: 3]];
             key_out[KEY_LEN-1- 2*width_6B                         -: width_4B] <= cont_4B[key_offset[KEY_OFF-1-2*3 -: 3]];
@@ -229,10 +232,9 @@ always @(posedge clk or negedge rst_n) begin
 
         end
         
-        if(phv_valid_out_delay[1]) begin
-            key_valid_out <= 1'b1;    
-        end
+               
         else begin
+            key_out <= 0;
             key_valid_out <= 1'b0;
         end
     end

@@ -213,6 +213,12 @@ wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_6;
 wire 										c_s_axis_tvalid_6;
 wire 										c_s_axis_tlast_6;
 
+wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_7;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_7;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_7;
+wire 										c_s_axis_tvalid_7;
+wire 										c_s_axis_tlast_7;
+
 parser #(
     .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH), //for 100g mac exclusively
 	.C_S_AXIS_TUSER_WIDTH(),
@@ -314,17 +320,19 @@ phv_deparser (
 	.depar_out_tready		(m_axis_tready),
 
 	//control path
-	.c_s_axis_tdata(c_s_axis_tdata_3),
-	.c_s_axis_tuser(c_s_axis_tuser_3),
-	.c_s_axis_tkeep(c_s_axis_tkeep_3),
-	.c_s_axis_tvalid(c_s_axis_tvalid_3),
-	.c_s_axis_tlast(c_s_axis_tlast_3)
+	.c_s_axis_tdata(c_s_axis_tdata_7),
+	.c_s_axis_tuser(c_s_axis_tuser_7),
+	.c_s_axis_tkeep(c_s_axis_tkeep_7),
+	.c_s_axis_tvalid(c_s_axis_tvalid_7),
+	.c_s_axis_tlast(c_s_axis_tlast_7)
 );
 
 
-/*
+
 stage #(
-	.STAGE(1)
+	.C_S_AXIS_DATA_WIDTH(512),
+    .C_S_AXIS_TUSER_WIDTH(128),
+    .STAGE_ID(1)  //valid: 0-4
 )
 stage1
 (
@@ -336,11 +344,25 @@ stage1
     .phv_in_valid			(stg0_phv_out_valid_w),
 	// output
     .phv_out				(stg1_phv_out),
-    .phv_out_valid			(stg1_phv_out_valid)
+    .phv_out_valid			(stg1_phv_out_valid),
+	//control path
+	.c_s_axis_tdata(c_s_axis_tdata_3),
+	.c_s_axis_tuser(c_s_axis_tuser_3),
+	.c_s_axis_tkeep(c_s_axis_tkeep_3),
+	.c_s_axis_tvalid(c_s_axis_tvalid_3),
+	.c_s_axis_tlast(c_s_axis_tlast_3),
+
+	.c_m_axis_tdata(c_s_axis_tdata_4),
+	.c_m_axis_tuser(c_s_axis_tuser_4),
+	.c_m_axis_tkeep(c_s_axis_tkeep_4),
+	.c_m_axis_tvalid(c_s_axis_tvalid_4),
+	.c_m_axis_tlast(c_s_axis_tlast_4)
 );
 
 stage #(
-	.STAGE(2)
+	.C_S_AXIS_DATA_WIDTH(512),
+    .C_S_AXIS_TUSER_WIDTH(128),
+    .STAGE_ID(2)  //valid: 0-4
 )
 stage2
 (
@@ -352,11 +374,25 @@ stage2
     .phv_in_valid			(stg1_phv_out_valid_w),
 	// output
     .phv_out				(stg2_phv_out),
-    .phv_out_valid			(stg2_phv_out_valid)
+    .phv_out_valid			(stg2_phv_out_valid),
+	//control path
+	.c_s_axis_tdata(c_s_axis_tdata_4),
+	.c_s_axis_tuser(c_s_axis_tuser_4),
+	.c_s_axis_tkeep(c_s_axis_tkeep_4),
+	.c_s_axis_tvalid(c_s_axis_tvalid_4),
+	.c_s_axis_tlast(c_s_axis_tlast_4),
+
+	.c_m_axis_tdata(c_s_axis_tdata_5),
+	.c_m_axis_tuser(c_s_axis_tuser_5),
+	.c_m_axis_tkeep(c_s_axis_tkeep_5),
+	.c_m_axis_tvalid(c_s_axis_tvalid_5),
+	.c_m_axis_tlast(c_s_axis_tlast_5)
 );
 
 stage #(
-	.STAGE(3)
+	.C_S_AXIS_DATA_WIDTH(512),
+    .C_S_AXIS_TUSER_WIDTH(128),
+    .STAGE_ID(3)  //valid: 0-4
 )
 stage3
 (
@@ -368,11 +404,25 @@ stage3
     .phv_in_valid			(stg2_phv_out_valid_w),
 	// output
     .phv_out				(stg3_phv_out),
-    .phv_out_valid			(stg3_phv_out_valid)
+    .phv_out_valid			(stg3_phv_out_valid),
+	//control path
+	.c_s_axis_tdata(c_s_axis_tdata_5),
+	.c_s_axis_tuser(c_s_axis_tuser_5),
+	.c_s_axis_tkeep(c_s_axis_tkeep_5),
+	.c_s_axis_tvalid(c_s_axis_tvalid_5),
+	.c_s_axis_tlast(c_s_axis_tlast_5),
+
+	.c_m_axis_tdata(c_s_axis_tdata_6),
+	.c_m_axis_tuser(c_s_axis_tuser_6),
+	.c_m_axis_tkeep(c_s_axis_tkeep_6),
+	.c_m_axis_tvalid(c_s_axis_tvalid_6),
+	.c_m_axis_tlast(c_s_axis_tlast_6)
 );
 
 stage #(
-	.STAGE(4)
+	.C_S_AXIS_DATA_WIDTH(512),
+    .C_S_AXIS_TUSER_WIDTH(128),
+    .STAGE_ID(4)  //valid: 0-4
 )
 stage4
 (
@@ -384,9 +434,20 @@ stage4
     .phv_in_valid			(stg3_phv_out_valid_w),
 	// output
     .phv_out				(stg4_phv_out),
-    .phv_out_valid			(stg4_phv_out_valid)
-);*/
+    .phv_out_valid			(stg4_phv_out_valid),
+	//control path
+	.c_s_axis_tdata(c_s_axis_tdata_6),
+	.c_s_axis_tuser(c_s_axis_tuser_6),
+	.c_s_axis_tkeep(c_s_axis_tkeep_6),
+	.c_s_axis_tvalid(c_s_axis_tvalid_6),
+	.c_s_axis_tlast(c_s_axis_tlast_6),
 
+	.c_m_axis_tdata(c_s_axis_tdata_7),
+	.c_m_axis_tuser(c_s_axis_tuser_7),
+	.c_m_axis_tkeep(c_s_axis_tkeep_7),
+	.c_m_axis_tvalid(c_s_axis_tvalid_7),
+	.c_m_axis_tlast(c_s_axis_tlast_7)
+);
 
 always @(posedge clk) begin
 	if (~aresetn) begin
