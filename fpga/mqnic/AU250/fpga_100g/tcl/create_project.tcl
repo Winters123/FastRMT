@@ -10,14 +10,14 @@ set proj_dir ./project_synth
 set SYN_FILES [list rtl/fpga.v]
 # lappend SYN_FILES rtl/fpga_core.v
 lappend SYN_FILES rtl/one_in_one_out/fpga_core.v
-
+#
 lappend SYN_FILES rtl/debounce_switch.v
 lappend SYN_FILES rtl/sync_signal.v
 # lappend SYN_FILES rtl/common/interface.v
 lappend SYN_FILES rtl/one_in_one_out/interface.v
 # lappend SYN_FILES rtl/common/port.v
 lappend SYN_FILES rtl/one_in_one_out/port.v
-
+#
 lappend SYN_FILES rtl/common/cpl_write.v
 lappend SYN_FILES rtl/common/cpl_op_mux.v
 lappend SYN_FILES rtl/common/desc_fetch.v
@@ -62,8 +62,8 @@ lappend SYN_FILES lib/pcie/rtl/pulse_merge.v
 lappend SYN_FILES lib_rmt/rmtv2/rmt_wrapper.v
 lappend SYN_FILES lib_rmt/rmtv2/pkt_filter.v
 lappend SYN_FILES lib_rmt/rmtv2/parser.v
-lappend SYN_FILES lib_rmt/rmtv2/sub_parser.v
 lappend SYN_FILES lib_rmt/rmtv2/deparser.v
+lappend SYN_FILES lib_rmt/rmtv2/sub_parser.v
 lappend SYN_FILES lib_rmt/rmtv2/sub_deparser.v
 lappend SYN_FILES lib_rmt/rmtv2/stage.v
 lappend SYN_FILES lib_rmt/rmtv2/action/action_engine.v
@@ -123,7 +123,7 @@ add_files [glob rtl/*.coe]
 add_files [glob rtl/*.mif]
 
 # for better simulation
-config_ip_cache -disable_cache
-update_ip_catalog
+#config_ip_cache -disable_cache
+#update_ip_catalog
 
 exit
