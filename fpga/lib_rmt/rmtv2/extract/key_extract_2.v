@@ -360,7 +360,7 @@ generate
                 case(c_state)
                     IDLE_C: begin
                         if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID &&
-                         control_flag == 16'hf1f2)begin
+                         control_flag == 16'hf2f1)begin
                             //c_wr_en <= 1'b1;
                             c_index <= c_s_axis_tdata[384+:8];
         
@@ -567,7 +567,7 @@ generate
 
                     PARSE_C: begin
                         // if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID && 
-                        //    control_flag == 16'hf1f2 && c_s_axis_tvalid) begin
+                        //    control_flag == 16'hf2f1 && c_s_axis_tvalid) begin
                         if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID && c_s_axis_tvalid) begin
                             c_m_axis_tdata <= 0;
                             c_m_axis_tuser <= 0;
