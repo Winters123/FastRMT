@@ -706,5 +706,4 @@ generate
     end
 endgenerate
 
-
 endmodule

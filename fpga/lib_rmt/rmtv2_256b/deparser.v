@@ -3,17 +3,26 @@
 `define SUB_DEPARSE(idx) \
 	if(parse_action[idx][0]) begin \
 		case(sub_depar_val_out_type[idx]) \
-			2'b01: pkts_tdata_stored_r[parse_action_ind[idx]<<3 +: 16] = sub_depar_val_out[idx][15:0]; \
-			2'b10: pkts_tdata_stored_r[parse_action_ind[idx]<<3 +: 32] = sub_depar_val_out[idx][31:0]; \
-			2'b11: pkts_tdata_stored_r[parse_action_ind[idx]<<3 +: 48] = sub_depar_val_out[idx][47:0]; \
+			2'b01: pkts_tdata_stored_r[parse_action_ind[idx]<<3 +: 16] = sub_depar_val_out_swapped[idx][32+:16]; \
+			2'b10: pkts_tdata_stored_r[parse_action_ind[idx]<<3 +: 32] = sub_depar_val_out_swapped[idx][16+:32]; \
+			2'b11: pkts_tdata_stored_r[parse_action_ind[idx]<<3 +: 48] = sub_depar_val_out_swapped[idx][0+:48]; \
 		endcase \
 	end \
+
+`define SWAP_BYTE_ORDER(idx) \
+	assign sub_depar_val_out_swapped[idx] = {	sub_depar_val_out[idx][0+:8], \
+												sub_depar_val_out[idx][8+:8], \
+												sub_depar_val_out[idx][16+:8], \
+												sub_depar_val_out[idx][24+:8], \
+												sub_depar_val_out[idx][32+:8], \
+												sub_depar_val_out[idx][40+:8]}; \
 
 module deparser #(
 	//in corundum with 100g ports, data width is 512b
 	parameter	C_AXIS_DATA_WIDTH = 256,
 	parameter	C_AXIS_TUSER_WIDTH = 128,
-	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256
+	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256,
+	parameter	DEPARSER_MOD_ID = 3'b101
 )
 (
 	input									clk,
@@ -37,7 +46,14 @@ module deparser #(
 	output reg [C_AXIS_TUSER_WIDTH-1:0]		depar_out_tuser,
 	output reg								depar_out_tvalid,
 	output reg								depar_out_tlast,
-	input									depar_out_tready
+	input									depar_out_tready,
+
+	// control path
+	input [C_AXIS_DATA_WIDTH-1:0]			ctrl_s_axis_tdata,
+	input [C_AXIS_TUSER_WIDTH-1:0]			ctrl_s_axis_tuser,
+	input [C_AXIS_DATA_WIDTH/8-1:0]			ctrl_s_axis_tkeep,
+	input									ctrl_s_axis_tvalid,
+	input									ctrl_s_axis_tlast
 );
 
 
@@ -107,8 +123,20 @@ reg [9:0]					sub_depar_phv_in_valid_nxt;
 reg [5:0]					sub_depar_act[0:9];
 
 wire [47:0]					sub_depar_val_out [0:9];
+wire [47:0]					sub_depar_val_out_swapped [0:9];
 wire [1:0]					sub_depar_val_out_type [0:9];
 wire [9:0]					sub_depar_val_out_valid;
+
+`SWAP_BYTE_ORDER(0)
+`SWAP_BYTE_ORDER(1)
+`SWAP_BYTE_ORDER(2)
+`SWAP_BYTE_ORDER(3)
+`SWAP_BYTE_ORDER(4)
+`SWAP_BYTE_ORDER(5)
+`SWAP_BYTE_ORDER(6)
+`SWAP_BYTE_ORDER(7)
+`SWAP_BYTE_ORDER(8)
+`SWAP_BYTE_ORDER(9)
 
 always @(*) begin
 
@@ -137,7 +165,7 @@ always @(*) begin
 			if (!pkt_fifo_empty && !phv_fifo_empty) begin // both pkt and phv fifo are not empty
 				pkts_tdata_stored_r[0+:C_AXIS_DATA_WIDTH] = pkt_fifo_tdata;
 				pkts_tuser_stored_r[0+:C_AXIS_TUSER_WIDTH] = phv_fifo_out[0+:128]; // first 128b of PHV
-				pkts_tkeep_stored_r[0+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tuser;
+				pkts_tkeep_stored_r[0+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tkeep;
 				pkts_tlast_stored_r[0] = pkt_fifo_tlast;
 				
 				pkt_fifo_rd_en = 1;
@@ -348,7 +376,112 @@ generate
 	end
 endgenerate
 
+/*================Control Path====================*/
+wire [C_AXIS_DATA_WIDTH-1:0] ctrl_s_axis_tdata_swapped;
 
+assign ctrl_s_axis_tdata_swapped = {	ctrl_s_axis_tdata[0+:8],
+										ctrl_s_axis_tdata[8+:8],
+										ctrl_s_axis_tdata[16+:8],
+										ctrl_s_axis_tdata[24+:8],
+										ctrl_s_axis_tdata[32+:8],
+										ctrl_s_axis_tdata[40+:8],
+										ctrl_s_axis_tdata[48+:8],
+										ctrl_s_axis_tdata[56+:8],
+										ctrl_s_axis_tdata[64+:8],
+										ctrl_s_axis_tdata[72+:8],
+										ctrl_s_axis_tdata[80+:8],
+										ctrl_s_axis_tdata[88+:8],
+										ctrl_s_axis_tdata[96+:8],
+										ctrl_s_axis_tdata[104+:8],
+										ctrl_s_axis_tdata[112+:8],
+										ctrl_s_axis_tdata[120+:8],
+										ctrl_s_axis_tdata[128+:8],
+										ctrl_s_axis_tdata[136+:8],
+										ctrl_s_axis_tdata[144+:8],
+										ctrl_s_axis_tdata[152+:8],
+										ctrl_s_axis_tdata[160+:8],
+										ctrl_s_axis_tdata[168+:8],
+										ctrl_s_axis_tdata[176+:8],
+										ctrl_s_axis_tdata[184+:8],
+										ctrl_s_axis_tdata[192+:8],
+										ctrl_s_axis_tdata[200+:8],
+										ctrl_s_axis_tdata[208+:8],
+										ctrl_s_axis_tdata[216+:8],
+										ctrl_s_axis_tdata[224+:8],
+										ctrl_s_axis_tdata[232+:8],
+										ctrl_s_axis_tdata[240+:8],
+										ctrl_s_axis_tdata[248+:8]};
+
+
+reg	[7:0]						ctrl_wr_ram_addr, ctrl_wr_ram_addr_next;
+reg	[259:0]						ctrl_wr_ram_data, ctrl_wr_ram_data_next;
+reg								ctrl_wr_ram_en;
+wire [7:0]						ctrl_mod_id;
+
+assign ctrl_mod_id = ctrl_s_axis_tdata[112+:8];
+
+localparam	WAIT_FIRST_PKT = 0,
+			WAIT_SECOND_PKT = 1,
+			WAIT_THIRD_PKT = 2,
+			WRITE_RAM = 3;
+
+reg [2:0] ctrl_state, ctrl_state_next;
+
+always @(*) begin
+	ctrl_state_next = ctrl_state;
+	ctrl_wr_ram_addr_next = ctrl_wr_ram_addr;
+	ctrl_wr_ram_data_next = ctrl_wr_ram_data;
+	ctrl_wr_ram_en = 0;
+
+	case (ctrl_state)
+		WAIT_FIRST_PKT: begin
+			// 1st ctrl packet
+			if (ctrl_s_axis_tvalid) begin
+				ctrl_state_next = WAIT_SECOND_PKT;
+			end
+		end
+		WAIT_SECOND_PKT: begin
+			// 2nd ctrl packet, we can check module ID
+			if (ctrl_s_axis_tvalid) begin
+				if (ctrl_mod_id[2:0]==DEPARSER_MOD_ID) begin
+					ctrl_state_next = WAIT_THIRD_PKT;
+
+					ctrl_wr_ram_addr_next = ctrl_s_axis_tdata[128+:8];
+				end
+			end
+		end
+		WAIT_THIRD_PKT: begin // first half of ctrl_wr_ram_data
+			if (ctrl_s_axis_tvalid) begin
+				ctrl_state_next = WRITE_RAM;
+				ctrl_wr_ram_data_next[259:4] = ctrl_s_axis_tdata_swapped[255:0];
+			end
+		end
+		WRITE_RAM: begin // second half of ctrl_wr_ram_data
+			if (ctrl_s_axis_tvalid) begin
+				ctrl_state_next = WAIT_FIRST_PKT;
+				ctrl_wr_ram_en = 1;
+				ctrl_wr_ram_data_next[3:0] = ctrl_s_axis_tdata_swapped[255:252];
+			end
+		end
+	endcase
+end
+
+always @(posedge clk) begin
+	if (~aresetn) begin
+		//
+		ctrl_state <= WAIT_FIRST_PKT;
+		//
+		ctrl_wr_ram_addr <= 0;
+		ctrl_wr_ram_data <= 0;
+	end
+	else begin
+		ctrl_state <= ctrl_state_next;
+		ctrl_wr_ram_addr <= ctrl_wr_ram_addr_next;
+		ctrl_wr_ram_data <= ctrl_wr_ram_data_next;
+	end
+end
+
+// =============================================================== //
 // parse_act_ram_ip #(
 // 	.C_INIT_FILE_NAME	("./alu_2.mif"),
 // 	.C_LOAD_INIT_FILE	(1)
@@ -358,10 +491,10 @@ parse_act_ram
 (
 	// write port
 	.clka		(clk),
-	.addra		(),
-	.dina		(),
-	.ena		(),
-	.wea		(),
+	.addra		(ctrl_wr_ram_addr[3:0]),
+	.dina		(ctrl_wr_ram_data),
+	.ena		(1'b1),
+	.wea		(ctrl_wr_ram_en),
 
 	//
 	.clkb		(clk),
