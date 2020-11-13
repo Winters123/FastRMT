@@ -261,7 +261,7 @@ generate
                 case(c_state)
                     IDLE_C: begin
                         if(c_s_axis_tvalid) begin
-                            if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == LOOKUP_ID && control_flag == 16'hf1f2) begin
+                            if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == LOOKUP_ID && control_flag == 16'hf2f1) begin
                                 //TCAM entry
                                 if(resv == 4'b0) begin
                                     c_wr_en_cam <= 1'b1;

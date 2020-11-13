@@ -443,7 +443,7 @@ always @(posedge axis_clk or negedge aresetn) begin
     else begin
         case(c_state)
             IDLE_C: begin
-                if(c_s_axis_tvalid && mod_id[2:0] == PARSER_ID && control_flag == 16'hf1f2)begin
+                if(c_s_axis_tvalid && mod_id[2:0] == PARSER_ID && control_flag == 16'hf2f1)begin
                     c_wr_en <= 1'b1;
                     c_index <= c_s_axis_tdata[384+:8];
 
