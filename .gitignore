@@ -3,7 +3,7 @@
 *.pyc
 *.vvp
 *.kate-swp
-*.bit
+rev/
 vivado*
 project_synth/
 
