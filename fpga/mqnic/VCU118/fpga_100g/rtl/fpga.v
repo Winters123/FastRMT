@@ -154,7 +154,7 @@ parameter AXIS_ETH_KEEP_WIDTH = AXIS_ETH_DATA_WIDTH/8;
 
 // Clock and reset
 wire pcie_user_clk;
-wire pcie_user_clk_250m;
+//wire pcie_user_clk_250m;
 wire pcie_user_reset;
 
 wire clk_125mhz_ibufg;
@@ -172,14 +172,14 @@ wire mmcm_rst = pcie_user_reset;
 wire mmcm_locked;
 wire mmcm_clkfb;
 
-  clk_wiz_0 clk_wiz_250_100
-   (
+//  clk_wiz_0 clk_wiz_250_100
+//   (
     // Clock out ports
-    .clk_out1(pcie_user_clk),     // output clk_out1
+//    .clk_out1(pcie_user_clk),     // output clk_out1
     // Status and control signals
-    .reset(reset), // input reset
+//    .reset(reset), // input reset
    // Clock in ports
-    .clk_in1(pcie_user_clk_250m));      // input clk_in1
+//    .clk_in1(pcie_user_clk_250m));      // input clk_in1
 
 
 IBUFGDS #(
@@ -581,7 +581,7 @@ pcie4_uscale_plus_inst (
     .pci_exp_txp(pcie_tx_p),
     .pci_exp_rxn(pcie_rx_n),
     .pci_exp_rxp(pcie_rx_p),
-    .user_clk(pcie_user_clk_250m),
+    .user_clk(pcie_user_clk),
     .user_reset(pcie_user_reset),
     .user_lnk_up(),
 
