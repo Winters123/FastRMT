@@ -3,9 +3,9 @@
 `define SUB_DEPARSE(idx) \
 	if(parse_action[idx][0]) begin \
 		case(sub_depar_val_out_type[idx]) \
-			2'b01: pkts_tdata_stored_r[parse_action_ind[idx]<<3 +: 16] = sub_depar_val_out_swapped[idx][32+:16]; \
-			2'b10: pkts_tdata_stored_r[parse_action_ind[idx]<<3 +: 32] = sub_depar_val_out_swapped[idx][16+:32]; \
-			2'b11: pkts_tdata_stored_r[parse_action_ind[idx]<<3 +: 48] = sub_depar_val_out_swapped[idx][0+:48]; \
+			2'b01: pkts_tdata_stored_r[parse_action_ind[idx]*8 +: 16] = sub_depar_val_out_swapped[idx][32+:16]; \
+			2'b10: pkts_tdata_stored_r[parse_action_ind[idx]*8 +: 32] = sub_depar_val_out_swapped[idx][16+:32]; \
+			2'b11: pkts_tdata_stored_r[parse_action_ind[idx]*8 +: 48] = sub_depar_val_out_swapped[idx][0+:48]; \
 		endcase \
 	end \
 

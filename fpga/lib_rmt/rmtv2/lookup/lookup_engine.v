@@ -656,11 +656,8 @@ generate
                 endcase
             end
         end
-        // tcam1 for lookup
 
-		// debug
-		wire [196:0] debug_wire;
-		assign debug_wire = c_s_axis_tdata_swapped[59+:197];
+        // tcam1 for lookup
         cam_top # ( 
             .C_DEPTH			(16),
             // .C_WIDTH			(256),
