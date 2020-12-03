@@ -161,7 +161,8 @@ localparam IDLE_C = 0,
            CAM_TMP_ENTRY = 2,
            ACT_TMP_ENTRY_WAIT = 3,
            ACT_TMP_ENTRY_WAIT_2 = 4,
-           ACT_TMP_ENTRY = 5;
+           ACT_TMP_ENTRY = 5,
+		   FLUSH_REST_C = 6;
 
 generate 
     if(C_S_AXIS_DATA_WIDTH == 512) begin
@@ -574,14 +575,25 @@ generate
                             c_m_axis_tlast_r <= c_s_axis_tlast;
                             
                             if(c_s_axis_tvalid && c_s_axis_tlast) c_state <= IDLE_C;
-                            // else begin
-                            //     //c_state <= IDLE_C;
-                            //     c_m_axis_tvalid_r <= 1'b0;
-                            //     c_m_axis_tlast_r <= 1'b0;
-                            // end
+							else c_state <= FLUSH_REST_C;
                         end
-
                     end
+					FLUSH_REST_C: begin
+						c_m_axis_tdata <= c_m_axis_tdata_r;
+						c_m_axis_tuser <= c_m_axis_tuser_r;
+						c_m_axis_tkeep <= c_m_axis_tkeep_r; 
+						c_m_axis_tvalid <= c_m_axis_tvalid_r; 
+						c_m_axis_tlast <= c_m_axis_tlast_r;
+
+                       	c_m_axis_tdata_r <= c_s_axis_tdata;
+                       	c_m_axis_tuser_r <= c_s_axis_tuser;
+                       	c_m_axis_tkeep_r <= c_s_axis_tkeep;
+                       	c_m_axis_tvalid_r <= c_s_axis_tvalid;
+                       	c_m_axis_tlast_r <= c_s_axis_tlast;
+                            
+                        if(c_s_axis_tvalid && c_s_axis_tlast) 
+							c_state <= IDLE_C;
+					end
 
                     CAM_TMP_ENTRY: begin
                         c_m_axis_tvalid_r <= 1'b0;

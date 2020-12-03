@@ -263,7 +263,7 @@ always@(*) begin
 			`SUB_PARSE(8)
 			`SUB_PARSE(9)
 
-
+			// Tao: manually set output port to 1 for eazy test
 			pkt_hdr_vec_r ={val_6B_swapped[7], val_6B_swapped[6], val_6B_swapped[5], val_6B_swapped[4], val_6B_swapped[3], val_6B_swapped[2], val_6B_swapped[1], val_6B_swapped[0],
 							val_4B_swapped[7], val_4B_swapped[6], val_4B_swapped[5], val_4B_swapped[4], val_4B_swapped[3], val_4B_swapped[2], val_4B_swapped[1], val_4B_swapped[0],
 							val_2B_swapped[7], val_2B_swapped[6], val_2B_swapped[5], val_2B_swapped[4], val_2B_swapped[3], val_2B_swapped[2], val_2B_swapped[1], val_2B_swapped[0],
@@ -329,12 +329,6 @@ reg [C_S_AXIS_DATA_WIDTH/8-1:0]	ctrl_m_axis_tkeep_next;
 reg								ctrl_m_axis_tlast_next;
 reg								ctrl_m_axis_tvalid_next;
 
-reg [C_S_AXIS_DATA_WIDTH-1:0]	ctrl_s_axis_tdata_d1;
-reg [C_S_AXIS_TUSER_WIDTH-1:0]	ctrl_s_axis_tuser_d1;
-reg [C_S_AXIS_DATA_WIDTH/8-1:0]	ctrl_s_axis_tkeep_d1;
-reg								ctrl_s_axis_tlast_d1;
-reg								ctrl_s_axis_tvalid_d1;
-
 wire [C_S_AXIS_DATA_WIDTH-1:0] ctrl_s_axis_tdata_swapped;
 
 assign ctrl_s_axis_tdata_swapped = {	ctrl_s_axis_tdata[0+:8],
@@ -381,20 +375,19 @@ assign ctrl_mod_id = ctrl_s_axis_tdata[112+:8];
 localparam	WAIT_FIRST_PKT = 0,
 			WAIT_SECOND_PKT = 1,
 			WAIT_THIRD_PKT = 2,
-			WRITE_RAM = 3;
+			WRITE_RAM = 3,
+			FLUSH_REST_C = 4;
 
 reg [2:0] ctrl_state, ctrl_state_next;
 
 always @(*) begin
-	ctrl_m_axis_tdata_next = ctrl_s_axis_tdata_d1;
-	ctrl_m_axis_tuser_next = ctrl_s_axis_tuser_d1;
-	ctrl_m_axis_tkeep_next = ctrl_s_axis_tkeep_d1;
-	ctrl_m_axis_tlast_next = ctrl_s_axis_tlast_d1;
-	ctrl_m_axis_tvalid_next = ctrl_s_axis_tvalid_d1;
+	ctrl_m_axis_tdata_next = ctrl_s_axis_tdata;
+	ctrl_m_axis_tuser_next = ctrl_s_axis_tuser;
+	ctrl_m_axis_tkeep_next = ctrl_s_axis_tkeep;
+	ctrl_m_axis_tlast_next = ctrl_s_axis_tlast;
+	ctrl_m_axis_tvalid_next = ctrl_s_axis_tvalid;
 
 	ctrl_state_next = ctrl_state;
-	ctrl_wr_ram_addr_next = ctrl_wr_ram_addr;
-	ctrl_wr_ram_data_next = ctrl_wr_ram_data;
 	ctrl_wr_ram_en = 0;
 
 	case (ctrl_state)
@@ -410,22 +403,32 @@ always @(*) begin
 				if (ctrl_mod_id[2:0]==PARSER_MOD_ID) begin
 					ctrl_state_next = WAIT_THIRD_PKT;
 
-					ctrl_wr_ram_addr_next = ctrl_s_axis_tdata[128+:8];
+					ctrl_wr_ram_addr = ctrl_s_axis_tdata[128+:8];
+				end
+				else begin
+					ctrl_state_next = FLUSH_REST_C;
 				end
 			end
 		end
 		WAIT_THIRD_PKT: begin // first half of ctrl_wr_ram_data
 			if (ctrl_s_axis_tvalid) begin
 				ctrl_state_next = WRITE_RAM;
-				ctrl_wr_ram_data_next[259:4] = ctrl_s_axis_tdata_swapped[255:0];
+				ctrl_wr_ram_data[259:4] = ctrl_s_axis_tdata_swapped[255:0];
 			end
 		end
 		WRITE_RAM: begin // second half of ctrl_wr_ram_data
 			if (ctrl_s_axis_tvalid) begin
-				ctrl_state_next = WAIT_FIRST_PKT;
+				if (ctrl_s_axis_tlast) 
+					ctrl_state_next = WAIT_FIRST_PKT;
+				else
+					ctrl_state_next = FLUSH_REST_C;
 				ctrl_wr_ram_en = 1;
-				ctrl_wr_ram_data_next[3:0] = ctrl_s_axis_tdata_swapped[255:252];
+				ctrl_wr_ram_data[3:0] = ctrl_s_axis_tdata_swapped[255:252];
 			end
+		end
+		FLUSH_REST_C: begin
+			if (ctrl_s_axis_tvalid && ctrl_s_axis_tlast)
+				ctrl_state_next = WAIT_FIRST_PKT;
 		end
 	endcase
 end
@@ -434,42 +437,21 @@ always @(posedge axis_clk) begin
 	if (~aresetn) begin
 		//
 		ctrl_state <= WAIT_FIRST_PKT;
+
 		ctrl_m_axis_tdata <= 0;
 		ctrl_m_axis_tuser <= 0;
 		ctrl_m_axis_tkeep <= 0;
 		ctrl_m_axis_tvalid <= 0;
 		ctrl_m_axis_tlast <= 0;
-		//
-		ctrl_wr_ram_addr <= 0;
-		ctrl_wr_ram_data <= 0;
 	end
 	else begin
 		ctrl_state <= ctrl_state_next;
-		ctrl_wr_ram_addr <= ctrl_wr_ram_addr_next;
-		ctrl_wr_ram_data <= ctrl_wr_ram_data_next;
 
 		ctrl_m_axis_tdata <= ctrl_m_axis_tdata_next;
 		ctrl_m_axis_tuser <= ctrl_m_axis_tuser_next;
 		ctrl_m_axis_tkeep <= ctrl_m_axis_tkeep_next;
 		ctrl_m_axis_tlast <= ctrl_m_axis_tlast_next;
 		ctrl_m_axis_tvalid <= ctrl_m_axis_tvalid_next;
-	end
-end
-
-always @(posedge axis_clk) begin
-	if (~aresetn) begin
-		ctrl_s_axis_tdata_d1 <= 0;
-		ctrl_s_axis_tuser_d1 <= 0;
-		ctrl_s_axis_tkeep_d1 <= 0;
-		ctrl_s_axis_tlast_d1 <= 0;
-		ctrl_s_axis_tvalid_d1 <= 0;
-	end
-	else begin
-		ctrl_s_axis_tdata_d1 <= ctrl_s_axis_tdata;
-		ctrl_s_axis_tuser_d1 <= ctrl_s_axis_tuser;
-		ctrl_s_axis_tkeep_d1 <= ctrl_s_axis_tkeep;
-		ctrl_s_axis_tlast_d1 <= ctrl_s_axis_tlast;
-		ctrl_s_axis_tvalid_d1 <= ctrl_s_axis_tvalid;
 	end
 end
 

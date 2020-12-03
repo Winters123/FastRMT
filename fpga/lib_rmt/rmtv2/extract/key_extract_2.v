@@ -261,11 +261,11 @@ reg                                 c_m_axis_tlast_r;
 
 
 
-localparam IDLE_C = 1,
-           PARSE_C = 2,
-           WRITE_OFF_C = 3,
-           WRITE_MASK_C = 4,
-		   FLUSH_PKT_C = 5;
+localparam IDLE_C = 0,
+           PARSE_C = 1,
+           WRITE_OFF_C = 2,
+           WRITE_MASK_C = 3,
+		   FLUSH_PKT_C = 4;
 
 generate 
     if(C_S_AXIS_DATA_WIDTH == 512) begin
@@ -619,11 +619,6 @@ generate
 								c_state <= IDLE_C;
 							else
 								c_state <= FLUSH_PKT_C;
-                            // else begin
-                            //     //c_state <= IDLE_C;
-                            //     c_m_axis_tvalid_r <= 1'b0;
-                            //     c_m_axis_tlast_r <= 1'b0;
-                            // end
                         end
 
                     end
