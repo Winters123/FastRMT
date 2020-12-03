@@ -264,7 +264,8 @@ reg                                 c_m_axis_tlast_r;
 localparam IDLE_C = 1,
            PARSE_C = 2,
            WRITE_OFF_C = 3,
-           WRITE_MASK_C = 4;
+           WRITE_MASK_C = 4,
+		   FLUSH_PKT_C = 5;
 
 generate 
     if(C_S_AXIS_DATA_WIDTH == 512) begin
@@ -476,7 +477,7 @@ generate
         assign mod_id = c_s_axis_tdata[112+:8];
         //4'b0 for key offset
         //4'b1 for key mask
-        assign resv = c_s_axis_tdata[124+:4];
+        assign resv = c_s_axis_tdata[120+:4];
         assign control_flag = c_s_axis_tdata[64:16];
 		wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
 		assign c_s_axis_tdata_swapped = {	c_s_axis_tdata[0+:8],
@@ -614,7 +615,10 @@ generate
                             c_m_axis_tvalid_r <= c_s_axis_tvalid;
                             c_m_axis_tlast_r <= c_s_axis_tlast;
                             
-                            if(c_s_axis_tvalid && c_s_axis_tlast) c_state <= IDLE_C;
+                            if(c_s_axis_tvalid && c_s_axis_tlast) 
+								c_state <= IDLE_C;
+							else
+								c_state <= FLUSH_PKT_C;
                             // else begin
                             //     //c_state <= IDLE_C;
                             //     c_m_axis_tvalid_r <= 1'b0;
@@ -661,6 +665,23 @@ generate
                             c_state <= c_state;
                         end
                     end
+
+					FLUSH_PKT_C: begin
+                        c_m_axis_tdata <= c_m_axis_tdata_r;
+                        c_m_axis_tuser <= c_m_axis_tuser_r;
+                        c_m_axis_tkeep <= c_m_axis_tkeep_r;
+                        c_m_axis_tvalid <= c_m_axis_tvalid_r;
+                        c_m_axis_tlast <= c_m_axis_tlast_r;
+
+                        c_m_axis_tdata_r <= c_s_axis_tdata;
+                        c_m_axis_tuser_r <= c_s_axis_tuser;
+                        c_m_axis_tkeep_r <= c_s_axis_tkeep;
+                        c_m_axis_tvalid_r <= c_s_axis_tvalid;
+                        c_m_axis_tlast_r <= c_s_axis_tlast;
+                            
+                        if(c_s_axis_tvalid && c_s_axis_tlast) 
+							c_state <= IDLE_C;
+					end
 
                 endcase
             end

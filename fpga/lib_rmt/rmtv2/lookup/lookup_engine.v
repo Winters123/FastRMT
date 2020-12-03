@@ -429,7 +429,7 @@ generate
     //NOTE: data width is 256b
     else begin
         assign mod_id = c_s_axis_tdata[112+:8];
-        assign resv = c_s_axis_tdata[124+:4];
+        assign resv = c_s_axis_tdata[120+:4];
         assign control_flag = c_s_axis_tdata[64+:16];
 		wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
 		assign c_s_axis_tdata_swapped = {	c_s_axis_tdata[0+:8],
@@ -658,6 +658,9 @@ generate
         end
         // tcam1 for lookup
 
+		// debug
+		wire [196:0] debug_wire;
+		assign debug_wire = c_s_axis_tdata_swapped[59+:197];
         cam_top # ( 
             .C_DEPTH			(16),
             // .C_WIDTH			(256),
