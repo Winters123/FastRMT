@@ -11,3 +11,4 @@ xsim.dir/
 xvlog*
 
 tb_demo.v
+*.bit
