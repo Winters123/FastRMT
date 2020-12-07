@@ -39,7 +39,9 @@ module deparser #(
 
 );
 
+// TODO: retrive vlan_id from PHV vector
 wire  [11:0]   vlan_id;
+// reg [11:0]   vlan_id;
 
 wire [259:0]  bram_out;
 
@@ -166,7 +168,7 @@ always @(posedge clk or negedge aresetn) begin
                     // deparse_tkeep_stored_r[(C_S_AXIS_DATA_WIDTH/8)-1:0] <= pkt_fifo_tkeep;
                     // deparse_tlast_stored_r[0] <= pkt_fifo_tlast;
 
-                    pkt_fifo_rd_en <= 1'b1;
+                    // pkt_fifo_rd_en <= 1'b1;
                     
                     // if(pkt_fifo_tlast) begin
                     //     //TODO needs to wait for the RAM
@@ -200,7 +202,7 @@ always @(posedge clk or negedge aresetn) begin
                 deparse_phv_stored_r <= phv_fifo_out;
                 deparse_phv_reg_valid_in <= 10'b1111111111;
                 
-
+				// vlan_id <= pkt_fifo_tdata[116 +: 12];
                 deparse_tdata_stored_r[C_S_AXIS_DATA_WIDTH-1:0] <= pkt_fifo_tdata;
                 deparse_tuser_stored_r[C_S_AXIS_TUSER_WIDTH-1:0] <= pkt_fifo_tuser;
                 deparse_tkeep_stored_r[(C_S_AXIS_DATA_WIDTH/8)-1:0] <= pkt_fifo_tkeep;
@@ -223,7 +225,7 @@ always @(posedge clk or negedge aresetn) begin
                 deparse_tkeep_stored_r[2*(C_S_AXIS_DATA_WIDTH/8)-1:C_S_AXIS_DATA_WIDTH/8] <= pkt_fifo_tkeep;
                 deparse_tlast_stored_r[1] <= pkt_fifo_tlast;
 
-                pkt_fifo_rd_en <= 1'b0;
+                pkt_fifo_rd_en <= 1'b1;
                 //TODO push the inputs to sub_deparser
                 deparse_phv_reg_valid_in <= 10'b0;
                 sub_parse_action_valid_in <= 10'b1111111111;

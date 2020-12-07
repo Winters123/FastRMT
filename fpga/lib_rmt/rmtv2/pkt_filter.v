@@ -54,6 +54,9 @@ reg									r_s_tready;
 reg [1:0] state, state_next;
 //1 for control, 0 for data;
 reg 								c_switch;
+wire								w_c_switch;
+
+assign w_c_switch = c_switch;
 
 assign IP_flag = s_axis_tdata[143:128];
 assign UDP_flag = s_axis_tdata[223:216];
@@ -91,6 +94,10 @@ always @(*) begin
 				else begin
 					r_tvalid = 0;
 					state_next = DROP_PKT;
+				end
+
+				if (s_axis_tlast) begin
+					state_next = WAIT_FIRST_PKT;
 				end
 			end
 
@@ -142,13 +149,13 @@ always @(posedge clk or negedge aresetn) begin
 	else begin
 		state <= state_next;
 
-		if(!c_switch) begin
+		if(!w_c_switch) begin
 			m_axis_tdata <= r_tdata;
 			m_axis_tkeep <= r_tkeep;
 			m_axis_tuser <= r_tuser;
 			m_axis_tlast <= r_tlast;
-
 			m_axis_tvalid <= r_tvalid;
+
 			s_axis_tready <= r_s_tready;
 			//reset control path output 
 			c_m_axis_tdata <= 0;
@@ -159,6 +166,12 @@ always @(posedge clk or negedge aresetn) begin
 			c_m_axis_tvalid <= 0;
 		end
 		else begin
+			m_axis_tdata <= 0;
+			m_axis_tkeep <= 0;
+			m_axis_tuser <= 0;
+			m_axis_tlast <= 0;
+			m_axis_tvalid <= 0;
+			// 
 			c_m_axis_tdata <= r_tdata;
 			c_m_axis_tkeep <= r_tkeep;
 			c_m_axis_tuser <= r_tuser;

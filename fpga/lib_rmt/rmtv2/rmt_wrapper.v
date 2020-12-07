@@ -158,8 +158,8 @@ fifo_generator_705b pkt_fifo (
 fifo_generator_512b phv_fifo_1 (
   .clk(clk),                  // input wire clk
   .srst(~aresetn),                // input wire srst
-  .din(stg0_phv_out[511:0]),                  // input wire [511 : 0] din
-  .wr_en(stg0_phv_out_valid_w),              // input wire wr_en
+  .din(stg4_phv_out[511:0]),                  // input wire [511 : 0] din
+  .wr_en(stg4_phv_out_valid_w),              // input wire wr_en
   .rd_en(phv_fifo_rd_en),              // input wire rd_en
   .dout(low_phv_out),                // output wire [511 : 0] dout
   .full(),                // output wire full
@@ -171,8 +171,8 @@ fifo_generator_512b phv_fifo_1 (
 fifo_generator_522b phv_fifo_2 (
   .clk(clk),                  // input wire clk
   .srst(~aresetn),                // input wire srst
-  .din(stg0_phv_out[1123:512]),                  // input wire [521 : 0] din
-  .wr_en(stg0_phv_out_valid_w),              // input wire wr_en
+  .din(stg4_phv_out[1123:512]),                  // input wire [521 : 0] din
+  .wr_en(stg4_phv_out_valid_w),              // input wire wr_en
   .rd_en(phv_fifo_rd_en),              // input wire rd_en
   .dout(high_phv_out),                // output wire [521 : 0] dout
   .full(),                // output wire full
@@ -285,49 +285,6 @@ stage0
 	.c_m_axis_tvalid(c_s_axis_tvalid_3),
 	.c_m_axis_tlast(c_s_axis_tlast_3)
 );
-
-
-
-deparser #(
-	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
-	.C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
-	.C_PKT_VEC_WIDTH(),
-    .DEPARSER_ID()
-)
-phv_deparser (
-	.clk					(clk),
-	.aresetn				(aresetn),
-
-	//data plane
-	.pkt_fifo_tdata			(tdata_fifo),
-	.pkt_fifo_tkeep			(tkeep_fifo),
-	.pkt_fifo_tuser			(tuser_fifo),
-	.pkt_fifo_tlast			(tlast_fifo),
-	.pkt_fifo_empty			(pkt_fifo_empty),
-	// output from STAGE
-	.pkt_fifo_rd_en			(pkt_fifo_rd_en),
-
-	.phv_fifo_out			(phv_fifo_out_w),
-	.phv_fifo_empty			(phv_fifo_empty),
-	.phv_fifo_rd_en			(phv_fifo_rd_en),
-	// output
-	.depar_out_tdata		(m_axis_tdata),
-	.depar_out_tkeep		(m_axis_tkeep),
-	.depar_out_tuser		(m_axis_tuser),
-	.depar_out_tvalid		(m_axis_tvalid),
-	.depar_out_tlast		(m_axis_tlast),
-	// input
-	.depar_out_tready		(m_axis_tready),
-
-	//control path
-	.c_s_axis_tdata(c_s_axis_tdata_7),
-	.c_s_axis_tuser(c_s_axis_tuser_7),
-	.c_s_axis_tkeep(c_s_axis_tkeep_7),
-	.c_s_axis_tvalid(c_s_axis_tvalid_7),
-	.c_s_axis_tlast(c_s_axis_tlast_7)
-);
-
-
 
 stage #(
 	.C_S_AXIS_DATA_WIDTH(512),
@@ -447,6 +404,46 @@ stage4
 	.c_m_axis_tkeep(c_s_axis_tkeep_7),
 	.c_m_axis_tvalid(c_s_axis_tvalid_7),
 	.c_m_axis_tlast(c_s_axis_tlast_7)
+);
+
+
+deparser #(
+	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+	.C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+	.C_PKT_VEC_WIDTH(),
+    .DEPARSER_ID()
+)
+phv_deparser (
+	.clk					(clk),
+	.aresetn				(aresetn),
+
+	//data plane
+	.pkt_fifo_tdata			(tdata_fifo),
+	.pkt_fifo_tkeep			(tkeep_fifo),
+	.pkt_fifo_tuser			(tuser_fifo),
+	.pkt_fifo_tlast			(tlast_fifo),
+	.pkt_fifo_empty			(pkt_fifo_empty),
+	// output from STAGE
+	.pkt_fifo_rd_en			(pkt_fifo_rd_en),
+
+	.phv_fifo_out			(phv_fifo_out_w),
+	.phv_fifo_empty			(phv_fifo_empty),
+	.phv_fifo_rd_en			(phv_fifo_rd_en),
+	// output
+	.depar_out_tdata		(m_axis_tdata),
+	.depar_out_tkeep		(m_axis_tkeep),
+	.depar_out_tuser		(m_axis_tuser),
+	.depar_out_tvalid		(m_axis_tvalid),
+	.depar_out_tlast		(m_axis_tlast),
+	// input
+	.depar_out_tready		(m_axis_tready),
+
+	//control path
+	.c_s_axis_tdata(c_s_axis_tdata_7),
+	.c_s_axis_tuser(c_s_axis_tuser_7),
+	.c_s_axis_tkeep(c_s_axis_tkeep_7),
+	.c_s_axis_tvalid(c_s_axis_tvalid_7),
+	.c_s_axis_tlast(c_s_axis_tlast_7)
 );
 
 always @(posedge clk) begin

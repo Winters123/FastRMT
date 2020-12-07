@@ -111,35 +111,35 @@ assign vlan_id = phv_in[140:129];
 
 //locate those containers
 always @(posedge clk) begin
-    cont_6B[7] <= phv_in[PHV_LEN-1            -: width_6B];
-    cont_6B[6] <= phv_in[PHV_LEN-1-  width_6B -: width_6B];
-    cont_6B[5] <= phv_in[PHV_LEN-1-2*width_6B -: width_6B];
-    cont_6B[4] <= phv_in[PHV_LEN-1-3*width_6B -: width_6B];
-    cont_6B[3] <= phv_in[PHV_LEN-1-4*width_6B -: width_6B];
-    cont_6B[2] <= phv_in[PHV_LEN-1-5*width_6B -: width_6B];
-    cont_6B[1] <= phv_in[PHV_LEN-1-6*width_6B -: width_6B];
-    cont_6B[0] <= phv_in[PHV_LEN-1-7*width_6B -: width_6B];
-    cont_4B[7] <= phv_in[PHV_LEN-1-8*width_6B           -: width_4B];
-    cont_4B[6] <= phv_in[PHV_LEN-1-8*width_6B-  width_4B -: width_4B];
-    cont_4B[5] <= phv_in[PHV_LEN-1-8*width_6B-2*width_4B -: width_4B];
-    cont_4B[4] <= phv_in[PHV_LEN-1-8*width_6B-3*width_4B -: width_4B];
-    cont_4B[3] <= phv_in[PHV_LEN-1-8*width_6B-4*width_4B -: width_4B];
-    cont_4B[2] <= phv_in[PHV_LEN-1-8*width_6B-5*width_4B -: width_4B];
-    cont_4B[1] <= phv_in[PHV_LEN-1-8*width_6B-6*width_4B -: width_4B];
-    cont_4B[0] <= phv_in[PHV_LEN-1-8*width_6B-7*width_4B -: width_4B];
-    cont_2B[7] <= phv_in[PHV_LEN-1-8*width_6B-8*width_4B            -: width_2B];
-    cont_2B[6] <= phv_in[PHV_LEN-1-8*width_6B-8*width_4B-  width_2B -: width_2B];
-    cont_2B[5] <= phv_in[PHV_LEN-1-8*width_6B-8*width_4B-2*width_2B -: width_2B];
-    cont_2B[4] <= phv_in[PHV_LEN-1-8*width_6B-8*width_4B-3*width_2B -: width_2B];
-    cont_2B[3] <= phv_in[PHV_LEN-1-8*width_6B-8*width_4B-4*width_2B -: width_2B];
-    cont_2B[2] <= phv_in[PHV_LEN-1-8*width_6B-8*width_4B-5*width_2B -: width_2B];
-    cont_2B[1] <= phv_in[PHV_LEN-1-8*width_6B-8*width_4B-6*width_2B -: width_2B];
-    cont_2B[0] <= phv_in[PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
-    com_op[0]  <= phv_in[255+100 -: 20];
-    com_op[1]  <= phv_in[255+80  -: 20];
-    com_op[2]  <= phv_in[255+60  -: 20];
-    com_op[3]  <= phv_in[255+40  -: 20];
-    com_op[4]  <= phv_in[255+20  -: 20];
+    cont_6B[7] <= phv_out_delay[0][PHV_LEN-1            -: width_6B];
+    cont_6B[6] <= phv_out_delay[0][PHV_LEN-1-  width_6B -: width_6B];
+    cont_6B[5] <= phv_out_delay[0][PHV_LEN-1-2*width_6B -: width_6B];
+    cont_6B[4] <= phv_out_delay[0][PHV_LEN-1-3*width_6B -: width_6B];
+    cont_6B[3] <= phv_out_delay[0][PHV_LEN-1-4*width_6B -: width_6B];
+    cont_6B[2] <= phv_out_delay[0][PHV_LEN-1-5*width_6B -: width_6B];
+    cont_6B[1] <= phv_out_delay[0][PHV_LEN-1-6*width_6B -: width_6B];
+    cont_6B[0] <= phv_out_delay[0][PHV_LEN-1-7*width_6B -: width_6B];
+    cont_4B[7] <= phv_out_delay[0][PHV_LEN-1-8*width_6B           -: width_4B];
+    cont_4B[6] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-  width_4B -: width_4B];
+    cont_4B[5] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-2*width_4B -: width_4B];
+    cont_4B[4] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-3*width_4B -: width_4B];
+    cont_4B[3] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-4*width_4B -: width_4B];
+    cont_4B[2] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-5*width_4B -: width_4B];
+    cont_4B[1] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-6*width_4B -: width_4B];
+    cont_4B[0] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-7*width_4B -: width_4B];
+    cont_2B[7] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B            -: width_2B];
+    cont_2B[6] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-  width_2B -: width_2B];
+    cont_2B[5] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-2*width_2B -: width_2B];
+    cont_2B[4] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-3*width_2B -: width_2B];
+    cont_2B[3] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-4*width_2B -: width_2B];
+    cont_2B[2] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-5*width_2B -: width_2B];
+    cont_2B[1] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-6*width_2B -: width_2B];
+    cont_2B[0] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
+    com_op[0]  <= phv_out_delay[0][255+100 -: 20];
+    com_op[1]  <= phv_out_delay[0][255+80  -: 20];
+    com_op[2]  <= phv_out_delay[0][255+60  -: 20];
+    com_op[3]  <= phv_out_delay[0][255+40  -: 20];
+    com_op[4]  <= phv_out_delay[0][255+20  -: 20];
     key_mask_out <= key_mask_out_w;
 end
 
@@ -272,7 +272,7 @@ generate
         assign mod_id = c_s_axis_tdata[368+:8];
         //4'b0 for key offset
         //4'b1 for key mask
-        assign resv = c_s_axis_tdata[380+:4];
+        assign resv = c_s_axis_tdata[376+:4];
         assign control_flag = c_s_axis_tdata[335:320];
         //LE to BE switching
         wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
