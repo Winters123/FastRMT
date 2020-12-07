@@ -62,8 +62,8 @@ lappend SYN_FILES lib/pcie/rtl/pulse_merge.v
 lappend SYN_FILES lib_rmt/rmtv2/rmt_wrapper.v
 lappend SYN_FILES lib_rmt/rmtv2/pkt_filter.v
 lappend SYN_FILES lib_rmt/rmtv2/parser.v
-lappend SYN_FILES lib_rmt/rmtv2/deparser.v
 lappend SYN_FILES lib_rmt/rmtv2/sub_parser.v
+lappend SYN_FILES lib_rmt/rmtv2/deparser.v
 lappend SYN_FILES lib_rmt/rmtv2/sub_deparser.v
 lappend SYN_FILES lib_rmt/rmtv2/stage.v
 lappend SYN_FILES lib_rmt/rmtv2/action/action_engine.v
@@ -86,7 +86,7 @@ lappend XDC_FILES ../../../common/syn/tdma_ber_ch.tcl
 set IP_TCL_FILES [list ip/pcie4_uscale_plus_0.tcl]
 lappend IP_TCL_FILES ip/cmac_usplus_0.tcl
 lappend IP_TCL_FILES ip/cmac_usplus_1.tcl
-lappend IP_TCL_FILES ip/clk_wiz_0.tcl
+# lappend IP_TCL_FILES ip/clk_wiz_0.tcl
 #
 
 # IPs for RMT pipeline
@@ -98,12 +98,15 @@ lappend IP_TCL_FILES ip/rmt/fifo_generator_512b.tcl
 lappend IP_TCL_FILES ip/rmt/fifo_generator_522b.tcl
 lappend IP_TCL_FILES ip/rmt/fifo_generator_705b.tcl
 lappend IP_TCL_FILES ip/rmt/parse_act_ram_ip.tcl
-lappend IP_TCL_FILES ip/rmt/tcam_generator.tcl
+# lappend IP_TCL_FILES ip/rmt/tcam_generator.tcl
 
 
 #############################
 
 create_project -name ${design} -force -dir "${proj_dir}" -part ${device}
+
+read_vhdl -library cam  lib_rmt/xilinx_cam/dmem.vhd
+read_vhdl -library cam  [glob lib_rmt/xilinx_cam/cam*.vhd]
 
 foreach syn $SYN_FILES {
 	add_files -fileset sources_1 $syn
@@ -119,8 +122,8 @@ foreach ip_tcl $IP_TCL_FILES {
 
 ##
 #
-add_files [glob rtl/*.coe]
-add_files [glob rtl/*.mif]
+add_files [glob lib_rmt/rmtv2/*.coe]
+add_files [glob lib_rmt/rmtv2/*.mif]
 
 # for better simulation
 #config_ip_cache -disable_cache
