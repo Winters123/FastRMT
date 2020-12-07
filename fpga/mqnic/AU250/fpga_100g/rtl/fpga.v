@@ -139,7 +139,7 @@ wire pcie_user_clk;
 wire pcie_user_reset;
 
 //for lower-frequency
-wire pcie_user_clk_wiz;
+// wire pcie_user_clk_wiz;
 
 wire cfgmclk_int;
 
@@ -160,13 +160,13 @@ wire mmcm_locked;
 wire mmcm_clkfb;
 
 
-clk_wiz_0 
-clk_wiz_250_125
-(
-	.clk_out1(pcie_user_clk),     // output clk_out1
-	.reset(pcie_user_reset),
-	.clk_in1(pcie_user_clk_wiz)
-);
+// clk_wiz_0 
+// clk_wiz_250_125
+// (
+// 	.clk_out1(pcie_user_clk),     // output clk_out1
+// 	.reset(pcie_user_reset),
+// 	.clk_in1(pcie_user_clk_wiz)
+// );
 
 // MMCM instance
 // 161.13 MHz in, 125 MHz out
@@ -574,7 +574,8 @@ pcie4_uscale_plus_inst (
     .pci_exp_txp(pcie_tx_p),
     .pci_exp_rxn(pcie_rx_n),
     .pci_exp_rxp(pcie_rx_p),
-    .user_clk(pcie_user_clk_wiz),
+    // .user_clk(pcie_user_clk_wiz),
+    .user_clk(pcie_user_clk),
     .user_reset(pcie_user_reset),
     .user_lnk_up(),
 
