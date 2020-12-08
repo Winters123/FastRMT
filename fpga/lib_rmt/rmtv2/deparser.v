@@ -51,16 +51,16 @@ reg  [15:0]   parse_action[0:9];
 reg  [6:0]    parse_action_ind [0:9];
 wire [9:0] parse_action_ind_10b [0:9];
 
-assign parse_action_ind_10b[0] = parse_action_ind[0] << 3;
-assign parse_action_ind_10b[1] = parse_action_ind[1] << 3;
-assign parse_action_ind_10b[2] = parse_action_ind[2] << 3;
-assign parse_action_ind_10b[3] = parse_action_ind[3] << 3;
-assign parse_action_ind_10b[4] = parse_action_ind[4] << 3;
-assign parse_action_ind_10b[5] = parse_action_ind[5] << 3;
-assign parse_action_ind_10b[6] = parse_action_ind[6] << 3;
-assign parse_action_ind_10b[7] = parse_action_ind[7] << 3;
-assign parse_action_ind_10b[8] = parse_action_ind[8] << 3;
-assign parse_action_ind_10b[9] = parse_action_ind[9] << 3;
+assign parse_action_ind_10b[0] = parse_action_ind[0];
+assign parse_action_ind_10b[1] = parse_action_ind[1];
+assign parse_action_ind_10b[2] = parse_action_ind[2];
+assign parse_action_ind_10b[3] = parse_action_ind[3];
+assign parse_action_ind_10b[4] = parse_action_ind[4];
+assign parse_action_ind_10b[5] = parse_action_ind[5];
+assign parse_action_ind_10b[6] = parse_action_ind[6];
+assign parse_action_ind_10b[7] = parse_action_ind[7];
+assign parse_action_ind_10b[8] = parse_action_ind[8];
+assign parse_action_ind_10b[9] = parse_action_ind[9];
 
 assign vlan_id = phv_fifo_out[129+:12];
 
@@ -76,16 +76,16 @@ always @(posedge clk) begin
     parse_action[2] <= bram_out[212+:16];
     parse_action[1] <= bram_out[228+:16];
     parse_action[0] <= bram_out[244+:16];
-    parse_action_ind[0] <= parse_action[0][12:6];
-    parse_action_ind[1] <= parse_action[1][12:6];
-    parse_action_ind[2] <= parse_action[2][12:6];
-    parse_action_ind[3] <= parse_action[3][12:6];
-    parse_action_ind[4] <= parse_action[4][12:6];
-    parse_action_ind[5] <= parse_action[5][12:6];
-    parse_action_ind[6] <= parse_action[6][12:6];
-    parse_action_ind[7] <= parse_action[7][12:6];
-    parse_action_ind[8] <= parse_action[8][12:6];
-    parse_action_ind[9] <= parse_action[9][12:6];
+    parse_action_ind[0] <= {3'b0,parse_action[0][12:6]}<<3;
+    parse_action_ind[1] <= {3'b0,parse_action[1][12:6]}<<3;
+    parse_action_ind[2] <= {3'b0,parse_action[2][12:6]}<<3;
+    parse_action_ind[3] <= {3'b0,parse_action[3][12:6]}<<3;
+    parse_action_ind[4] <= {3'b0,parse_action[4][12:6]}<<3;
+    parse_action_ind[5] <= {3'b0,parse_action[5][12:6]}<<3;
+    parse_action_ind[6] <= {3'b0,parse_action[6][12:6]}<<3;
+    parse_action_ind[7] <= {3'b0,parse_action[7][12:6]}<<3;
+    parse_action_ind[8] <= {3'b0,parse_action[8][12:6]}<<3;
+    parse_action_ind[9] <= {3'b0,parse_action[9][12:6]}<<3;
 end
 
 

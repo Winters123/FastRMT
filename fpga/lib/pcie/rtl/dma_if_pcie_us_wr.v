@@ -313,6 +313,11 @@ reg [RAM_OFFSET_WIDTH-1:0] end_offset_reg = {RAM_OFFSET_WIDTH{1'b0}}, end_offset
 reg [PCIE_ADDR_WIDTH-1:0] tlp_addr_reg = {PCIE_ADDR_WIDTH{1'b0}}, tlp_addr_next;
 reg [11:0] tlp_len_reg = 12'd0, tlp_len_next;
 reg [RAM_OFFSET_WIDTH-1:0] offset_reg = {RAM_OFFSET_WIDTH{1'b0}}, offset_next;
+
+wire [RAM_OFFSET_WIDTH+2:0] offset_reg_w;
+
+assign offset_reg_w = {3'b0,offset_reg};
+
 reg [9:0] dword_count_reg = 10'd0, dword_count_next;
 reg [SEG_COUNT-1:0] ram_mask_reg = {SEG_COUNT{1'b0}}, ram_mask_next;
 reg ram_mask_valid_reg = 1'b0, ram_mask_valid_next;
@@ -881,7 +886,7 @@ always @* begin
                     last_cycle_next = cycle_count_next == 0;
                     offset_next = offset_reg + AXIS_PCIE_DATA_WIDTH/8;
 
-                    m_axis_rq_tdata_int[AXIS_PCIE_DATA_WIDTH-1:128] = {2{ram_rd_resp_data}} >> (SEG_COUNT*SEG_DATA_WIDTH-offset_reg*8 + 128);
+                    m_axis_rq_tdata_int[AXIS_PCIE_DATA_WIDTH-1:128] = {2{ram_rd_resp_data}} >> (SEG_COUNT*SEG_DATA_WIDTH-offset_reg_w<<2'b11 + 20'd128);
                     m_axis_rq_tvalid_int = 1'b1;
                     if (dword_count_reg >= AXIS_PCIE_KEEP_WIDTH-4) begin
                         m_axis_rq_tkeep_int = {AXIS_PCIE_KEEP_WIDTH{1'b1}};
