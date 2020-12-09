@@ -3,9 +3,9 @@
 `define SUB_DEPARSE(idx) \
 	if(parse_action[idx][0]) begin \
 		case(sub_depar_val_out_type[idx]) \
-			2'b01: pkts_tdata_stored_r[parse_action_ind[idx]*8 +: 16] = sub_depar_val_out_swapped[idx][32+:16]; \
-			2'b10: pkts_tdata_stored_r[parse_action_ind[idx]*8 +: 32] = sub_depar_val_out_swapped[idx][16+:32]; \
-			2'b11: pkts_tdata_stored_r[parse_action_ind[idx]*8 +: 48] = sub_depar_val_out_swapped[idx][0+:48]; \
+			2'b01: pkts_tdata_stored_r[parse_action_ind_10b[idx]<<3 +: 16] = sub_depar_val_out_swapped[idx][32+:16]; \
+			2'b10: pkts_tdata_stored_r[parse_action_ind_10b[idx]<<3 +: 32] = sub_depar_val_out_swapped[idx][16+:32]; \
+			2'b11: pkts_tdata_stored_r[parse_action_ind_10b[idx]<<3 +: 48] = sub_depar_val_out_swapped[idx][0+:48]; \
 		endcase \
 	end \
 
@@ -85,6 +85,7 @@ reg [7:0] state, state_next;
 reg [11:0] vlan_id; // vlan id
 wire [259:0] bram_out;
 wire [6:0] parse_action_ind [0:9];
+wire [9:0] parse_action_ind_10b [0:9];
 
 wire [15:0] parse_action [0:9];		// we have 10 parse action
 
@@ -110,6 +111,17 @@ assign parse_action_ind[6] = parse_action[6][12:6];
 assign parse_action_ind[7] = parse_action[7][12:6];
 assign parse_action_ind[8] = parse_action[8][12:6];
 assign parse_action_ind[9] = parse_action[9][12:6];
+
+assign parse_action_ind_10b[0] = parse_action_ind[0];
+assign parse_action_ind_10b[1] = parse_action_ind[1];
+assign parse_action_ind_10b[2] = parse_action_ind[2];
+assign parse_action_ind_10b[3] = parse_action_ind[3];
+assign parse_action_ind_10b[4] = parse_action_ind[4];
+assign parse_action_ind_10b[5] = parse_action_ind[5];
+assign parse_action_ind_10b[6] = parse_action_ind[6];
+assign parse_action_ind_10b[7] = parse_action_ind[7];
+assign parse_action_ind_10b[8] = parse_action_ind[8];
+assign parse_action_ind_10b[9] = parse_action_ind[9];
 
 localparam PHV_2B_START_POS = 20*5+256;
 localparam PHV_4B_START_POS = 20*5+256+16*8;
