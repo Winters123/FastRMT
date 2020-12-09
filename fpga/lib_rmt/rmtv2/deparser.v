@@ -1,5 +1,15 @@
 `timescale 1ns / 1ps
 
+`define DEPARSE_OUT_VAL(idx) \
+	if(parse_action[idx][0]) begin \
+        case(deparse_phv_select[idx]) \
+            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[idx] +: 16] <= dp_val_LE[idx][47-:16]; \
+            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[idx] +: 32] <= dp_val_LE[idx][47-:32]; \
+            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[idx] +: 48] <= dp_val_LE[idx][47-:48]; \
+        endcase \
+    end \
+
+
 module deparser #(
 	//in corundum with 100g ports, data width is 512b
 	parameter	C_S_AXIS_DATA_WIDTH = 512,
@@ -276,98 +286,16 @@ always @(posedge clk or negedge aresetn) begin
 
                 sub_parse_action_valid_in <= 10'b0;
                 //retrieve the data
-                if(parse_action[0][0]) begin
-                        case(deparse_phv_select[0]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[0] +: 16] <= dp_val_BE[0][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[0] +: 32] <= dp_val_BE[0][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[0] +: 48] <= dp_val_BE[0][47:0];
-                        endcase
-                end
-
-                if(parse_action[1][0]) begin
-                        case(deparse_phv_select[1]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[1] +: 16] <= dp_val_BE[1][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[1] +: 32] <= dp_val_BE[1][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[1] +: 48] <= dp_val_BE[1][47:0];
-                        endcase
-                end
-
-                if(parse_action[2][0]) begin
-                        case(deparse_phv_select[2]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[2] +: 16] <= dp_val_BE[2][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[2] +: 32] <= dp_val_BE[2][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[2] +: 48] <= dp_val_BE[2][47:0];
-                        endcase
-                end
-
-                if(parse_action[3][0]) begin
-                        case(deparse_phv_select[3]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[3] +: 16] <= dp_val_BE[3][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[3] +: 32] <= dp_val_BE[3][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[3] +: 48] <= dp_val_BE[3][47:0];
-                        endcase
-                end
-
-                if(parse_action[4][0]) begin
-                        case(deparse_phv_select[4]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[4] +: 16] <= dp_val_BE[4][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[4] +: 32] <= dp_val_BE[4][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[4] +: 48] <= dp_val_BE[4][47:0];
-                        endcase
-                end
-
-                if(parse_action[5][0]) begin
-                        case(deparse_phv_select[5]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[5] +: 16] <= dp_val_BE[5][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[5] +: 32] <= dp_val_BE[5][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[5] +: 48] <= dp_val_BE[5][47:0];
-                        endcase
-
-                end
-
-                if(parse_action[6][0]) begin
-                        case(deparse_phv_select[6]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[6] +: 16] <= dp_val_BE[6][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[6] +: 32] <= dp_val_BE[6][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[6] +: 48] <= dp_val_BE[6][47:0];
-                        endcase
-                end
-
-                if(parse_action[7][0]) begin
-                        case(deparse_phv_select[7]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[7] +: 16] <= dp_val_BE[7][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[7] +: 32] <= dp_val_BE[7][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[7] +: 48] <= dp_val_BE[7][47:0];
-                        endcase
-                    
-                end
-
-                if(parse_action[8][0]) begin
-                        case(deparse_phv_select[8]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[8] +: 16] <= dp_val_BE[8][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[8] +: 32] <= dp_val_BE[8][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[8] +: 48] <= dp_val_BE[8][47:0];
-                        endcase
-                end
-
-                if(parse_action[9][0]) begin
-                        case(deparse_phv_select[9]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[9] +: 16] <= dp_val_BE[9][15:0];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[9] +: 32] <= dp_val_BE[9][31:0];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[9] +: 48] <= dp_val_BE[9][47:0];
-                        endcase
-                end
-
+				`DEPARSE_OUT_VAL(0)
+				`DEPARSE_OUT_VAL(1)
+				`DEPARSE_OUT_VAL(2)
+				`DEPARSE_OUT_VAL(3)
+				`DEPARSE_OUT_VAL(4)
+				`DEPARSE_OUT_VAL(5)
+				`DEPARSE_OUT_VAL(6)
+				`DEPARSE_OUT_VAL(7)
+				`DEPARSE_OUT_VAL(8)
+				`DEPARSE_OUT_VAL(9)
 
                 deparse_state <= FLUSH_PKT_0;
             end
