@@ -48,7 +48,8 @@ wire [259:0]  bram_out;
 // wire [6:0]    parse_action_ind [0:9];
 // wire [15:0]   parse_action [0:9];		// we have 10 parse action
 reg  [15:0]   parse_action[0:9];
-reg  [6:0]    parse_action_ind [0:9];
+
+reg  [9:0]    parse_action_ind [0:9];
 wire [9:0] parse_action_ind_10b [0:9];
 
 assign parse_action_ind_10b[0] = parse_action_ind[0];
@@ -61,6 +62,7 @@ assign parse_action_ind_10b[6] = parse_action_ind[6];
 assign parse_action_ind_10b[7] = parse_action_ind[7];
 assign parse_action_ind_10b[8] = parse_action_ind[8];
 assign parse_action_ind_10b[9] = parse_action_ind[9];
+
 
 assign vlan_id = phv_fifo_out[129+:12];
 
