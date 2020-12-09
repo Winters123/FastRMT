@@ -167,7 +167,7 @@ localparam IDLE_C = 0,
 generate 
     if(C_S_AXIS_DATA_WIDTH == 512) begin
         assign mod_id = c_s_axis_tdata[368+:8];
-        assign resv   = c_s_axis_tdata[380+:4];
+        assign resv   = c_s_axis_tdata[376+:4];
         assign control_flag = c_s_axis_tdata[335:320];
         //LE to BE switching
         wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;

@@ -83,8 +83,13 @@ always @(*) begin
 						state_next = FLUSH_CTL;
 						c_switch = 1'b1;
 					end
-					else begin
+					else if (!s_axis_tlast) begin
 						state_next = FLUSH_DATA;
+						c_switch = 1'b0;
+					end
+
+					else if (s_axis_tlast) begin
+						state_next = WAIT_FIRST_PKT;
 						c_switch = 1'b0;
 					end
 				end
