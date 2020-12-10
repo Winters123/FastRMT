@@ -56,8 +56,16 @@ wire [259:0]  bram_out;
 // wire [15:0]   parse_action [0:9];		// we have 10 parse action
 reg  [15:0]   parse_action[0:9];
 
-reg  [9:0]    parse_action_ind [0:9];
-wire [9:0] parse_action_ind_10b [0:9];
+reg  [9:0]    parse_action_ind_0;
+reg  [9:0]    parse_action_ind_1;
+reg  [9:0]    parse_action_ind_2;
+reg  [9:0]    parse_action_ind_3;
+reg  [9:0]    parse_action_ind_4;
+reg  [9:0]    parse_action_ind_5;
+reg  [9:0]    parse_action_ind_6;
+reg  [9:0]    parse_action_ind_7;
+reg  [9:0]    parse_action_ind_8;
+reg  [9:0]    parse_action_ind_9;
 
 // assign parse_action_ind_10b[0] = parse_action_ind[0];
 // assign parse_action_ind_10b[1] = parse_action_ind[1];
@@ -85,16 +93,16 @@ always @(posedge clk) begin
     parse_action[2] <= bram_out[212+:16];
     parse_action[1] <= bram_out[228+:16];
     parse_action[0] <= bram_out[244+:16];
-    parse_action_ind[0] <= {parse_action[0][12:6],3'b0};
-    parse_action_ind[1] <= {parse_action[1][12:6],3'b0};
-    parse_action_ind[2] <= {parse_action[2][12:6],3'b0};
-    parse_action_ind[3] <= {parse_action[3][12:6],3'b0};
-    parse_action_ind[4] <= {parse_action[4][12:6],3'b0};
-    parse_action_ind[5] <= {parse_action[5][12:6],3'b0};
-    parse_action_ind[6] <= {parse_action[6][12:6],3'b0};
-    parse_action_ind[7] <= {parse_action[7][12:6],3'b0};
-    parse_action_ind[8] <= {parse_action[8][12:6],3'b0};
-    parse_action_ind[9] <= {parse_action[9][12:6],3'b0};
+    parse_action_ind_0 <= {parse_action[0][12:6],3'b0};
+    parse_action_ind_1 <= {parse_action[1][12:6],3'b0};
+    parse_action_ind_2 <= {parse_action[2][12:6],3'b0};
+    parse_action_ind_3 <= {parse_action[3][12:6],3'b0};
+    parse_action_ind_4 <= {parse_action[4][12:6],3'b0};
+    parse_action_ind_5 <= {parse_action[5][12:6],3'b0};
+    parse_action_ind_6 <= {parse_action[6][12:6],3'b0};
+    parse_action_ind_7 <= {parse_action[7][12:6],3'b0};
+    parse_action_ind_8 <= {parse_action[8][12:6],3'b0};
+    parse_action_ind_9 <= {parse_action[9][12:6],3'b0};
 end
 
 
@@ -286,97 +294,78 @@ always @(posedge clk or negedge aresetn) begin
 
                 sub_parse_action_valid_in <= 10'b0;
                 //retrieve the data
-                if(parse_action[0][0]) begin
-                        case(deparse_phv_select[0]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[0] +: 16] <= dp_val_LE[0][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[0] +: 32] <= dp_val_LE[0][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[0] +: 48] <= dp_val_LE[0][47:0];
-                        endcase
-                end
+ 
+                    case({parse_action[0][0],deparse_phv_select[0]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_0 +: 16] <= dp_val_LE[0][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_0 +: 32] <= dp_val_LE[0][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_0 +: 48] <= dp_val_LE[0][47:0];
+                        default: ;
+                    endcase
+                    case({parse_action[1][0],deparse_phv_select[1]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_1 +: 16] <= dp_val_LE[1][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_1 +: 32] <= dp_val_LE[1][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_1 +: 48] <= dp_val_LE[1][47:0];
+                        default: ;
+                    endcase
+                    case({parse_action[2][0],deparse_phv_select[2]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_2 +: 16] <= dp_val_LE[2][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_2 +: 32] <= dp_val_LE[2][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_2 +: 48] <= dp_val_LE[2][47:0];
+                        default: ;
+                    endcase
+                    case({parse_action[3][0],deparse_phv_select[3]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_3 +: 16] <= dp_val_LE[3][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_3 +: 32] <= dp_val_LE[3][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_3 +: 48] <= dp_val_LE[3][47:0];
+                        default: ;
+                    endcase
+                    case({parse_action[4][0],deparse_phv_select[4]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_4 +: 16] <= dp_val_LE[4][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_4 +: 32] <= dp_val_LE[4][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_4 +: 48] <= dp_val_LE[4][47:0];
+                        default: ;
+                    endcase
+                    case({parse_action[5][0],deparse_phv_select[5]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_5 +: 16] <= dp_val_LE[5][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_5 +: 32] <= dp_val_LE[5][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_5 +: 48] <= dp_val_LE[5][47:0];
+                        default: ;
+                    endcase
+                    case({parse_action[6][0],deparse_phv_select[6]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_6 +: 16] <= dp_val_LE[6][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_6 +: 32] <= dp_val_LE[6][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_6 +: 48] <= dp_val_LE[6][47:0];
+                        default: ;
+                    endcase
+                    case({parse_action[7][0],deparse_phv_select[7]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_7 +: 16] <= dp_val_LE[7][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_7 +: 32] <= dp_val_LE[7][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_7 +: 48] <= dp_val_LE[7][47:0];
+                        default: ;
+                    endcase
+                    case({parse_action[8][0],deparse_phv_select[8]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_8 +: 16] <= dp_val_LE[8][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_8 +: 32] <= dp_val_LE[8][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_8 +: 48] <= dp_val_LE[8][47:0];
+                        default: ;
+                    endcase
+                    case({parse_action[8][0],deparse_phv_select[8]}) 
+                        
+                        3'b101: deparse_tdata_stored_r[parse_action_ind_9 +: 16] <= dp_val_LE[9][47-:16];
+                        3'b110: deparse_tdata_stored_r[parse_action_ind_9 +: 32] <= dp_val_LE[9][47-:32];
+                        3'b111: deparse_tdata_stored_r[parse_action_ind_9 +: 48] <= dp_val_LE[9][47:0];
+                        default: ;
+                    endcase
 
-                if(parse_action[1][0]) begin
-                        case(deparse_phv_select[1]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[1] +: 16] <= dp_val_LE[1][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[1] +: 32] <= dp_val_LE[1][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[1] +: 48] <= dp_val_LE[1][47:0];
-                        endcase
-                end
-
-                if(parse_action[2][0]) begin
-                        case(deparse_phv_select[2]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[2] +: 16] <= dp_val_LE[2][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[2] +: 32] <= dp_val_LE[2][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[2] +: 48] <= dp_val_LE[2][47:0];
-                        endcase
-                end
-
-                if(parse_action[3][0]) begin
-                        case(deparse_phv_select[3]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[3] +: 16] <= dp_val_LE[3][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[3] +: 32] <= dp_val_LE[3][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[3] +: 48] <= dp_val_LE[3][47:0];
-                        endcase
-                end
-
-                if(parse_action[4][0]) begin
-                        case(deparse_phv_select[4]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[4] +: 16] <= dp_val_LE[4][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[4] +: 32] <= dp_val_LE[4][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[4] +: 48] <= dp_val_LE[4][47:0];
-                        endcase
-                end
-
-                if(parse_action[5][0]) begin
-                        case(deparse_phv_select[5]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[5] +: 16] <= dp_val_LE[5][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[5] +: 32] <= dp_val_LE[5][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[5] +: 48] <= dp_val_LE[5][47:0];
-                        endcase
-
-                end
-
-                if(parse_action[6][0]) begin
-                        case(deparse_phv_select[6]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[6] +: 16] <= dp_val_LE[6][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[6] +: 32] <= dp_val_LE[6][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[6] +: 48] <= dp_val_LE[6][47:0];
-                        endcase
-                end
-
-                if(parse_action[7][0]) begin
-                        case(deparse_phv_select[7]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[7] +: 16] <= dp_val_LE[7][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[7] +: 32] <= dp_val_LE[7][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[7] +: 48] <= dp_val_LE[7][47:0];
-                        endcase
-                    
-                end
-
-                if(parse_action[8][0]) begin
-                        case(deparse_phv_select[8]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[8] +: 16] <= dp_val_LE[8][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[8] +: 32] <= dp_val_LE[8][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[8] +: 48] <= dp_val_LE[8][47:0];
-                        endcase
-                end
-
-                if(parse_action[9][0]) begin
-                        case(deparse_phv_select[9]) 
-                            
-                            2'b01: deparse_tdata_stored_r[parse_action_ind[9] +: 16] <= dp_val_LE[9][47-:16];
-                            2'b10: deparse_tdata_stored_r[parse_action_ind[9] +: 32] <= dp_val_LE[9][47-:32];
-                            2'b11: deparse_tdata_stored_r[parse_action_ind[9] +: 48] <= dp_val_LE[9][47:0];
-                        endcase
-                end
 
 
                 deparse_state <= FLUSH_PKT_0;
