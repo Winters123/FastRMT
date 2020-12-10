@@ -311,7 +311,6 @@ assign phv_out = {val_6B_BE[7], val_6B_BE[6], val_6B_BE[5], val_6B_BE[4], val_6B
 				 val_2B_BE[7], val_2B_BE[6], val_2B_BE[5], val_2B_BE[4], val_2B_BE[3], val_2B_BE[2], val_2B_BE[1], val_2B_BE[0],
 				 condi_action[0], condi_action[1], condi_action[2], condi_action[3], condi_action[4],
 				 {115{1'b0}}, vlan_id, 1'b0, {128{1'b0}}};
-                 // 256'b0};
 
 
 
