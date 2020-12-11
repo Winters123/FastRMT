@@ -103,6 +103,8 @@ always @(posedge clk or negedge aresetn) begin
                             3'd7:  deparse_phv_reg_out[47:0] <= deparse_phv_reg[PHV_6B_START_POS+48*7+:48];
                         endcase
                     end
+
+                    default: deparse_phv_select <= 2'b0;
                 endcase
 
             end

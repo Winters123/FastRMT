@@ -177,7 +177,10 @@ always @(posedge axis_clk or negedge aresetn) begin
         if(s_axis_tvalid && ~s_axis_tvalid_before) begin
             phv_ready <= 1'b0;
             //pkt_hdr_field <= s_axis_tdata<<(1024-C_S_AXIS_DATA_WIDTH);    
-            pkt_hdr_field <= s_axis_tdata;     
+            pkt_hdr_field[511:0] <= s_axis_tdata;
+            if(s_axis_tlast) begin
+                pkt_hdr_field[1023:512] <= 512'b0;
+            end
         end
         else if(pkt_seg_cnt < SEG_NUM-1 && s_axis_tvalid) begin
             pkt_hdr_field[1024-1 -: C_S_AXIS_DATA_WIDTH] <= s_axis_tdata;   
