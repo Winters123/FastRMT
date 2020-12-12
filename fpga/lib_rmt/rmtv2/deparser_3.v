@@ -73,7 +73,7 @@ reg  [8:0]    parse_action_ind_7_r;
 reg  [8:0]    parse_action_ind_8_r;
 reg  [8:0]    parse_action_ind_9_r;
 
-reg [2:0] deparse_code[0:9];
+reg [2:0] deparse_code[0:4];
 
 
 //assign vlan_id = phv_fifo_out[129+:12];
@@ -154,7 +154,7 @@ wire [9:0]                   valid_out;
 
 //BE LE switching
 
-reg [47:0]                 dp_val_LE[0:9];
+reg [47:0]                 dp_val_LE[0:4];
 
 wire [47:0] dp_val_LE_w[0:4];
 
@@ -171,24 +171,14 @@ always @(posedge clk or negedge aresetn) begin
         dp_val_LE[2] <= 48'b0;
         dp_val_LE[3] <= 48'b0;
         dp_val_LE[4] <= 48'b0;
-        dp_val_LE[5] <= 48'b0;
-        dp_val_LE[6] <= 48'b0;
-        dp_val_LE[7] <= 48'b0;
-        dp_val_LE[8] <= 48'b0;
-        dp_val_LE[9] <= 48'b0;  
     end
 
     else if(valid_out[0] == 1'b1) begin
-        dp_val_LE[0] <= {dp_val_BE[0][7:0], dp_val_BE[0][15:8], dp_val_BE[0][23:16], dp_val_BE[0][31:24], dp_val_BE[0][39:32], dp_val_BE[0][47:40]};
-        dp_val_LE[1] <= {dp_val_BE[1][7:0], dp_val_BE[1][15:8], dp_val_BE[1][23:16], dp_val_BE[1][31:24], dp_val_BE[1][39:32], dp_val_BE[1][47:40]};
-        dp_val_LE[2] <= {dp_val_BE[2][7:0], dp_val_BE[2][15:8], dp_val_BE[2][23:16], dp_val_BE[2][31:24], dp_val_BE[2][39:32], dp_val_BE[2][47:40]};
-        dp_val_LE[3] <= {dp_val_BE[3][7:0], dp_val_BE[3][15:8], dp_val_BE[3][23:16], dp_val_BE[3][31:24], dp_val_BE[3][39:32], dp_val_BE[3][47:40]};
-        dp_val_LE[4] <= {dp_val_BE[4][7:0], dp_val_BE[4][15:8], dp_val_BE[4][23:16], dp_val_BE[4][31:24], dp_val_BE[4][39:32], dp_val_BE[4][47:40]};
-        dp_val_LE[5] <= {dp_val_BE[5][7:0], dp_val_BE[5][15:8], dp_val_BE[5][23:16], dp_val_BE[5][31:24], dp_val_BE[5][39:32], dp_val_BE[5][47:40]};
-        dp_val_LE[6] <= {dp_val_BE[6][7:0], dp_val_BE[6][15:8], dp_val_BE[6][23:16], dp_val_BE[6][31:24], dp_val_BE[6][39:32], dp_val_BE[6][47:40]};
-        dp_val_LE[7] <= {dp_val_BE[7][7:0], dp_val_BE[7][15:8], dp_val_BE[7][23:16], dp_val_BE[7][31:24], dp_val_BE[7][39:32], dp_val_BE[7][47:40]};
-        dp_val_LE[8] <= {dp_val_BE[8][7:0], dp_val_BE[8][15:8], dp_val_BE[8][23:16], dp_val_BE[8][31:24], dp_val_BE[8][39:32], dp_val_BE[8][47:40]};
-        dp_val_LE[9] <= {dp_val_BE[9][7:0], dp_val_BE[9][15:8], dp_val_BE[9][23:16], dp_val_BE[9][31:24], dp_val_BE[9][39:32], dp_val_BE[9][47:40]};
+        dp_val_LE[0] <= {dp_val_BE[5][7:0], dp_val_BE[5][15:8], dp_val_BE[5][23:16], dp_val_BE[5][31:24], dp_val_BE[5][39:32], dp_val_BE[5][47:40]};
+        dp_val_LE[1] <= {dp_val_BE[6][7:0], dp_val_BE[6][15:8], dp_val_BE[6][23:16], dp_val_BE[6][31:24], dp_val_BE[6][39:32], dp_val_BE[6][47:40]};
+        dp_val_LE[2] <= {dp_val_BE[7][7:0], dp_val_BE[7][15:8], dp_val_BE[7][23:16], dp_val_BE[7][31:24], dp_val_BE[7][39:32], dp_val_BE[7][47:40]};
+        dp_val_LE[3] <= {dp_val_BE[8][7:0], dp_val_BE[8][15:8], dp_val_BE[8][23:16], dp_val_BE[8][31:24], dp_val_BE[8][39:32], dp_val_BE[8][47:40]};
+        dp_val_LE[4] <= {dp_val_BE[9][7:0], dp_val_BE[9][15:8], dp_val_BE[9][23:16], dp_val_BE[9][31:24], dp_val_BE[9][39:32], dp_val_BE[9][47:40]};
     end
     else begin
         dp_val_LE[0] <= dp_val_LE[0];
@@ -196,11 +186,6 @@ always @(posedge clk or negedge aresetn) begin
         dp_val_LE[2] <= dp_val_LE[2];
         dp_val_LE[3] <= dp_val_LE[3];
         dp_val_LE[4] <= dp_val_LE[4];
-        dp_val_LE[5] <= dp_val_LE[5];
-        dp_val_LE[6] <= dp_val_LE[6];
-        dp_val_LE[7] <= dp_val_LE[7];
-        dp_val_LE[8] <= dp_val_LE[8];
-        dp_val_LE[9] <= dp_val_LE[9];
     end
 end
 
@@ -331,16 +316,11 @@ always @(posedge clk or negedge aresetn) begin
             end
 
             WAIT_SUB_2: begin
-                deparse_code[0] <= {parse_action[0][0],deparse_phv_select[0]};
-                deparse_code[1] <= {parse_action[1][0],deparse_phv_select[1]};
-                deparse_code[2] <= {parse_action[2][0],deparse_phv_select[2]};
-                deparse_code[3] <= {parse_action[3][0],deparse_phv_select[3]};
-                deparse_code[4] <= {parse_action[4][0],deparse_phv_select[4]};
-                deparse_code[5] <= {parse_action[5][0],deparse_phv_select[5]};
-                deparse_code[6] <= {parse_action[6][0],deparse_phv_select[6]};
-                deparse_code[7] <= {parse_action[7][0],deparse_phv_select[7]};
-                deparse_code[8] <= {parse_action[8][0],deparse_phv_select[8]};
-                deparse_code[9] <= {parse_action[9][0],deparse_phv_select[9]};
+                deparse_code[0] <= {parse_action[5][0],deparse_phv_select[5]};
+                deparse_code[1] <= {parse_action[6][0],deparse_phv_select[6]};
+                deparse_code[2] <= {parse_action[7][0],deparse_phv_select[7]};
+                deparse_code[3] <= {parse_action[8][0],deparse_phv_select[8]};
+                deparse_code[4] <= {parse_action[9][0],deparse_phv_select[9]};
 
                 //checkme: let's do half of it:
                 case({parse_action[0][0],deparse_phv_select[0]}) 
@@ -393,37 +373,37 @@ always @(posedge clk or negedge aresetn) begin
 
                 case(deparse_code[5]) 
                     
-                    3'b101: deparse_tdata_stored_2p[parse_action_ind_5_r +: 16] <= dp_val_LE[5][47-:16];
-                    3'b110: deparse_tdata_stored_2p[parse_action_ind_5_r +: 32] <= dp_val_LE[5][47-:32];
-                    3'b111: deparse_tdata_stored_2p[parse_action_ind_5_r +: 48] <= dp_val_LE[5][47:0];
+                    3'b101: deparse_tdata_stored_2p[parse_action_ind_5_r +: 16] <= dp_val_LE[0][47-:16];
+                    3'b110: deparse_tdata_stored_2p[parse_action_ind_5_r +: 32] <= dp_val_LE[0][47-:32];
+                    3'b111: deparse_tdata_stored_2p[parse_action_ind_5_r +: 48] <= dp_val_LE[0][47:0];
                     default: ;
                 endcase
                 case(deparse_code[6]) 
                     
-                    3'b101: deparse_tdata_stored_2p[parse_action_ind_6_r +: 16] <= dp_val_LE[6][47-:16];
-                    3'b110: deparse_tdata_stored_2p[parse_action_ind_6_r +: 32] <= dp_val_LE[6][47-:32];
-                    3'b111: deparse_tdata_stored_2p[parse_action_ind_6_r +: 48] <= dp_val_LE[6][47:0];
+                    3'b101: deparse_tdata_stored_2p[parse_action_ind_6_r +: 16] <= dp_val_LE[1][47-:16];
+                    3'b110: deparse_tdata_stored_2p[parse_action_ind_6_r +: 32] <= dp_val_LE[1][47-:32];
+                    3'b111: deparse_tdata_stored_2p[parse_action_ind_6_r +: 48] <= dp_val_LE[1][47:0];
                     default: ;
                 endcase
                 case(deparse_code[7]) 
                     
-                    3'b101: deparse_tdata_stored_2p[parse_action_ind_7_r +: 16] <= dp_val_LE[7][47-:16];
-                    3'b110: deparse_tdata_stored_2p[parse_action_ind_7_r +: 32] <= dp_val_LE[7][47-:32];
-                    3'b111: deparse_tdata_stored_2p[parse_action_ind_7_r +: 48] <= dp_val_LE[7][47:0];
+                    3'b101: deparse_tdata_stored_2p[parse_action_ind_7_r +: 16] <= dp_val_LE[2][47-:16];
+                    3'b110: deparse_tdata_stored_2p[parse_action_ind_7_r +: 32] <= dp_val_LE[2][47-:32];
+                    3'b111: deparse_tdata_stored_2p[parse_action_ind_7_r +: 48] <= dp_val_LE[2][47:0];
                     default: ;
                 endcase
                 case(deparse_code[8]) 
                     
-                    3'b101: deparse_tdata_stored_2p[parse_action_ind_8_r +: 16] <= dp_val_LE[8][47-:16];
-                    3'b110: deparse_tdata_stored_2p[parse_action_ind_8_r +: 32] <= dp_val_LE[8][47-:32];
-                    3'b111: deparse_tdata_stored_2p[parse_action_ind_8_r +: 48] <= dp_val_LE[8][47:0];
+                    3'b101: deparse_tdata_stored_2p[parse_action_ind_8_r +: 16] <= dp_val_LE[3][47-:16];
+                    3'b110: deparse_tdata_stored_2p[parse_action_ind_8_r +: 32] <= dp_val_LE[3][47-:32];
+                    3'b111: deparse_tdata_stored_2p[parse_action_ind_8_r +: 48] <= dp_val_LE[3][47:0];
                     default: ;
                 endcase
                 case(deparse_code[9]) 
                     
-                    3'b101: deparse_tdata_stored_2p[parse_action_ind_9_r +: 16] <= dp_val_LE[9][47-:16];
-                    3'b110: deparse_tdata_stored_2p[parse_action_ind_9_r +: 32] <= dp_val_LE[9][47-:32];
-                    3'b111: deparse_tdata_stored_2p[parse_action_ind_9_r +: 48] <= dp_val_LE[9][47:0];
+                    3'b101: deparse_tdata_stored_2p[parse_action_ind_9_r +: 16] <= dp_val_LE[4][47-:16];
+                    3'b110: deparse_tdata_stored_2p[parse_action_ind_9_r +: 32] <= dp_val_LE[4][47-:32];
+                    3'b111: deparse_tdata_stored_2p[parse_action_ind_9_r +: 48] <= dp_val_LE[4][47:0];
                     default: ;
                 endcase
 
@@ -495,9 +475,6 @@ always @(posedge clk or negedge aresetn) begin
         endcase
     end
 end
-
-
-
 
 generate 
     for(index=0; index<10; index = index+1)
