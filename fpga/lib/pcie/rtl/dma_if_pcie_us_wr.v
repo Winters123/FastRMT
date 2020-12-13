@@ -313,11 +313,6 @@ reg [RAM_OFFSET_WIDTH-1:0] end_offset_reg = {RAM_OFFSET_WIDTH{1'b0}}, end_offset
 reg [PCIE_ADDR_WIDTH-1:0] tlp_addr_reg = {PCIE_ADDR_WIDTH{1'b0}}, tlp_addr_next;
 reg [11:0] tlp_len_reg = 12'd0, tlp_len_next;
 reg [RAM_OFFSET_WIDTH-1:0] offset_reg = {RAM_OFFSET_WIDTH{1'b0}}, offset_next;
-
-wire [RAM_OFFSET_WIDTH+2:0] offset_reg_w;
-
-assign offset_reg_w = {3'b0,offset_reg};
-
 reg [9:0] dword_count_reg = 10'd0, dword_count_next;
 reg [SEG_COUNT-1:0] ram_mask_reg = {SEG_COUNT{1'b0}}, ram_mask_next;
 reg ram_mask_valid_reg = 1'b0, ram_mask_valid_next;
@@ -388,9 +383,6 @@ assign ram_rd_cmd_sel = ram_rd_cmd_sel_reg;
 assign ram_rd_cmd_addr = ram_rd_cmd_addr_reg;
 assign ram_rd_cmd_valid = ram_rd_cmd_valid_reg;
 assign ram_rd_resp_ready = ram_rd_resp_ready_cmb;
-
-wire [PCIE_ADDR_WIDTH-1:0] pcie_addr_plus_max_payload = pcie_addr_reg + {max_payload_size_dw_reg, 2'b00};
-wire [PCIE_ADDR_WIDTH-1:0] pcie_addr_plus_op_count = pcie_addr_reg + op_count_reg;
 
 // operation tag management
 reg [OP_TAG_WIDTH+1-1:0] op_table_start_ptr_reg = 0;
@@ -481,7 +473,7 @@ always @* begin
 
             if (op_count_next <= {max_payload_size_dw_reg, 2'b00}-pcie_addr_next[1:0]) begin
                 // packet smaller than max payload size
-                if ((pcie_addr_next ^ (pcie_addr_next + op_count_next)) & (1 << 12)) begin
+                if (((pcie_addr_next & 12'hfff) + (op_count_next & 12'hfff)) >> 12 != 0 || op_count_next >> 12 != 0) begin
                     // crosses 4k boundary
                     tlp_count_next = 13'h1000 - pcie_addr_next[11:0];
                 end else begin
@@ -490,7 +482,7 @@ always @* begin
                 end
             end else begin
                 // packet larger than max payload size
-                if ((pcie_addr_next ^ (pcie_addr_next + {max_payload_size_dw_reg, 2'b00})) & (1 << 12)) begin
+                if (((pcie_addr_next & 12'hfff) + {max_payload_size_dw_reg, 2'b00}) >> 12 != 0) begin
                     // crosses 4k boundary
                     tlp_count_next = 13'h1000 - pcie_addr_next[11:0];
                 end else begin
@@ -541,7 +533,7 @@ always @* begin
 
                 if (op_count_next <= {max_payload_size_dw_reg, 2'b00}-pcie_addr_next[1:0]) begin
                     // packet smaller than max payload size
-                    if ((pcie_addr_next ^ (pcie_addr_next + op_count_next)) & (1 << 12)) begin
+                    if (((pcie_addr_next & 12'hfff) + (op_count_next & 12'hfff)) >> 12 != 0 || op_count_next >> 12 != 0) begin
                         // crosses 4k boundary
                         tlp_count_next = 13'h1000 - pcie_addr_next[11:0];
                     end else begin
@@ -550,7 +542,7 @@ always @* begin
                     end
                 end else begin
                     // packet larger than max payload size
-                    if ((pcie_addr_next ^ (pcie_addr_next + {max_payload_size_dw_reg, 2'b00})) & (1 << 12)) begin
+                    if (((pcie_addr_next & 12'hfff) + {max_payload_size_dw_reg, 2'b00}) >> 12 != 0) begin
                         // crosses 4k boundary
                         tlp_count_next = 13'h1000 - pcie_addr_next[11:0];
                     end else begin
@@ -886,7 +878,7 @@ always @* begin
                     last_cycle_next = cycle_count_next == 0;
                     offset_next = offset_reg + AXIS_PCIE_DATA_WIDTH/8;
 
-                    m_axis_rq_tdata_int[AXIS_PCIE_DATA_WIDTH-1:128] = {2{ram_rd_resp_data}} >> (SEG_COUNT*SEG_DATA_WIDTH-offset_reg_w<<2'b11 + 20'd128);
+                    m_axis_rq_tdata_int[AXIS_PCIE_DATA_WIDTH-1:128] = {2{ram_rd_resp_data}} >> (SEG_COUNT*SEG_DATA_WIDTH-offset_reg*8 + 128);
                     m_axis_rq_tvalid_int = 1'b1;
                     if (dword_count_reg >= AXIS_PCIE_KEEP_WIDTH-4) begin
                         m_axis_rq_tkeep_int = {AXIS_PCIE_KEEP_WIDTH{1'b1}};
