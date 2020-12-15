@@ -130,6 +130,7 @@ always @(posedge axis_clk or negedge aresetn) begin
 				    		end
                         endcase
                     end
+					default:  val_out_select <= 2'b0;
                 endcase
             end
             default: begin

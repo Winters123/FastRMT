@@ -8,15 +8,15 @@ FPGA_ARCH = virtexuplus
 SYN_FILES = rtl/fpga.v
 
 #SYN_FILES += rtl/fpga_core.v
-SYN_FILES += rtl/fpga_core.v
+SYN_FILES += rtl/one_in_one_out/fpga_core.v
 
 SYN_FILES += rtl/debounce_switch.v
 SYN_FILES += rtl/sync_signal.v
 
 #SYN_FILES += rtl/common/interface.v
-SYN_FILES += rtl/common/one_in_one_out/interface.v
+SYN_FILES += rtl/one_in_one_out/interface.v
 #SYN_FILES += rtl/common/port.v
-SYN_FILES += rtl/common/one_in_one_out/port.v
+SYN_FILES += rtl/one_in_one_out/port.v
 
 SYN_FILES += rtl/common/cpl_write.v
 SYN_FILES += rtl/common/cpl_op_mux.v
@@ -61,7 +61,7 @@ SYN_FILES += lib/pcie/rtl/pcie_tag_manager.v
 SYN_FILES += lib/pcie/rtl/pulse_merge.v
 
 #RMT-related rtl files
-SYN_FILES += lib_rmt/rmtv2/deparser.v
+SYN_FILES += lib_rmt/rmtv2/deparser_2.v
 SYN_FILES += lib_rmt/rmtv2/sub_deparser.v
 SYN_FILES += lib_rmt/rmtv2/parser.v
 SYN_FILES += lib_rmt/rmtv2/sub_parser.v
