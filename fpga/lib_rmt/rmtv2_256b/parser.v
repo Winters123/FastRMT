@@ -188,6 +188,7 @@ wire [47:0] val_6B_swapped [0:7];
 wire [31:0] val_4B_swapped [0:7];
 wire [15:0] val_2B_swapped [0:7];
 
+
 `SWAP_BYTE_ORDER(0)
 `SWAP_BYTE_ORDER(1)
 `SWAP_BYTE_ORDER(2)
@@ -365,8 +366,11 @@ assign ctrl_s_axis_tdata_swapped = {	ctrl_s_axis_tdata[0+:8],
 										ctrl_s_axis_tdata[248+:8]};
 
 
-reg	[7:0]						ctrl_wr_ram_addr, ctrl_wr_ram_addr_next;
-reg	[259:0]						ctrl_wr_ram_data, ctrl_wr_ram_data_next;
+reg	[7:0]						ctrl_wr_ram_addr_next;
+reg [7:0]						ctrl_wr_ram_addr;
+reg	[259:0]						ctrl_wr_ram_data;
+reg	[259:0]						ctrl_wr_ram_data_next;
+reg								ctrl_wr_ram_en_next;
 reg								ctrl_wr_ram_en;
 wire [7:0]						ctrl_mod_id;
 
@@ -388,7 +392,9 @@ always @(*) begin
 	ctrl_m_axis_tvalid_next = ctrl_s_axis_tvalid;
 
 	ctrl_state_next = ctrl_state;
-	ctrl_wr_ram_en = 0;
+	ctrl_wr_ram_addr_next = ctrl_wr_ram_addr;
+	ctrl_wr_ram_data_next = ctrl_wr_ram_data;
+	ctrl_wr_ram_en_next = 0;
 
 	case (ctrl_state)
 		WAIT_FIRST_PKT: begin
@@ -403,7 +409,7 @@ always @(*) begin
 				if (ctrl_mod_id[2:0]==PARSER_MOD_ID) begin
 					ctrl_state_next = WAIT_THIRD_PKT;
 
-					ctrl_wr_ram_addr = ctrl_s_axis_tdata[128+:8];
+					ctrl_wr_ram_addr_next = ctrl_s_axis_tdata[128+:8];
 				end
 				else begin
 					ctrl_state_next = FLUSH_REST_C;
@@ -413,7 +419,7 @@ always @(*) begin
 		WAIT_THIRD_PKT: begin // first half of ctrl_wr_ram_data
 			if (ctrl_s_axis_tvalid) begin
 				ctrl_state_next = WRITE_RAM;
-				ctrl_wr_ram_data[259:4] = ctrl_s_axis_tdata_swapped[255:0];
+				ctrl_wr_ram_data_next[259:4] = ctrl_s_axis_tdata_swapped[255:0];
 			end
 		end
 		WRITE_RAM: begin // second half of ctrl_wr_ram_data
@@ -422,8 +428,8 @@ always @(*) begin
 					ctrl_state_next = WAIT_FIRST_PKT;
 				else
 					ctrl_state_next = FLUSH_REST_C;
-				ctrl_wr_ram_en = 1;
-				ctrl_wr_ram_data[3:0] = ctrl_s_axis_tdata_swapped[255:252];
+				ctrl_wr_ram_data_next[3:0] = ctrl_s_axis_tdata_swapped[255:252];
+				ctrl_wr_ram_en_next = 1;
 			end
 		end
 		FLUSH_REST_C: begin
@@ -443,6 +449,11 @@ always @(posedge axis_clk) begin
 		ctrl_m_axis_tkeep <= 0;
 		ctrl_m_axis_tvalid <= 0;
 		ctrl_m_axis_tlast <= 0;
+
+		//
+		ctrl_wr_ram_addr <= 0;
+		ctrl_wr_ram_data <= 0;
+		ctrl_wr_ram_en <= 0;
 	end
 	else begin
 		ctrl_state <= ctrl_state_next;
@@ -452,6 +463,10 @@ always @(posedge axis_clk) begin
 		ctrl_m_axis_tkeep <= ctrl_m_axis_tkeep_next;
 		ctrl_m_axis_tlast <= ctrl_m_axis_tlast_next;
 		ctrl_m_axis_tvalid <= ctrl_m_axis_tvalid_next;
+		//
+		ctrl_wr_ram_addr <= ctrl_wr_ram_addr_next;
+		ctrl_wr_ram_data <= ctrl_wr_ram_data_next;
+		ctrl_wr_ram_en <= ctrl_wr_ram_en_next;
 	end
 end
 
@@ -460,6 +475,8 @@ end
 // 	.C_INIT_FILE_NAME	("./parse_act_ram_init_file.mif"),
 // 	.C_LOAD_INIT_FILE	(1)
 // )
+//
+//
 parse_act_ram_ip
 parse_act_ram
 (

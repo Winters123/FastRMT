@@ -149,14 +149,12 @@ reg                 continous_flag;
 
 reg [2:0]           c_state;
 
-
 /****for 256b exclusively*****/
 reg [C_S_AXIS_DATA_WIDTH-1:0]       c_m_axis_tdata_r;
 reg [C_S_AXIS_TUSER_WIDTH-1:0]      c_m_axis_tuser_r;
 reg [C_S_AXIS_DATA_WIDTH/8-1:0]     c_m_axis_tkeep_r;
 reg                                 c_m_axis_tvalid_r;
 reg                                 c_m_axis_tlast_r;
-
 
 localparam IDLE_C = 0,
            PARSE_C = 1,
@@ -431,9 +429,6 @@ generate
     end
     //NOTE: data width is 256b
     else begin
-        assign mod_id = c_s_axis_tdata[112+:8];
-        assign resv = c_s_axis_tdata[120+:4];
-        assign control_flag = c_s_axis_tdata[64+:16];
 		wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
 		assign c_s_axis_tdata_swapped = {	c_s_axis_tdata[0+:8],
 											c_s_axis_tdata[8+:8],
@@ -467,209 +462,201 @@ generate
 											c_s_axis_tdata[232+:8],
 											c_s_axis_tdata[240+:8],
 											c_s_axis_tdata[248+:8]};
-        always @(posedge clk or negedge rst_n) begin
-            if(~rst_n) begin
-                c_index_cam <= 0;
-                c_wr_en_cam <= 0;
 
-                c_index_act <= 0;
-                c_wr_en_act <= 0;
+        assign mod_id = c_s_axis_tdata[112+:8];
+        assign resv = c_s_axis_tdata[120+:4];
+        assign control_flag = c_s_axis_tdata[64+:16];
+		// 
+		reg [2:0] c_state_next;
+		reg [C_S_AXIS_DATA_WIDTH-1:0]		r_tdata, c_s_axis_tdata_d1;
+		reg [C_S_AXIS_TUSER_WIDTH-1:0]		r_tuser, c_s_axis_tuser_d1;
+		reg [C_S_AXIS_DATA_WIDTH/8-1:0]		r_tkeep, c_s_axis_tkeep_d1;
+		reg									r_tlast, c_s_axis_tlast_d1;
+		reg									r_tvalid, c_s_axis_tvalid_d1;
 
-                act_entry_tmp <= 0;
-                continous_flag <= 0;
+		reg [C_S_AXIS_DATA_WIDTH-1:0]		r_1st_tdata, r_1st_tdata_next;
+		reg [C_S_AXIS_TUSER_WIDTH-1:0]		r_1st_tuser, r_1st_tuser_next;
+		reg [C_S_AXIS_DATA_WIDTH/8-1:0]		r_1st_tkeep, r_1st_tkeep_next;
+		reg									r_1st_tlast, r_1st_tlast_next;
+		reg									r_1st_tvalid, r_1st_tvalid_next;
 
-                c_m_axis_tdata <= 0;
-                c_m_axis_tuser <= 0;
-                c_m_axis_tkeep <= 0;
-                c_m_axis_tvalid <= 0;
-                c_m_axis_tlast <= 0;
+		reg [7:0]							c_index_cam_next, c_index_act_next;
+		reg									c_wr_en_cam_next, c_wr_en_act_next;
+		reg [196:0]							c_wr_cam_data, c_wr_cam_data_next;
+		reg [ACT_LEN-1:0]					c_wr_act_data, c_wr_act_data_next;
 
-                c_m_axis_tdata_r <= 0;
-                c_m_axis_tuser_r <= 0;
-                c_m_axis_tkeep_r <= 0;
-                c_m_axis_tvalid_r <= 0;
-                c_m_axis_tlast_r <= 0;
+		always @(*) begin
+			c_state_next = c_state;
 
-                c_state <= IDLE_C;
+			r_tdata = 0;
+			r_tkeep = 0;
+			r_tuser = 0;
+			r_tlast = 0;
+			r_tvalid = 0;
 
-            end
-            else begin
-                case(c_state)
-                    IDLE_C: begin
-                        c_m_axis_tdata <= c_m_axis_tdata_r;
-                        c_m_axis_tuser <= c_m_axis_tuser_r;
-                        c_m_axis_tkeep <= c_m_axis_tkeep_r;
-                        c_m_axis_tvalid <= c_m_axis_tvalid_r;
-                        c_m_axis_tlast <= c_m_axis_tlast_r;
-                        if(c_s_axis_tvalid) begin
-                            c_m_axis_tdata_r <= c_s_axis_tdata;
-                            c_m_axis_tuser_r <= c_s_axis_tuser;
-                            c_m_axis_tkeep_r <= c_s_axis_tkeep;
-                            c_m_axis_tvalid_r <= c_s_axis_tvalid;
-                            c_m_axis_tlast_r <= c_s_axis_tlast;
+			r_1st_tdata_next = r_1st_tdata;
+			r_1st_tkeep_next = r_1st_tkeep;
+			r_1st_tuser_next = r_1st_tuser;
+			r_1st_tlast_next = r_1st_tlast;
+			r_1st_tvalid_next = r_1st_tvalid;
 
-                            c_state <= PARSE_C;
-                        end
-                        else begin
-                            c_wr_en_cam <= 1'b0;
-                            c_wr_en_act <= 1'b0;
-                            c_index_act <= 8'b0; 
-                            c_index_cam <= 8'b0;
-                            continous_flag <= 1'b0;
+			c_index_cam_next = c_index_cam;
+			c_index_act_next = c_index_act;
+			c_wr_en_cam_next = 0;
+			c_wr_en_act_next = 0;
+			c_wr_cam_data_next = c_wr_cam_data;
+			c_wr_act_data_next = c_wr_act_data;
 
-                            c_m_axis_tvalid_r <= 1'b0;
-                            c_m_axis_tlast_r <= 1'b0;
+			case (c_state) 
+				IDLE_C: begin // 1st segment
+					r_tvalid = 0;
+					if (c_s_axis_tvalid) begin
+						// store 1st segment
+						r_1st_tdata_next = c_s_axis_tdata;
+						r_1st_tuser_next = c_s_axis_tuser;
+						r_1st_tkeep_next = c_s_axis_tkeep;
+						r_1st_tlast_next = c_s_axis_tlast;
+						r_1st_tvalid_next = c_s_axis_tvalid;
 
-                            c_state <= IDLE_C;
-                        end
-                    end
-                    PARSE_C: begin
-                        if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == LOOKUP_ID && 
-                        control_flag == 16'hf2f1 && c_s_axis_tvalid) begin
-                            c_m_axis_tdata <= 0;
-                            c_m_axis_tuser <= 0;
-                            c_m_axis_tkeep <= 0;
-                            c_m_axis_tvalid <= 0;
-                            c_m_axis_tlast <= 0;
-
-                            if(resv == 4'b0 && c_s_axis_tvalid) begin
-                                c_index_cam <= c_s_axis_tdata[128+:8];
-                                c_wr_en_cam <= 1'b1;
-                                c_state <= CAM_TMP_ENTRY;
-                            end
-                            else if (c_s_axis_tvalid)begin
-                                c_index_act <= c_s_axis_tdata[128+:8];
-                                c_wr_en_act <= 1'b0;
-                                c_state <= ACT_TMP_ENTRY_WAIT;
-                            end
-                            else begin
-                                c_state <= PARSE_C;
-                                c_wr_en_act <= c_wr_en_act;
-                                c_index_act <= c_index_act;
-                            end
-                        end
-                        //if I don't know if I should send it, then I should hold it.
-                        else if(!c_s_axis_tvalid) begin
-                            c_m_axis_tdata <= c_m_axis_tdata;
-                            c_m_axis_tuser <= c_m_axis_tuser;
-                            c_m_axis_tkeep <= c_m_axis_tkeep;
-                            c_m_axis_tvalid <= 0;
-                            c_m_axis_tlast <= 0;
-
-                            c_m_axis_tdata_r <= c_m_axis_tdata_r;
-                            c_m_axis_tuser_r <= c_m_axis_tuser_r;
-                            c_m_axis_tkeep_r <= c_m_axis_tkeep_r;
-                            c_m_axis_tvalid_r <= c_m_axis_tvalid_r;
-                            c_m_axis_tlast_r <= c_m_axis_tlast_r;
-                        end
-
-                        else begin
-                            c_m_axis_tdata <= c_m_axis_tdata_r;
-                            c_m_axis_tuser <= c_m_axis_tuser_r;
-                            c_m_axis_tkeep <= c_m_axis_tkeep_r;
-                            c_m_axis_tvalid <= c_m_axis_tvalid_r;
-                            c_m_axis_tlast <= c_m_axis_tlast_r;
-
-                            c_m_axis_tdata_r <= c_s_axis_tdata;
-                            c_m_axis_tuser_r <= c_s_axis_tuser;
-                            c_m_axis_tkeep_r <= c_s_axis_tkeep;
-                            c_m_axis_tvalid_r <= c_s_axis_tvalid;
-                            c_m_axis_tlast_r <= c_s_axis_tlast;
-                            
-                            if(c_s_axis_tvalid && c_s_axis_tlast) c_state <= IDLE_C;
-							else c_state <= FLUSH_REST_C;
-                        end
-                    end
-					FLUSH_REST_C: begin
-						c_m_axis_tdata <= c_m_axis_tdata_r;
-						c_m_axis_tuser <= c_m_axis_tuser_r;
-						c_m_axis_tkeep <= c_m_axis_tkeep_r; 
-						c_m_axis_tvalid <= c_m_axis_tvalid_r; 
-						c_m_axis_tlast <= c_m_axis_tlast_r;
-
-                       	c_m_axis_tdata_r <= c_s_axis_tdata;
-                       	c_m_axis_tuser_r <= c_s_axis_tuser;
-                       	c_m_axis_tkeep_r <= c_s_axis_tkeep;
-                       	c_m_axis_tvalid_r <= c_s_axis_tvalid;
-                       	c_m_axis_tlast_r <= c_s_axis_tlast;
-                            
-                        if(c_s_axis_tvalid && c_s_axis_tlast) 
-							c_state <= IDLE_C;
+						c_state_next = PARSE_C;
 					end
+				end
+				PARSE_C: begin // 2nd segment
+					if (mod_id[7:3] == STAGE_ID && mod_id[2:0] == LOOKUP_ID && 
+						control_flag == 16'hf2f1 && c_s_axis_tvalid) begin
+						// should not emit segment
+						if(resv == 4'b0 && c_s_axis_tvalid) begin
+							c_index_cam_next = c_s_axis_tdata[128+:8];
+							c_state_next = CAM_TMP_ENTRY;
+						end
+						else begin
+							c_index_act_next = c_s_axis_tdata[128+:8];
+							c_state_next = ACT_TMP_ENTRY_WAIT;
+						end
+					end
+					else if (!c_s_axis_tvalid) begin
+					end
+					else begin
+						// emit
+						r_tdata = r_1st_tdata;
+						r_tkeep = r_1st_tkeep;
+						r_tuser = r_1st_tuser;
+						r_tlast = r_1st_tlast;
+						r_tvalid = r_1st_tvalid;
+						c_state_next = FLUSH_REST_C;
+					end
+				end
+				CAM_TMP_ENTRY: begin
+					if (c_s_axis_tvalid) begin
+						c_wr_en_cam_next = 1; // next clk to write
+						c_wr_cam_data_next = c_s_axis_tdata_swapped[59+:197];
+						
+						c_state_next = FLUSH_REST_C;
+					end
+				end
+				ACT_TMP_ENTRY_WAIT: begin
+					if (c_s_axis_tvalid) begin
+						c_wr_act_data_next[369+:256] = c_s_axis_tdata_swapped;
+						c_state_next = ACT_TMP_ENTRY_WAIT_2;
+					end
+				end
+				ACT_TMP_ENTRY_WAIT_2: begin
+					if (c_s_axis_tvalid) begin
+						c_wr_act_data_next[113+:256] = c_s_axis_tdata_swapped;
+						c_state_next = ACT_TMP_ENTRY;
+					end
+				end
+				ACT_TMP_ENTRY: begin
+					if (c_s_axis_tvalid) begin
+						c_wr_en_act_next = 1; // next clk to write
+						c_wr_act_data_next[0+:113] = c_s_axis_tdata_swapped[143+:113];
+						c_state_next = FLUSH_REST_C;
+					end
+				end
+				FLUSH_REST_C: begin
+					c_wr_en_cam_next = 0;
+					c_wr_en_act_next = 0;
+					r_tdata = c_s_axis_tdata_d1;
+					r_tkeep = c_s_axis_tkeep_d1;
+					r_tuser = c_s_axis_tuser_d1;
+					r_tlast = c_s_axis_tlast_d1;
+					r_tvalid = c_s_axis_tvalid_d1;
+					if (c_s_axis_tvalid_d1 && c_s_axis_tlast_d1) begin
+						c_state_next = IDLE_C;
+					end
+				end
+			endcase
+		end
 
-                    CAM_TMP_ENTRY: begin
-                        c_m_axis_tvalid_r <= 1'b0;
-                        c_m_axis_tlast_r <= 1'b0;
-                        if(c_s_axis_tlast && c_s_axis_tvalid) begin
-                            c_wr_en_cam <= 1'b0;
-                            c_index_cam <= 8'b0;
-                            c_state <= IDLE_C;
-                        end
-                        else if(c_s_axis_tvalid) begin
-                            c_wr_en_cam <= 1'b1;
-                            c_index_cam <= c_index_cam + 8'b1;
-                            c_state <= CAM_TMP_ENTRY;
-                        end
-                        else begin
-                            c_wr_en_cam <= c_wr_en_cam;
-                            c_index_cam <= c_index_cam;
-                            c_state <= c_state;
-                        end
-                    end
+		always @(posedge clk) begin
+			if (~rst_n) begin
+				c_state <= IDLE_C;
 
-                    ACT_TMP_ENTRY_WAIT: begin
-                        c_m_axis_tvalid_r <= 1'b0;
-                        c_m_axis_tlast_r <= 1'b0;
-                        c_wr_en_act <= 1'b0;
-                        if(c_s_axis_tvalid && ~c_s_axis_tlast) begin
-                            act_entry_tmp[369+:256] <= c_s_axis_tdata_swapped;
-                            if(continous_flag) c_index_act <= c_index_act + 8'b1;
-                            c_state <= ACT_TMP_ENTRY_WAIT_2;
-                        end
-                        else if (c_s_axis_tvalid && c_s_axis_tlast) begin
-                            c_state <= IDLE_C;
-                        end
-                        else begin
-                            c_state <= ACT_TMP_ENTRY_WAIT;
-                        end
-                    end
+				// control output
+				c_m_axis_tdata <= 0;
+				c_m_axis_tuser <= 0;
+				c_m_axis_tkeep <= 0;
+				c_m_axis_tlast <= 0;
+				c_m_axis_tvalid <= 0;
+				//
+				c_index_cam <= 0;
+				c_index_act <= 0;
+				c_wr_en_cam <= 0;
+				c_wr_en_act <= 0;
+				c_wr_cam_data <= 0;
+				c_wr_act_data <= 0;
+			end
+			else begin
+				c_state <= c_state_next;
 
-                    ACT_TMP_ENTRY_WAIT_2: begin
-                        if(c_s_axis_tvalid && ~c_s_axis_tlast) begin
-                            act_entry_tmp[113+:256] <= c_s_axis_tdata_swapped;
-                            c_state <= ACT_TMP_ENTRY;
-                        end
-                        else if (c_s_axis_tvalid && c_s_axis_tlast) begin
-                            c_state <= IDLE_C;
-                        end
-                        else begin
-                            act_entry_tmp[113+:256] <= act_entry_tmp[113+:256];
-                            c_state <= ACT_TMP_ENTRY_WAIT_2;
-                        end
-                    end
 
-                    ACT_TMP_ENTRY: begin
-                        if(c_s_axis_tvalid) begin
-                            act_entry_tmp[0+:113] <= c_s_axis_tdata_swapped[143+:113];
-                            c_wr_en_act <= 1'b1;
-                            if(c_s_axis_tlast) begin
-                                continous_flag <= 1'b0;
-                                c_state <= IDLE_C;
-                            end
-                            else begin
-                                c_state <= ACT_TMP_ENTRY_WAIT;
-                                continous_flag <= 1'b1;
-                            end
-                        end
-                        else begin
-                            c_state <= ACT_TMP_ENTRY;
-                        end
+				// output ctrl master signals
+				c_m_axis_tdata <= r_tdata;
+				c_m_axis_tkeep <= r_tkeep;
+				c_m_axis_tuser <= r_tuser;
+				c_m_axis_tlast <= r_tlast;
+				c_m_axis_tvalid <= r_tvalid;
+				//
+				c_index_cam <= c_index_cam_next;
+				c_index_act <= c_index_act_next;
+				c_wr_en_cam <= c_wr_en_cam_next;
+				c_wr_en_act <= c_wr_en_act_next;
+				c_wr_cam_data <= c_wr_cam_data_next;
+				c_wr_act_data <= c_wr_act_data_next;
+			end
+		end
 
-                    end
+		always @(posedge clk) begin
+			if (~rst_n) begin
+				// delayed 1 clk
+				c_s_axis_tdata_d1 <= 0;
+				c_s_axis_tuser_d1 <= 0;
+				c_s_axis_tkeep_d1 <= 0;
+				c_s_axis_tlast_d1 <= 0;
+				c_s_axis_tvalid_d1 <= 0;
+				//
+				r_1st_tdata <= 0;
+				r_1st_tkeep <= 0;
+				r_1st_tuser <= 0;
+				r_1st_tlast <= 0;
+				r_1st_tvalid <= 0;
+			end
+			else begin
+				// delayed 1 clk
+				c_s_axis_tdata_d1 <= c_s_axis_tdata;
+				c_s_axis_tuser_d1 <= c_s_axis_tuser;
+				c_s_axis_tkeep_d1 <= c_s_axis_tkeep;
+				c_s_axis_tlast_d1 <= c_s_axis_tlast;
+				c_s_axis_tvalid_d1 <= c_s_axis_tvalid;
+				// 
+				r_1st_tdata <= r_1st_tdata_next;
+				r_1st_tkeep <= r_1st_tkeep_next;
+				r_1st_tuser <= r_1st_tuser_next;
+				r_1st_tlast <= r_1st_tlast_next;
+				r_1st_tvalid <= r_1st_tvalid_next;
+			end
+		end
 
-                endcase
-            end
-        end
 
         // tcam1 for lookup
         cam_top # ( 
@@ -697,7 +684,7 @@ generate
             .WE                 (c_wr_en_cam),
             .WR_ADDR            (c_index_cam[3:0]),
             .DATA_MASK          (),  //TODO do we need ternary matching?
-            .DIN                (c_s_axis_tdata_swapped[59+:197]),
+            .DIN                (c_wr_cam_data),
             .EN					(1'b1)
         );
 
@@ -712,7 +699,7 @@ generate
         (
             .addra(c_index_act[3:0]),
             .clka(clk),
-            .dina(act_entry_tmp),
+            .dina(c_wr_act_data),
             .ena(1'b1),
             .wea(c_wr_en_act),
 
@@ -721,6 +708,21 @@ generate
             .doutb(action_wire),
             .enb(match)
         );
+		// debug
+		localparam PHV_4B_START_POS = 16*8+5*20+256;
+		(* mark_debug="true" *) wire dbg_ram_wr_en;
+		(* mark_debug="true" *) wire dbg_cam_wr_en;
+		(* mark_debug="true" *) wire dbg_action_valid;
+		(* mark_debug="true" *) wire [15:0] dbg_key_val_2B;
+		(* mark_debug="true" *) wire [24:0] dbg_action_in;
+		(* mark_debug="true" *) wire [24:0] dbg_action_out;
+		
+		assign dbg_ram_wr_en = c_wr_en_act;
+		assign dbg_cam_wr_en = c_wr_en_cam;
+		assign dbg_action_valid = action_valid;
+		assign dbg_key_val_2B = c_s_axis_tdata_swapped[59+5+16*2-1 -: 16];
+		assign dbg_action_in = c_wr_act_data[275 +: 25];
+		assign dbg_action_out = action_wire[275 +: 25];
     end
 
 endgenerate
