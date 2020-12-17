@@ -64,6 +64,13 @@ wire [ACT_LEN*25-1:0]        lookup2action_action;
 wire                         lookup2action_action_valid;
 wire [PHV_LEN-1:0]           lookup2action_phv;
 
+//control path 2 (lookup2action)
+wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_2;
+wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		c_s_axis_tkeep_2;
+wire [C_S_AXIS_TUSER_WIDTH-1:0]				c_s_axis_tuser_2;
+wire 										c_s_axis_tvalid_2;
+wire 										c_s_axis_tlast_2;
+
 
 
 key_extract_2 #(
@@ -134,11 +141,11 @@ lookup_engine #(
 	.c_s_axis_tvalid(c_s_axis_tvalid_1),
 	.c_s_axis_tlast(c_s_axis_tlast_1),
 
-    .c_m_axis_tdata(c_m_axis_tdata),
-	.c_m_axis_tuser(c_m_axis_tuser),
-	.c_m_axis_tkeep(c_m_axis_tkeep),
-	.c_m_axis_tvalid(c_m_axis_tvalid),
-	.c_m_axis_tlast(c_m_axis_tlast)
+    .c_m_axis_tdata(c_s_axis_tdata_2),
+	.c_m_axis_tuser(c_s_axis_tdata_2),
+	.c_m_axis_tkeep(c_s_axis_tdata_2),
+	.c_m_axis_tvalid(c_s_axis_tdata_2),
+	.c_m_axis_tlast(c_s_axis_tdata_2)
 );
 
 action_engine #(
@@ -158,7 +165,20 @@ action_engine #(
 
     //signals output from ALUs
     .phv_out(phv_out),
-    .phv_valid_out(phv_out_valid)
+    .phv_valid_out(phv_out_valid),
+    
+    //control path
+    .c_s_axis_tdata(c_s_axis_tdata_2),
+	.c_s_axis_tuser(c_s_axis_tuser_2),
+	.c_s_axis_tkeep(c_s_axis_tkeep_2),
+	.c_s_axis_tvalid(c_s_axis_tvalid_2),
+	.c_s_axis_tlast(c_s_axis_tlast_2),
+
+    .c_m_axis_tdata(c_m_axis_tdata),
+	.c_m_axis_tuser(c_m_axis_tuser),
+	.c_m_axis_tkeep(c_m_axis_tkeep),
+	.c_m_axis_tvalid(c_m_axis_tvalid),
+	.c_m_axis_tlast(c_m_axis_tlast)
 );
 
 
