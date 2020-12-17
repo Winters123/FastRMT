@@ -136,6 +136,7 @@ crossbar #(
     .action_in(action_in),
     .action_in_valid(action_in_valid),
     //output to the ALU
+    .vlan_id(vlan_id),
     .alu_in_valid(alu_in_valid),
     .alu_in_6B_1(alu_in_6B_1),
     .alu_in_6B_2(alu_in_6B_2),

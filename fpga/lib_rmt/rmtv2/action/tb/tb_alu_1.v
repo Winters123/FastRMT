@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 module tb_alu_1 #(
-    parameter STAGE = 0,
+    parameter STAGE_ID = 0,
     parameter ACTION_LEN = 25,
     parameter DATA_WIDTH = 48
 )();
@@ -54,7 +54,7 @@ initial begin
     action_valid <= 1'b0;
     operand_1_in <= 48'b0;
     operand_2_in <= 48'd3;
-    #(CYCLE)
+    #(5*CYCLE)
 
     /*
         SUB ---> 0010
@@ -68,7 +68,7 @@ initial begin
     action_valid <= 1'b0;
     operand_1_in <= 48'b0;
     operand_2_in <= 48'd3;
-    #(CYCLE)
+    #(5*CYCLE)
 
     /*
         illegitimate action
@@ -88,7 +88,7 @@ end
 
 
 alu_1  #(
-    .STAGE(STAGE),
+    .STAGE_ID(STAGE_ID),
     .ACTION_LEN(),
     .DATA_WIDTH(width_6B)
 )alu_1_0(
