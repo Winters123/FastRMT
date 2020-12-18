@@ -55,7 +55,7 @@ initial begin
     action_valid_in <= 1'b0;
     comp_meta_data_in <= 356'b0;
     comp_meta_data_valid_in <= 1'b0;
-    #CYCLE;
+    #(4*CYCLE);
 
     /* 
         discard (modify metadata)

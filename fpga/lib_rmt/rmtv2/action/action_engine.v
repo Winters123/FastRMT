@@ -9,7 +9,9 @@ module action_engine #(
     parameter STAGE_ID = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter ACT_LEN = 25,
-    parameter ACT_ID = 3
+    parameter ACT_ID = 3,
+    parameter C_S_AXIS_DATA_WIDTH = 512,
+    parameter C_S_AXIS_TUSER_WIDTH = 128
 )(
     input clk,
     input rst_n,
@@ -22,7 +24,20 @@ module action_engine #(
 
     //signals output from ALUs
     output reg [PHV_LEN-1:0]      phv_out,
-    output reg                    phv_valid_out
+    output reg                    phv_valid_out,
+
+    //control path
+    input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
+	input [C_S_AXIS_TUSER_WIDTH-1:0]		c_s_axis_tuser,
+	input [C_S_AXIS_DATA_WIDTH/8-1:0]		c_s_axis_tkeep,
+	input									c_s_axis_tvalid,
+	input									c_s_axis_tlast,
+
+    output [C_S_AXIS_DATA_WIDTH-1:0]		c_m_axis_tdata,
+	output [C_S_AXIS_TUSER_WIDTH-1:0]		c_m_axis_tuser,
+	output [C_S_AXIS_DATA_WIDTH/8-1:0]		c_m_axis_tkeep,
+	output 								    c_m_axis_tvalid,
+	output 								    c_m_axis_tlast
 );
 
 /********intermediate variables declared here********/
@@ -38,6 +53,7 @@ wire [width_6B*8-1:0]       alu_in_6B_2;
 wire [width_4B*8-1:0]       alu_in_4B_1;
 wire [width_4B*8-1:0]       alu_in_4B_2;
 wire [width_4B*8-1:0]       alu_in_4B_3;
+wire [11:0]                 vlan_id;
 wire [width_2B*8-1:0]       alu_in_2B_1;
 wire [width_2B*8-1:0]       alu_in_2B_2;
 wire [355:0]                alu_in_phv_remain_data;
@@ -75,6 +91,8 @@ crossbar #(
     //input from action
     .action_in(action_in),
     .action_in_valid(action_valid_in),
+    //checkme: vlan id
+    .vlan_id(vlan_id),
     //output to the ALU
     .alu_in_valid(alu_in_valid),
     .alu_in_6B_1(alu_in_6B_1),
@@ -130,10 +148,13 @@ generate
 	end
 endgenerate
 
+//checkme: adapted for multi-tenancy
 alu_2 #(
     .STAGE_ID(STAGE_ID),
     .ACTION_LEN(),
-    .DATA_WIDTH(width_4B)  //data width of the ALU
+    .DATA_WIDTH(width_4B),  //data width of the ALU
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH)
 )alu_2_0(
     .clk(clk),
     .rst_n(rst_n),
@@ -143,9 +164,24 @@ alu_2 #(
     .operand_1_in(alu_in_4B_1[(7+1) * width_4B -1 -: width_4B]),
     .operand_2_in(alu_in_4B_2[(7+1) * width_4B -1 -: width_4B]),
     .operand_3_in(alu_in_4B_3[(7+1) * width_4B -1 -: width_4B]),
+    //checkme: vlan_id is for multi-tenancy
+    .vlan_id(vlan_id),
     //output to form PHV
     .container_out(output_4B[7]),
-    .container_out_valid()
+    .container_out_valid(),
+    
+    //checkme: 
+    .c_s_axis_tdata(c_s_axis_tdata),
+    .c_s_axis_tuser(c_s_axis_tuser),
+    .c_s_axis_tkeep(c_s_axis_tkeep),
+    .c_s_axis_tvalid(c_s_axis_tvalid),
+    .c_s_axis_tlast(c_s_axis_tlast),
+
+    .c_m_axis_tdata(c_m_axis_tdata),
+    .c_m_axis_tuser(c_m_axis_tuser),
+    .c_m_axis_tkeep(c_m_axis_tkeep),
+    .c_m_axis_tvalid(c_m_axis_tvalid),
+    .c_m_axis_tlast(c_m_axis_tlast)
 );
 
 generate
@@ -216,6 +252,4 @@ always @(posedge clk) begin
 		phv_valid_out <= phv_valid_out_r;
 	end
 end
-
-
 endmodule

@@ -16,7 +16,7 @@ module alu_3 #(
     //the input data shall be metadata & com_ins
     input [META_LEN+COMP_LEN-1:0]       comp_meta_data_in,
     input                               comp_meta_data_valid_in,
-    input [ACTION_LEN-1:0]                 action_in,
+    input [ACTION_LEN-1:0]              action_in,
     input                               action_valid_in,
 
     //output is the modified metadata plus comp_ins
@@ -43,9 +43,13 @@ metadata fields that are related:
     
 */
 
-localparam IDLE=0, OP_1=1, OP_2=2;
+localparam IDLE_S=3'd0,
+		   WAIT1_S=3'd1,
+		   WAIT2_S=3'd2, 
+		   WAIT3_S=3'd3, 
+		   OUTPUT_S=3'd4;
 
-reg [1:0]						state, state_next;
+reg [2:0]						state, state_next;
 reg [META_LEN+COMP_LEN-1:0]		comp_meta_data_out_r;
 reg								comp_meta_data_valid_next;
 
@@ -55,9 +59,9 @@ always @(*) begin
 	comp_meta_data_valid_next = 0;
 
 	case (state)
-		IDLE: begin
+		IDLE_S: begin
 			if (action_valid_in) begin
-				state_next = OP_1;
+				state_next = WAIT1_S;
 				case(action_in[24:21])
             	    4'b1100: begin
             	        comp_meta_data_out_r[355:32] = {action_in[10:5],comp_meta_data_in[349:32]};
@@ -75,13 +79,19 @@ always @(*) begin
             	endcase
 			end
 		end
-		OP_1: begin
+		WAIT1_S: begin
 			// empty cycle
-			state_next = OP_2;
+			state_next = WAIT2_S;
 		end
-		OP_2: begin
+		WAIT2_S: begin
+			state_next = WAIT3_S;
+		end
+		WAIT3_S: begin
+			state_next = OUTPUT_S;
+		end
+		OUTPUT_S: begin
 			comp_meta_data_valid_next = 1;
-			state_next = IDLE;
+			state_next = IDLE_S;
 		end
 	endcase
 end
@@ -90,7 +100,7 @@ always @(posedge clk) begin
 	if (~rst_n) begin
 		comp_meta_data_out <= 0;
 		comp_meta_data_valid_out <= 0;
-		state <= IDLE;
+		state <= IDLE_S;
 	end
 	else begin
 		state <= state_next;

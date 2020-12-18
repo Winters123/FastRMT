@@ -26,6 +26,8 @@ module crossbar #(
     input [ACT_LEN*25-1:0]      action_in,
     input                       action_in_valid,
 
+    //output of vlan_id
+    output reg [11:0]             vlan_id,
     //output to the ALU
     output reg                    alu_in_valid,
     output reg [width_6B*8-1:0]   alu_in_6B_1,
@@ -110,6 +112,7 @@ assign sub_action[4] = action_in[ACT_LEN*25-1 -20*ACT_LEN-:ACT_LEN];
 assign sub_action[3] = action_in[ACT_LEN*25-1 -21*ACT_LEN-:ACT_LEN];
 assign sub_action[2] = action_in[ACT_LEN*25-1 -22*ACT_LEN-:ACT_LEN];
 assign sub_action[1] = action_in[ACT_LEN*25-1 -23*ACT_LEN-:ACT_LEN];
+
 assign sub_action[0] = action_in[ACT_LEN*25-1 -24*ACT_LEN-:ACT_LEN];
 
 //assign inputs for ALUs 
@@ -117,6 +120,12 @@ assign sub_action[0] = action_in[ACT_LEN*25-1 -24*ACT_LEN-:ACT_LEN];
 always @(posedge clk) begin
     action_out <= action_in;
     action_valid_out <= action_in_valid;
+    if(phv_in_valid) begin
+        vlan_id <= phv_in[140:129];
+    end
+    else begin
+        vlan_id <= vlan_id;
+    end
 end
 
 always @(posedge clk or negedge rst_n) begin
@@ -176,9 +185,11 @@ always @(posedge clk or negedge rst_n) begin
                         alu_in_4B_1[(i+1)*width_4B-1 -: width_4B] <= cont_4B[sub_action[8+i+1][18:16]];
                         alu_in_4B_2[(i+1)*width_4B-1 -: width_4B] <= {16'b0,sub_action[8+i+1][15:0]};
                     end
-                    4'b1011, 4'b1000: begin
+                    //checkme: loadd put here
+                    4'b1011, 4'b1000, 4'b0111: begin
                         alu_in_4B_1[(i+1)*width_4B-1 -: width_4B] <= cont_4B[sub_action[8+i+1][18:16]];
-                        alu_in_4B_2[(i+1)*width_4B-1 -: width_4B] <= {16'b0,sub_action[8+i+1][15:0]};
+                        //alu_in_4B_2[(i+1)*width_4B-1 -: width_4B] <= {16'b0,sub_action[8+i+1][15:0]};
+                        alu_in_4B_2[(i+1)*width_4B-1 -: width_4B] <= cont_4B[sub_action[8+i+1][13:11]];
                     end
                     //if there is no action to take, output the original value
                     default: begin

@@ -39,9 +39,13 @@ module alu_1 #(
 */
 
 
-localparam IDLE=0, OP_1=1, OP_2=2;
+localparam IDLE_S=3'd0, 
+		   WAIT1_S=3'd1, 
+		   WAIT2_S=3'd2, 
+		   WAIT3_S=3'd3, 
+		   OUTPUT_S=3'd4;
 
-reg [1:0]					state, state_next;
+reg [2:0]					state, state_next;
 reg [DATA_WIDTH-1:0]		container_out_r;
 reg							container_out_valid_next;
 
@@ -51,9 +55,9 @@ always @(*) begin
 	container_out_valid_next = 0;
 
 	case (state)
-		IDLE: begin
+		IDLE_S: begin
 			if (action_valid) begin
-				state_next = OP_1;
+				state_next = WAIT1_S;
 				case(action_in[24:21])
             	    4'b0001, 4'b1001: begin
             	        container_out_r = operand_1_in + operand_2_in;
@@ -68,22 +72,28 @@ always @(*) begin
             	endcase
 			end
 		end
-		OP_1: begin
+		WAIT1_S: begin
 			// empty cycle
-			state_next = OP_2;
+			state_next = WAIT2_S;
 		end
-		OP_2: begin
+		WAIT2_S: begin
+			state_next = WAIT3_S;
+		end
+		WAIT3_S: begin
+			state_next = OUTPUT_S;
+		end
+		OUTPUT_S: begin
 			container_out_valid_next = 1;
-			state_next = IDLE;
+			state_next = IDLE_S;
 		end
 	endcase
 end
 
-always @(posedge clk) begin
+always @(posedge clk or negedge rst_n) begin
 	if (~rst_n) begin
 		container_out <= 0;
 		container_out_valid <= 0;
-		state <= IDLE;
+		state <= IDLE_S;
 	end
 	else begin
 		state <= state_next;

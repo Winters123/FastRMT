@@ -132,17 +132,31 @@ assign parse_action[1] = bram_out[228+:16];
 assign parse_action[0] = bram_out[244+:16];
 
 
-always @(posedge axis_clk) begin
-    condi_action_d[0] <= bram_out[0+:20];
-    condi_action_d[1] <= bram_out[20+:20];
-    condi_action_d[2] <= bram_out[40+:20];
-    condi_action_d[3] <= bram_out[60+:20];
-    condi_action_d[4] <= bram_out[80+:20];
-    condi_action[0] <= condi_action_d[0];
-    condi_action[1] <= condi_action_d[1];
-    condi_action[2] <= condi_action_d[2];
-    condi_action[3] <= condi_action_d[3];
-    condi_action[4] <= condi_action_d[4];
+always @(posedge axis_clk or negedge aresetn) begin
+    if(~aresetn) begin
+        condi_action_d[0] <= 0;
+        condi_action_d[1] <= 0;
+        condi_action_d[2] <= 0;
+        condi_action_d[3] <= 0;
+        condi_action_d[4] <= 0;
+        condi_action[0] <= 0;
+        condi_action[1] <= 0;
+        condi_action[2] <= 0;
+        condi_action[3] <= 0;
+        condi_action[4] <= 0;
+    end
+    else begin
+        condi_action_d[0] <= bram_out[0+:20];
+        condi_action_d[1] <= bram_out[20+:20];
+        condi_action_d[2] <= bram_out[40+:20];
+        condi_action_d[3] <= bram_out[60+:20];
+        condi_action_d[4] <= bram_out[80+:20];
+        condi_action[0] <= condi_action_d[0];
+        condi_action[1] <= condi_action_d[1];
+        condi_action[2] <= condi_action_d[2];
+        condi_action[3] <= condi_action_d[3];
+        condi_action[4] <= condi_action_d[4];
+    end
 end
 
 

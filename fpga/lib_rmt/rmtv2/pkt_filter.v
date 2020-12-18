@@ -37,6 +37,18 @@ module pkt_filter #(
 
 );
 
+
+/* setup debug core
+*/
+(*mark_debug = "true"*) wire [15:0] debug_m_axis_tdata;
+(*mark_debug = "true"*) wire        debug_m_axis_tvalid;
+(*mark_debug = "true"*) wire        debug_m_axis_tlast;
+
+assign debug_m_axis_tdata = m_axis_tdata[15:0];
+assign debug_m_axis_tvalid = m_axis_tvalid;
+assign debug_m_axis_tlast = m_axis_tlast;
+
+
 localparam WAIT_FIRST_PKT=0, 
 		   DROP_PKT=1, 
 		   FLUSH_DATA=2,

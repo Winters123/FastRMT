@@ -4,16 +4,13 @@ FPGA_PART = xcvu9p-flga2104-2L-e
 FPGA_TOP = fpga
 FPGA_ARCH = virtexuplus
 
-
-
 # Files for synthesis
 SYN_FILES = rtl/fpga.v
-SYN_FILES += rtl/one_in_one_out/fpga_core.v
+SYN_FILES += rtl/fpga_core.v
 SYN_FILES += rtl/debounce_switch.v
 SYN_FILES += rtl/sync_signal.v
-SYN_FILES += rtl/one_in_one_out/mqnic_interface.v
-SYN_FILES += rtl/one_in_one_out/mqnic_port.v
-
+SYN_FILES += rtl/common/mqnic_interface.v
+SYN_FILES += rtl/common/mqnic_port.v
 SYN_FILES += rtl/common/cpl_write.v
 SYN_FILES += rtl/common/cpl_op_mux.v
 SYN_FILES += rtl/common/desc_fetch.v
@@ -56,24 +53,6 @@ SYN_FILES += lib/pcie/rtl/pcie_us_msi.v
 SYN_FILES += lib/pcie/rtl/pcie_tag_manager.v
 SYN_FILES += lib/pcie/rtl/pulse_merge.v
 
-
-
-# RMT-related rtl files
-SYN_FILES += lib_rmt/rmtv2/deparser_2.v
-SYN_FILES += lib_rmt/rmtv2/sub_deparser.v
-SYN_FILES += lib_rmt/rmtv2/parser.v
-SYN_FILES += lib_rmt/rmtv2/sub_parser.v
-SYN_FILES += lib_rmt/rmtv2/rmt_wrapper.v
-SYN_FILES += lib_rmt/rmtv2/stage.v
-SYN_FILES += lib_rmt/rmtv2/extract/key_extract_2.v
-SYN_FILES += lib_rmt/rmtv2/lookup/lookup_engine.v
-SYN_FILES += lib_rmt/rmtv2/action/action_engine.v
-SYN_FILES += lib_rmt/rmtv2/action/alu_1.v
-SYN_FILES += lib_rmt/rmtv2/action/alu_2.v
-SYN_FILES += lib_rmt/rmtv2/action/alu_3.v
-SYN_FILES += lib_rmt/rmtv2/action/crossbar.v
-SYN_FILES += lib_rmt/rmtv2/pkt_filter.v
-
 # XDC files
 XDC_FILES = fpga.xdc
 XDC_FILES += boot.xdc
@@ -86,20 +65,6 @@ XDC_FILES += ../../../common/syn/tdma_ber_ch.tcl
 IP_TCL_FILES = ip/pcie4_uscale_plus_0.tcl
 IP_TCL_FILES += ip/cmac_usplus_0.tcl
 IP_TCL_FILES += ip/cmac_usplus_1.tcl
-
-
-# IPs for RMT pipeline
-IP_TCL_FILES += ip/rmt/blk_mem_gen_0.tcl
-IP_TCL_FILES += ip/rmt/blk_mem_gen_1.tcl
-IP_TCL_FILES += ip/rmt/blk_mem_gen_2.tcl
-IP_TCL_FILES += ip/rmt/blk_mem_gen_3.tcl
-IP_TCL_FILES += ip/rmt/fifo_generator_512b.tcl
-IP_TCL_FILES += ip/rmt/fifo_generator_522b.tcl
-IP_TCL_FILES += ip/rmt/fifo_generator_705b.tcl
-IP_TCL_FILES += ip/rmt/parse_act_ram_ip.tcl
-IP_TCL_FILES += ip/rmt/tcam_generator.tcl
-IP_TCL_FILES += ip/rmt/page_tbl_16w_16d.tcl
-
 
 include ../common/vivado.mk
 
