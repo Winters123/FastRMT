@@ -151,6 +151,7 @@ lookup_engine #(
 
 action_engine #(
     .STAGE_ID(STAGE_ID),
+	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
     .PHV_LEN(),
     .ACT_LEN(),
     .ACT_ID()
