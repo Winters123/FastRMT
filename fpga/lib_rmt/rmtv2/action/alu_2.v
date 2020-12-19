@@ -83,7 +83,8 @@ reg [4:0]                   op2_imm, op2_imm_r;
 /********intermediate variables declared here********/
 
 //support tenant isolation
-assign load_addr = store_addr[4:0] + base_addr;
+// assign load_addr = store_addr[4:0] + base_addr;
+assign load_addr = operand_2_in[4:0] + base_addr;
 
 /*
 7 operations to support:
