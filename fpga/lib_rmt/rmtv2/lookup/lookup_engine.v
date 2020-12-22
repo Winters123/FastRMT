@@ -427,7 +427,7 @@ generate
             .addrb(match_addr),
             .clkb(clk),
             .doutb(action_wire),
-            .enb(match)
+            .enb(1'b1)
         );
     end
     //NOTE: data width is 256b
