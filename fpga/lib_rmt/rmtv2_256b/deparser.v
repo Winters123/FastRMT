@@ -90,6 +90,8 @@ wire [9:0] parse_action_ind_10b [0:9];
 wire [15:0] parse_action [0:9];		// we have 10 parse action
 
 
+
+
 assign parse_action[9] = bram_out[100+:16];
 assign parse_action[8] = bram_out[116+:16];
 assign parse_action[7] = bram_out[132+:16];
@@ -138,6 +140,20 @@ wire [47:0]					sub_depar_val_out [0:9];
 wire [47:0]					sub_depar_val_out_swapped [0:9];
 wire [1:0]					sub_depar_val_out_type [0:9];
 wire [9:0]					sub_depar_val_out_valid;
+
+// for debug
+// (* mark_debug = "true" *) wire val_valid;
+// (* mark_debug = "true" *) wire [31:0] val_2b_0;
+// (* mark_debug = "true" *) wire [31:0] val_2b_1;
+// (* mark_debug = "true" *) wire [31:0] val_2b_2;
+// 
+// assign val_valid = sub_depar_val_out_valid[0];
+// assign val_2b_0 = phv_fifo_out[PHV_4B_START_POS+0 +: 32];
+// assign val_2b_1 = phv_fifo_out[PHV_4B_START_POS+32 +: 32];
+// assign val_2b_2 = phv_fifo_out[PHV_4B_START_POS+32*2 +: 32];
+
+
+//
 
 `SWAP_BYTE_ORDER(0)
 `SWAP_BYTE_ORDER(1)
@@ -425,9 +441,9 @@ assign ctrl_s_axis_tdata_swapped = {	ctrl_s_axis_tdata[0+:8],
 										ctrl_s_axis_tdata[248+:8]};
 
 
-reg	[7:0]						ctrl_wr_ram_addr;
-reg	[259:0]						ctrl_wr_ram_data;
-reg								ctrl_wr_ram_en;
+reg	[7:0]						ctrl_wr_ram_addr, ctrl_wr_ram_addr_next;
+reg	[259:0]						ctrl_wr_ram_data, ctrl_wr_ram_data_next;
+reg								ctrl_wr_ram_en, ctrl_wr_ram_en_next;
 wire [7:0]						ctrl_mod_id;
 
 assign ctrl_mod_id = ctrl_s_axis_tdata[112+:8];
@@ -442,7 +458,9 @@ reg [2:0] ctrl_state, ctrl_state_next;
 
 always @(*) begin
 	ctrl_state_next = ctrl_state;
-	ctrl_wr_ram_en = 0;
+	ctrl_wr_ram_addr_next = ctrl_wr_ram_addr;
+	ctrl_wr_ram_data_next = ctrl_wr_ram_data;
+	ctrl_wr_ram_en_next = 0;
 
 	case (ctrl_state)
 		WAIT_FIRST_PKT: begin
@@ -457,7 +475,7 @@ always @(*) begin
 				if (ctrl_mod_id[2:0]==DEPARSER_MOD_ID) begin
 					ctrl_state_next = WAIT_THIRD_PKT;
 
-					ctrl_wr_ram_addr = ctrl_s_axis_tdata[128+:8];
+					ctrl_wr_ram_addr_next = ctrl_s_axis_tdata[128+:8];
 				end
 				else begin
 					ctrl_state_next = FLUSH_REST_C;
@@ -467,7 +485,7 @@ always @(*) begin
 		WAIT_THIRD_PKT: begin // first half of ctrl_wr_ram_data
 			if (ctrl_s_axis_tvalid) begin
 				ctrl_state_next = WRITE_RAM;
-				ctrl_wr_ram_data[259:4] = ctrl_s_axis_tdata_swapped[255:0];
+				ctrl_wr_ram_data_next[259:4] = ctrl_s_axis_tdata_swapped[255:0];
 			end
 		end
 		WRITE_RAM: begin // second half of ctrl_wr_ram_data
@@ -476,8 +494,8 @@ always @(*) begin
 					ctrl_state_next = WAIT_FIRST_PKT;
 				else
 					ctrl_state_next = FLUSH_REST_C;
-				ctrl_wr_ram_en = 1;
-				ctrl_wr_ram_data[3:0] = ctrl_s_axis_tdata_swapped[255:252];
+				ctrl_wr_ram_en_next = 1;
+				ctrl_wr_ram_data_next[3:0] = ctrl_s_axis_tdata_swapped[255:252];
 			end
 		end
 		FLUSH_REST_C: begin
@@ -490,9 +508,17 @@ end
 always @(posedge clk) begin
 	if (~aresetn) begin
 		ctrl_state <= WAIT_FIRST_PKT;
+
+		ctrl_wr_ram_addr <= 0;
+		ctrl_wr_ram_data <= 0;
+		ctrl_wr_ram_en <= 0;
 	end
 	else begin
 		ctrl_state <= ctrl_state_next;
+
+		ctrl_wr_ram_addr <= ctrl_wr_ram_addr_next;
+		ctrl_wr_ram_data <= ctrl_wr_ram_data_next;
+		ctrl_wr_ram_en <= ctrl_wr_ram_en_next;
 	end
 end
 

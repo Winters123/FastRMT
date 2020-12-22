@@ -1,5 +1,15 @@
 `timescale 1ns / 1ps
 
+`define DEPARSE_OUT_VAL(idx) \
+	if(parse_action[idx][0]) begin \
+        case(deparse_phv_select[idx]) \
+            2'b01: deparse_tdata_stored_r[parse_action_ind_10b[idx] +: 16] <= dp_val_LE[idx][47-:16]; \
+            2'b10: deparse_tdata_stored_r[parse_action_ind_10b[idx] +: 32] <= dp_val_LE[idx][47-:32]; \
+            2'b11: deparse_tdata_stored_r[parse_action_ind_10b[idx] +: 48] <= dp_val_LE[idx][47-:48]; \
+        endcase \
+    end \
+
+
 module deparser #(
 	//in corundum with 100g ports, data width is 512b
 	parameter	C_S_AXIS_DATA_WIDTH = 512,
