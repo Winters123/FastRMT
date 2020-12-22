@@ -11,8 +11,8 @@ SYN_FILES = rtl/fpga.v
 SYN_FILES += rtl/one_in_one_out/fpga_core.v
 SYN_FILES += rtl/debounce_switch.v
 SYN_FILES += rtl/sync_signal.v
-SYN_FILES += rtl/one_in_one_out/mqnic_interface.v
-SYN_FILES += rtl/one_in_one_out/mqnic_port.v
+SYN_FILES += rtl/one_in_one_out/interface.v
+SYN_FILES += rtl/one_in_one_out/port.v
 
 SYN_FILES += rtl/common/cpl_write.v
 SYN_FILES += rtl/common/cpl_op_mux.v
