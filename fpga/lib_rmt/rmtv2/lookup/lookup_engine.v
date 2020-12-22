@@ -388,7 +388,6 @@ generate
             .C_MEM_INIT			(1),
             .C_MEM_INIT_FILE	("./cam_init_file.mif")
         )
-        //TODO remember to change it back.
         cam_0
         (
             .CLK				(clk),
