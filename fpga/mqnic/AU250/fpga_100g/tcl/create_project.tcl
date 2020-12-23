@@ -63,7 +63,7 @@ lappend SYN_FILES lib_rmt/rmtv2/rmt_wrapper.v
 lappend SYN_FILES lib_rmt/rmtv2/pkt_filter.v
 lappend SYN_FILES lib_rmt/rmtv2/parser.v
 lappend SYN_FILES lib_rmt/rmtv2/sub_parser.v
-lappend SYN_FILES lib_rmt/rmtv2/deparser.v
+lappend SYN_FILES lib_rmt/rmtv2/deparser_2.v
 lappend SYN_FILES lib_rmt/rmtv2/sub_deparser.v
 lappend SYN_FILES lib_rmt/rmtv2/stage.v
 lappend SYN_FILES lib_rmt/rmtv2/action/action_engine.v
