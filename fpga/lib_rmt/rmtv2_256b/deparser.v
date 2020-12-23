@@ -70,6 +70,7 @@ localparam FLUSH_PKT_1 = 45;
 localparam FLUSH_PKT_2 = 46;
 localparam FLUSH_PKT_3 = 47;
 localparam FLUSH_PKT = 48;
+localparam DROP_PKT = 49;
 
 reg [4*C_AXIS_DATA_WIDTH-1:0]		pkts_tdata_stored_r;
 reg [4*C_AXIS_DATA_WIDTH-1:0]		pkts_tdata_stored;
@@ -86,6 +87,9 @@ reg [11:0] vlan_id; // vlan id
 wire [259:0] bram_out;
 wire [6:0] parse_action_ind [0:9];
 wire [9:0] parse_action_ind_10b [0:9];
+wire discard_signal;
+
+assign discard_signal = phv_fifo_out[128];
 
 wire [15:0] parse_action [0:9];		// we have 10 parse action
 
@@ -199,8 +203,14 @@ always @(*) begin
 				pkt_fifo_rd_en = 1;
 
 				vlan_id = phv_fifo_out[129+:12];
-				state_next = WAIT_PKT_1;
 
+				if (discard_signal == 1) begin
+					phv_fifo_rd_en = 1;
+					state_next = DROP_PKT;
+				end
+				else begin
+					state_next = WAIT_PKT_1;
+				end
 			end
 		end
 		WAIT_PKT_1: begin
@@ -357,6 +367,12 @@ always @(*) begin
 						state_next = FLUSH_PKT;
 					end
 				end
+			end
+		end
+		DROP_PKT: begin
+			pkt_fifo_rd_en = 1;
+			if (pkt_fifo_tlast) begin
+				state_next = WAIT_TILL_PARSE_DONE;
 			end
 		end
 	endcase

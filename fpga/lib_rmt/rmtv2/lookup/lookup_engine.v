@@ -552,7 +552,7 @@ generate
 				CAM_TMP_ENTRY: begin
 					if (c_s_axis_tvalid) begin
 						c_wr_en_cam_next = 1; // next clk to write
-						c_wr_cam_data_next = c_s_axis_tdata_swapped[59+:201];
+						c_wr_cam_data_next = c_s_axis_tdata_swapped[55+:201];
 						
 						c_state_next = FLUSH_REST_C;
 					end
@@ -673,7 +673,7 @@ generate
         cam_0
         (
             .CLK				(clk),
-            .CMP_DIN			({vlan_id[7:4],extract_key}),
+            .CMP_DIN			({vlan_id[7:4], extract_key}),
             .CMP_DATA_MASK		({4'b0, extract_mask}),
             .BUSY				(),
             .MATCH				(match),
@@ -703,13 +703,13 @@ generate
             .addra(c_index_act[3:0]),
             .clka(clk),
             .dina(c_wr_act_data),
-            .ena(1'b1),
+            .ena(1'b1), // always set to 1
             .wea(c_wr_en_act),
 
             .addrb(match_addr),
             .clkb(clk),
             .doutb(action_wire),
-            .enb(match)
+            .enb(1'b1) // always set to 1
         );
 		// debug
 		localparam PHV_4B_START_POS = 16*8+5*20+256;
