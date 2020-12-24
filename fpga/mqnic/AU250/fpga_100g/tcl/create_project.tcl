@@ -87,7 +87,6 @@ set IP_TCL_FILES [list ip/pcie4_uscale_plus_0.tcl]
 lappend IP_TCL_FILES ip/cmac_usplus_0.tcl
 lappend IP_TCL_FILES ip/cmac_usplus_1.tcl
 # lappend IP_TCL_FILES ip/clk_wiz_0.tcl
-#
 
 # IPs for RMT pipeline
 lappend IP_TCL_FILES ip/rmt/blk_mem_gen_0.tcl
@@ -98,7 +97,7 @@ lappend IP_TCL_FILES ip/rmt/fifo_generator_512b.tcl
 lappend IP_TCL_FILES ip/rmt/fifo_generator_522b.tcl
 lappend IP_TCL_FILES ip/rmt/fifo_generator_705b.tcl
 lappend IP_TCL_FILES ip/rmt/parse_act_ram_ip.tcl
-# lappend IP_TCL_FILES ip/rmt/tcam_generator.tcl
+lappend IP_TCL_FILES ip/rmt/page_tbl_16w_16d.tcl
 
 
 #############################
