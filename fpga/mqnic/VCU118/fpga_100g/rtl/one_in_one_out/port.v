@@ -392,6 +392,13 @@ wire                       tx_axis_tready_int;
 wire                       tx_axis_tlast_int;
 wire                       tx_axis_tuser_int;
 
+wire [AXIS_DATA_WIDTH-1:0] tx_axis_tdata_int_2;
+wire [AXIS_KEEP_WIDTH-1:0] tx_axis_tkeep_int_2;
+wire                       tx_axis_tvalid_int_2;
+wire                       tx_axis_tready_int_2;
+wire                       tx_axis_tlast_int_2;
+wire                       tx_axis_tuser_int_2;
+
 // Descriptor and completion
 wire [0:0]                           rx_desc_req_sel = 1'b1;
 wire [QUEUE_INDEX_WIDTH-1:0]         rx_desc_req_queue;
@@ -1747,109 +1754,109 @@ end else begin
 
 end
 
-// if (TX_CHECKSUM_ENABLE) begin
+if (TX_CHECKSUM_ENABLE) begin
 
-//     axis_fifo #(
-//         .DEPTH(32),
-//         .DATA_WIDTH(1+8+8),
-//         .KEEP_ENABLE(0),
-//         .LAST_ENABLE(0),
-//         .ID_ENABLE(0),
-//         .DEST_ENABLE(0),
-//         .USER_ENABLE(0),
-//         .FRAME_FIFO(0)
-//     )
-//     tx_csum_fifo (
-//         .clk(clk),
-//         .rst(rst),
+    axis_fifo #(
+        .DEPTH(32),
+        .DATA_WIDTH(1+8+8),
+        .KEEP_ENABLE(0),
+        .LAST_ENABLE(0),
+        .ID_ENABLE(0),
+        .DEST_ENABLE(0),
+        .USER_ENABLE(0),
+        .FRAME_FIFO(0)
+    )
+    tx_csum_fifo (
+        .clk(clk),
+        .rst(rst),
 
-//         // AXI input
-//         .s_axis_tdata({tx_csum_cmd_csum_enable, tx_csum_cmd_csum_start, tx_csum_cmd_csum_offset}),
-//         .s_axis_tkeep(0),
-//         .s_axis_tvalid(tx_csum_cmd_valid),
-//         .s_axis_tready(tx_csum_cmd_ready),
-//         .s_axis_tlast(0),
-//         .s_axis_tid(0),
-//         .s_axis_tdest(0),
-//         .s_axis_tuser(0),
+        // AXI input
+        .s_axis_tdata({tx_csum_cmd_csum_enable, tx_csum_cmd_csum_start, tx_csum_cmd_csum_offset}),
+        .s_axis_tkeep(0),
+        .s_axis_tvalid(tx_csum_cmd_valid),
+        .s_axis_tready(tx_csum_cmd_ready),
+        .s_axis_tlast(0),
+        .s_axis_tid(0),
+        .s_axis_tdest(0),
+        .s_axis_tuser(0),
 
-//         // AXI output
-//         .m_axis_tdata({tx_fifo_csum_cmd_csum_enable, tx_fifo_csum_cmd_csum_start, tx_fifo_csum_cmd_csum_offset}),
-//         .m_axis_tkeep(),
-//         .m_axis_tvalid(tx_fifo_csum_cmd_valid),
-//         .m_axis_tready(tx_fifo_csum_cmd_ready),
-//         .m_axis_tlast(),
-//         .m_axis_tid(),
-//         .m_axis_tdest(),
-//         .m_axis_tuser(),
+        // AXI output
+        .m_axis_tdata({tx_fifo_csum_cmd_csum_enable, tx_fifo_csum_cmd_csum_start, tx_fifo_csum_cmd_csum_offset}),
+        .m_axis_tkeep(),
+        .m_axis_tvalid(tx_fifo_csum_cmd_valid),
+        .m_axis_tready(tx_fifo_csum_cmd_ready),
+        .m_axis_tlast(),
+        .m_axis_tid(),
+        .m_axis_tdest(),
+        .m_axis_tuser(),
 
-//         // Status
-//         .status_overflow(),
-//         .status_bad_frame(),
-//         .status_good_frame()
-//     );
+        // Status
+        .status_overflow(),
+        .status_bad_frame(),
+        .status_good_frame()
+    );
 
-//     tx_checksum #(
-//         .DATA_WIDTH(AXIS_DATA_WIDTH),
-//         .ID_ENABLE(0),
-//         .DEST_ENABLE(0),
-//         .USER_ENABLE(1),
-//         .USER_WIDTH(1),
-//         .USE_INIT_VALUE(0),
-//         .DATA_FIFO_DEPTH(MAX_TX_SIZE),
-//         .CHECKSUM_FIFO_DEPTH(64)
-//     )
-//     tx_checksum_inst (
-//         .clk(clk),
-//         .rst(rst),
+    tx_checksum #(
+        .DATA_WIDTH(AXIS_DATA_WIDTH),
+        .ID_ENABLE(0),
+        .DEST_ENABLE(0),
+        .USER_ENABLE(1),
+        .USER_WIDTH(1),
+        .USE_INIT_VALUE(0),
+        .DATA_FIFO_DEPTH(MAX_TX_SIZE),
+        .CHECKSUM_FIFO_DEPTH(64)
+    )
+    tx_checksum_inst (
+        .clk(clk),
+        .rst(rst),
 
-//         /*
-//          * AXI input
-//          */
-//         .s_axis_tdata(tx_axis_tdata_int),
-//         .s_axis_tkeep(tx_axis_tkeep_int),
-//         .s_axis_tvalid(tx_axis_tvalid_int),
-//         .s_axis_tready(tx_axis_tready_int),
-//         .s_axis_tlast(tx_axis_tlast_int),
-//         .s_axis_tid(0),
-//         .s_axis_tdest(0),
-//         .s_axis_tuser(tx_axis_tuser_int),
+        /*
+         * AXI input
+         */
+        .s_axis_tdata(tx_axis_tdata_int),
+        .s_axis_tkeep(tx_axis_tkeep_int),
+        .s_axis_tvalid(tx_axis_tvalid_int),
+        .s_axis_tready(tx_axis_tready_int),
+        .s_axis_tlast(tx_axis_tlast_int),
+        .s_axis_tid(0),
+        .s_axis_tdest(0),
+        .s_axis_tuser(tx_axis_tuser_int),
 
-//         /*
-//          * AXI output
-//          */
-//         .m_axis_tdata(tx_axis_tdata),
-//         .m_axis_tkeep(tx_axis_tkeep),
-//         .m_axis_tvalid(tx_axis_tvalid),
-//         .m_axis_tready(tx_axis_tready),
-//         .m_axis_tlast(tx_axis_tlast),
-//         .m_axis_tid(),
-//         .m_axis_tdest(),
-//         .m_axis_tuser(tx_axis_tuser),
+        /*
+         * AXI output
+         */
+        .m_axis_tdata(tx_axis_tdata_int_2),
+        .m_axis_tkeep(tx_axis_tkeep_int_2),
+        .m_axis_tvalid(tx_axis_tvalid_int_2),
+        .m_axis_tready(tx_axis_tready_int_2),
+        .m_axis_tlast(tx_axis_tlast_int_2),
+        .m_axis_tid(),
+        .m_axis_tdest(),
+        .m_axis_tuser(0),
 
-//         /*
-//          * Control
-//          */
-//         .s_axis_cmd_csum_enable(tx_fifo_csum_cmd_csum_enable),
-//         .s_axis_cmd_csum_start(tx_fifo_csum_cmd_csum_start),
-//         .s_axis_cmd_csum_offset(tx_fifo_csum_cmd_csum_offset),
-//         .s_axis_cmd_csum_init(16'd0),
-//         .s_axis_cmd_valid(tx_fifo_csum_cmd_valid),
-//         .s_axis_cmd_ready(tx_fifo_csum_cmd_ready)
-//     );
+        /*
+         * Control
+         */
+        .s_axis_cmd_csum_enable(tx_fifo_csum_cmd_csum_enable),
+        .s_axis_cmd_csum_start(tx_fifo_csum_cmd_csum_start),
+        .s_axis_cmd_csum_offset(tx_fifo_csum_cmd_csum_offset),
+        .s_axis_cmd_csum_init(16'd0),
+        .s_axis_cmd_valid(tx_fifo_csum_cmd_valid),
+        .s_axis_cmd_ready(tx_fifo_csum_cmd_ready)
+    );
 
-// end else begin
+end else begin
 
-//     assign tx_axis_tdata = tx_axis_tdata_int;
-//     assign tx_axis_tkeep = tx_axis_tkeep_int;
-//     assign tx_axis_tvalid = tx_axis_tvalid_int;
-//     assign tx_axis_tready_int = tx_axis_tready;
-//     assign tx_axis_tlast = tx_axis_tlast_int;
-//     assign tx_axis_tuser = tx_axis_tuser_int;
+    assign tx_axis_tdata_int_2 = tx_axis_tdata_int;
+    assign tx_axis_tkeep_int_2 = tx_axis_tkeep_int;
+    assign tx_axis_tvalid_int_2 = tx_axis_tvalid_int;
+    assign tx_axis_tready_int = tx_axis_tready_int_2;
+    assign tx_axis_tlast_int_2 = tx_axis_tlast_int;
+    assign tx_axis_tuser_int_2 = tx_axis_tuser_int;
 
-//     assign tx_csum_cmd_ready = 1'b1;
+    assign tx_csum_cmd_ready = 1'b1;
 
-// end
+end
 
 //TODO add RMT plugins for tx path.
 
@@ -1862,17 +1869,17 @@ if (RMT_TX_ENABLE) begin
     	.aresetn(~rst),	
 
     	// input Slave AXI Stream
-    	.s_axis_tdata(tx_axis_tdata_int),
-    	.s_axis_tkeep(tx_axis_tkeep_int),
-    	.s_axis_tuser(tx_axis_tuser_int),
-    	.s_axis_tvalid(tx_axis_tvalid_int),
-    	.s_axis_tready(tx_axis_tready_int),
-    	.s_axis_tlast(tx_axis_tlast_int),
+    	.s_axis_tdata(tx_axis_tdata_int_2),
+    	.s_axis_tkeep(tx_axis_tkeep_int_2),
+    	.s_axis_tuser(tx_axis_tuser_int_2),
+    	.s_axis_tvalid(tx_axis_tvalid_int_2),
+    	.s_axis_tready(tx_axis_tready_int_2),
+    	.s_axis_tlast(tx_axis_tlast_int_2),
 
     	// output Master AXI Stream
     	.m_axis_tdata(tx_axis_tdata),
     	.m_axis_tkeep(tx_axis_tkeep),
-    	.m_axis_tuser(tx_axis_tuser),
+    	.m_axis_tuser(0),
     	.m_axis_tvalid(tx_axis_tvalid),
     	.m_axis_tready(tx_axis_tready),
     	.m_axis_tlast(tx_axis_tlast)
@@ -1884,14 +1891,14 @@ end
 
 else begin
 
-    assign tx_axis_tdata = tx_axis_tdata_int;
-    assign tx_axis_tkeep = tx_axis_tkeep_int;
-    assign tx_axis_tvalid = tx_axis_tvalid_int;
-    assign tx_axis_tready_int = tx_axis_tready;
-    assign tx_axis_tlast = tx_axis_tlast_int;
-    assign tx_axis_tuser = tx_axis_tuser_int;
+    assign tx_axis_tdata = tx_axis_tdata_int_2;
+    assign tx_axis_tkeep = tx_axis_tkeep_int_2;
+    assign tx_axis_tvalid = tx_axis_tvalid_int_2;
+    assign tx_axis_tready_int_2 = tx_axis_tready;
+    assign tx_axis_tlast = tx_axis_tlast_int_2;
+    assign tx_axis_tuser = tx_axis_tuser_int_2;
 
-    assign tx_csum_cmd_ready = 1'b1;
+    //assign tx_csum_cmd_ready = 1'b1;
 
 end
 
