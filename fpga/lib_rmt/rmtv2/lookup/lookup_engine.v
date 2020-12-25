@@ -160,6 +160,8 @@ reg [C_S_AXIS_DATA_WIDTH/8-1:0]     c_m_axis_tkeep_r;
 reg                                 c_m_axis_tvalid_r;
 reg                                 c_m_axis_tlast_r;
 
+reg [C_S_AXIS_DATA_WIDTH-1:0]       tcam_data_val;
+
 localparam IDLE_C = 0,
            PARSE_C = 1,
            CAM_TMP_ENTRY = 2,
@@ -379,20 +381,20 @@ generate
                 endcase
             end
         end
-        // tcam1 for lookup
 
+        // tcam1 for lookup
         cam_top # ( 
             .C_DEPTH			(16),
             // .C_WIDTH			(256),
             .C_WIDTH			(201),
-            .C_MEM_INIT			(1),
-            .C_MEM_INIT_FILE	("./cam_init_file.mif")
+            .C_MEM_INIT			(0),
+            .C_MEM_INIT_FILE	()
         )
         cam_0
         (
             .CLK				(clk),
-            .CMP_DIN			({vlan_id[7:4],extract_key}),
-            .CMP_DATA_MASK		({4'b0, extract_mask}),
+            .CMP_DIN			({vlan_id[7:4], extract_key}),
+            .CMP_DATA_MASK		({4'b0000, extract_mask}),
             .BUSY				(),
             .MATCH				(match),
             .MATCH_ADDR			(match_addr),
@@ -713,19 +715,19 @@ generate
         );
 		// debug
 		localparam PHV_4B_START_POS = 16*8+5*20+256;
-		(* mark_debug="true" *) wire dbg_ram_wr_en;
-		(* mark_debug="true" *) wire dbg_cam_wr_en;
-		(* mark_debug="true" *) wire dbg_action_valid;
-		(* mark_debug="true" *) wire [15:0] dbg_key_val_2B;
-		(* mark_debug="true" *) wire [24:0] dbg_action_in;
-		(* mark_debug="true" *) wire [24:0] dbg_action_out;
+		// (* mark_debug="true" *) wire dbg_ram_wr_en;
+		// (* mark_debug="true" *) wire dbg_cam_wr_en;
+		// (* mark_debug="true" *) wire dbg_action_valid;
+		// (* mark_debug="true" *) wire [15:0] dbg_key_val_2B;
+		// (* mark_debug="true" *) wire [24:0] dbg_action_in;
+		// (* mark_debug="true" *) wire [24:0] dbg_action_out;
 		
-		assign dbg_ram_wr_en = c_wr_en_act;
-		assign dbg_cam_wr_en = c_wr_en_cam;
-		assign dbg_action_valid = action_valid;
-		assign dbg_key_val_2B = c_s_axis_tdata_swapped[59+5+16*2-1 -: 16];
-		assign dbg_action_in = c_wr_act_data[275 +: 25];
-		assign dbg_action_out = action_wire[275 +: 25];
+		// assign dbg_ram_wr_en = c_wr_en_act;
+		// assign dbg_cam_wr_en = c_wr_en_cam;
+		// assign dbg_action_valid = action_valid;
+		// assign dbg_key_val_2B = c_s_axis_tdata_swapped[59+5+16*2-1 -: 16];
+		// assign dbg_action_in = c_wr_act_data[275 +: 25];
+		// assign dbg_action_out = action_wire[275 +: 25];
     end
 
 endgenerate

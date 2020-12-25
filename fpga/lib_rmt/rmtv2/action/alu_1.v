@@ -38,6 +38,9 @@ module alu_1 #(
               extract op1 from pkt header, op2 from action, add(sub) and write back.
 */
 
+(*mark_debug = "true"*) wire [ACTION_LEN-1:0] action_in_w;
+(*mark_debug = "true"*) wire [DATA_WIDTH-1:0] container_out_w;
+(*mark_debug = "true"*) wire 				  container_out_valid_w;
 
 localparam IDLE_S=3'd0, 
 		   WAIT1_S=3'd1, 

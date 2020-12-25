@@ -21,7 +21,7 @@ always @(posedge clk or negedge rst_n) begin
         cycle_cnt <= 0;
     end
     else begin
-        if(cycle_cnt == 32'h80000000) begin
+        if(cycle_cnt == 32'h8) begin
             cycle_cnt <= 0;
         end
         else begin
@@ -38,7 +38,7 @@ always @(posedge clk or negedge rst_n) begin
     end
     else begin
         if (cycle_cnt == 32'h8) begin
-            c_val <= c_val + (time_lsb>>16) ^ time_lsb;
+            c_val <= c_val ^ (time_lsb>>16) ^ time_lsb;
         end
         else begin
             c_val <= c_val;
