@@ -662,36 +662,68 @@ generate
 			end
 		end
 
+		if (STAGE_ID == 4) begin
+			// tcam1 for lookup
+        	cam_top # ( 
+        	    .C_DEPTH			(16),
+        	    // .C_WIDTH			(256),
+        	    .C_WIDTH			(201),
+        	    .C_MEM_INIT			(1),
+        	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
+        	)
+        	//TODO remember to change it back.
+        	cam_0
+        	(
+        	    .CLK				(clk),
+        	    .CMP_DIN			({vlan_id[7:4], extract_key}),
+        	    .CMP_DATA_MASK		({4'b1111, extract_mask}),
+        	    .BUSY				(),
+        	    .MATCH				(match),
+        	    .MATCH_ADDR			(match_addr),
 
-        // tcam1 for lookup
-        cam_top # ( 
-            .C_DEPTH			(16),
-            // .C_WIDTH			(256),
-            .C_WIDTH			(201),
-            .C_MEM_INIT			(1),
-            .C_MEM_INIT_FILE	("./cam_init_file.mif")
-        )
-        //TODO remember to change it back.
-        cam_0
-        (
-            .CLK				(clk),
-            .CMP_DIN			({vlan_id[7:4], extract_key}),
-            .CMP_DATA_MASK		({4'b0, extract_mask}),
-            .BUSY				(),
-            .MATCH				(match),
-            .MATCH_ADDR			(match_addr),
+        	    //.WE				(lookup_din_en),
+        	    //.WR_ADDR			(lookup_din_addr),
+        	    //.DATA_MASK		(lookup_din_mask),  
+        	    //.DIN				(lookup_din),
 
-            //.WE				(lookup_din_en),
-            //.WR_ADDR			(lookup_din_addr),
-            //.DATA_MASK		(lookup_din_mask),  
-            //.DIN				(lookup_din),
+        	    .WE                 (c_wr_en_cam),
+        	    .WR_ADDR            (c_index_cam[3:0]),
+        	    .DATA_MASK          (),  //TODO do we need ternary matching?
+        	    .DIN                (c_wr_cam_data),
+        	    .EN					(1'b1)
+        	);
+		end
+		else begin
+			// tcam1 for lookup
+        	cam_top # ( 
+        	    .C_DEPTH			(16),
+        	    // .C_WIDTH			(256),
+        	    .C_WIDTH			(201),
+        	    .C_MEM_INIT			(1),
+        	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
+        	)
+        	//TODO remember to change it back.
+        	cam_0
+        	(
+        	    .CLK				(clk),
+        	    .CMP_DIN			({vlan_id[7:4], extract_key}),
+        	    .CMP_DATA_MASK		({4'b0, extract_mask}),
+        	    .BUSY				(),
+        	    .MATCH				(match),
+        	    .MATCH_ADDR			(match_addr),
 
-            .WE                 (c_wr_en_cam),
-            .WR_ADDR            (c_index_cam[3:0]),
-            .DATA_MASK          (),  //TODO do we need ternary matching?
-            .DIN                (c_wr_cam_data),
-            .EN					(1'b1)
-        );
+        	    //.WE				(lookup_din_en),
+        	    //.WR_ADDR			(lookup_din_addr),
+        	    //.DATA_MASK		(lookup_din_mask),  
+        	    //.DIN				(lookup_din),
+
+        	    .WE                 (c_wr_en_cam),
+        	    .WR_ADDR            (c_index_cam[3:0]),
+        	    .DATA_MASK          (),  //TODO do we need ternary matching?
+        	    .DIN                (c_wr_cam_data),
+        	    .EN					(1'b1)
+        	);
+		end
 
 
         //ram for action
