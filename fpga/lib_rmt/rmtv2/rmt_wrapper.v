@@ -346,35 +346,35 @@ stage2
 	.c_m_axis_tlast(c_s_axis_tlast_5)
 );
 
-// stage #(
-// 	.C_S_AXIS_DATA_WIDTH(512),
-//     .C_S_AXIS_TUSER_WIDTH(128),
-//     .STAGE_ID(3)  //valid: 0-4
-// )
-// stage3
-// (
-// 	.axis_clk				(clk),
-//     .aresetn				(aresetn),
+stage #(
+	.C_S_AXIS_DATA_WIDTH(512),
+    .C_S_AXIS_TUSER_WIDTH(128),
+    .STAGE_ID(3)  //valid: 0-4
+)
+stage3
+(
+	.axis_clk				(clk),
+    .aresetn				(aresetn),
 
-// 	// input
-//     .phv_in					(stg2_phv_out),
-//     .phv_in_valid			(stg2_phv_out_valid_w),
-// 	// output
-//     .phv_out				(stg3_phv_out),
-//     .phv_out_valid			(stg3_phv_out_valid),
-// 	//control path
-// 	.c_s_axis_tdata(c_s_axis_tdata_5),
-// 	.c_s_axis_tuser(c_s_axis_tuser_5),
-// 	.c_s_axis_tkeep(c_s_axis_tkeep_5),
-// 	.c_s_axis_tvalid(c_s_axis_tvalid_5),
-// 	.c_s_axis_tlast(c_s_axis_tlast_5),
+	// input
+    .phv_in					(stg2_phv_out),
+    .phv_in_valid			(stg2_phv_out_valid_w),
+	// output
+    .phv_out				(stg3_phv_out),
+    .phv_out_valid			(stg3_phv_out_valid),
+	//control path
+	.c_s_axis_tdata(c_s_axis_tdata_5),
+	.c_s_axis_tuser(c_s_axis_tuser_5),
+	.c_s_axis_tkeep(c_s_axis_tkeep_5),
+	.c_s_axis_tvalid(c_s_axis_tvalid_5),
+	.c_s_axis_tlast(c_s_axis_tlast_5),
 
-// 	.c_m_axis_tdata(c_s_axis_tdata_6),
-// 	.c_m_axis_tuser(c_s_axis_tuser_6),
-// 	.c_m_axis_tkeep(c_s_axis_tkeep_6),
-// 	.c_m_axis_tvalid(c_s_axis_tvalid_6),
-// 	.c_m_axis_tlast(c_s_axis_tlast_6)
-// );
+	.c_m_axis_tdata(c_s_axis_tdata_6),
+	.c_m_axis_tuser(c_s_axis_tuser_6),
+	.c_m_axis_tkeep(c_s_axis_tkeep_6),
+	.c_m_axis_tvalid(c_s_axis_tvalid_6),
+	.c_m_axis_tlast(c_s_axis_tlast_6)
+);
 
 stage #(
 	.C_S_AXIS_DATA_WIDTH(512),
@@ -387,17 +387,17 @@ stage4
     .aresetn				(aresetn),
 
 	// input
-    .phv_in					(stg2_phv_out),
-    .phv_in_valid			(stg2_phv_out_valid_w),
+    .phv_in					(stg3_phv_out),
+    .phv_in_valid			(stg3_phv_out_valid_w),
 	// output
     .phv_out				(stg4_phv_out),
     .phv_out_valid			(stg4_phv_out_valid),
 	//control path
-	.c_s_axis_tdata(c_s_axis_tdata_5),
-	.c_s_axis_tuser(c_s_axis_tuser_5),
-	.c_s_axis_tkeep(c_s_axis_tkeep_5),
-	.c_s_axis_tvalid(c_s_axis_tvalid_5),
-	.c_s_axis_tlast(c_s_axis_tlast_5),
+	.c_s_axis_tdata(c_s_axis_tdata_6),
+	.c_s_axis_tuser(c_s_axis_tuser_6),
+	.c_s_axis_tkeep(c_s_axis_tkeep_6),
+	.c_s_axis_tvalid(c_s_axis_tvalid_6),
+	.c_s_axis_tlast(c_s_axis_tlast_6),
 
 	.c_m_axis_tdata(c_s_axis_tdata_7),
 	.c_m_axis_tuser(c_s_axis_tuser_7),

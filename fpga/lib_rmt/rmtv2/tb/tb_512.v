@@ -79,7 +79,8 @@ initial begin
     s_axis_tuser <= 128'h0;
     s_axis_tvalid <= 1'b0;
     s_axis_tlast <= 1'b0;
-    #CYCLE // test date with VID=2
+	// configure stateful page table
+    #CYCLE
     s_axis_tdata <= 512'h00000000000000000000000000000001001355541c00f2f1d204dededede6f6f6f6f20de1140000001003000004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
@@ -87,7 +88,7 @@ initial begin
     s_axis_tlast <= 1'b0;
 	#CYCLE
     s_axis_tdata <= 512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004; 
-    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tkeep <= 64'h0000000000000003;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b1;
@@ -102,7 +103,7 @@ initial begin
     s_axis_tlast <= 1'b0;
 	#CYCLE
     s_axis_tdata <= 512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000404; 
-    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tkeep <= 64'h0000000000000003;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b1;
@@ -110,9 +111,9 @@ initial begin
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
 
-    //888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+    // ctrl pkts for vid1
 
-     #(20*CYCLE)
+    #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000010000b8d43b00f2f1d204dededede6f6f6f6f01de1140000001004f00004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
@@ -120,7 +121,7 @@ initial begin
     s_axis_tlast <= 1'b0;
 	#CYCLE
     s_axis_tdata <= 512'h000000000000000000000000000000000000000000000000000000000000000000300000030030000003003000000000000000000000250e230d210c910b3100; 
-    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tkeep <= 64'h00000001ffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b1;
@@ -213,7 +214,7 @@ initial begin
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
-    s_axis_tlast <= 1'b0;
+    s_axis_tlast <= 1'b1;
 
     #CYCLE
 	s_axis_tvalid <= 1'b0;
@@ -222,6 +223,48 @@ initial begin
 
 
     //7
+     #(20*CYCLE)
+    s_axis_tdata <= 512'h000000000000000000000000000000010002a4b93400f2f1d204dededede6f6f6f6f08de1140000001004800004500080f0000810504030201000b0a09080706; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b0;
+	#CYCLE
+    s_axis_tdata <= 512'h0000000000000000000000000000000000000000000000000000000000000000000000000000800f009000000000000000000000000000000000000000000010; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b1;
+    #CYCLE
+	s_axis_tvalid <= 1'b0;
+	s_axis_tlast <= 1'b0;
+
+    //8
+
+    #(20*CYCLE)
+    s_axis_tdata <= 512'h000000000000000000000000000000010f0219af6900f2f1d204dededede6f6f6f6fd3dd1140000001007d00004500080f0000810504030201000b0a09080706; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b0;
+	#CYCLE
+    s_axis_tdata <= 512'h000f00001e00003c0000780000f00000e00100c00320c20000000f00001e00003c0000780000f00000e00100c00300800700000f00001e00003c0000780000f0; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b0;
+	#CYCLE
+    s_axis_tdata <= 512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f00000e00100c00300800700; 
+    s_axis_tkeep <= 64'hffffffffffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b1;
+    s_axis_tlast <= 1'b1;
+    #CYCLE
+	s_axis_tvalid <= 1'b0;
+	s_axis_tlast <= 1'b0;
+
+
+    //9
      #(20*CYCLE)
     s_axis_tdata <= 512'h00000000000000000000000000000001000953621d00f2f1d204dededede6f6f6f6f1fde1140000001003100004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -238,9 +281,8 @@ initial begin
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
 
-    //8
-
-    #(20*CYCLE)
+    //10
+     #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000010f09176a3300f2f1d204dededede6f6f6f6f09de1140000001004700004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
@@ -256,8 +298,7 @@ initial begin
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
 
-
-    //9
+    //11
      #(20*CYCLE)
     s_axis_tdata <= 512'h00000000000000000000000000000000000aa4a23400f2f1d204dededede6f6f6f6f08de1140000001004800004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -274,8 +315,9 @@ initial begin
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
 
-    //9
-     #(20*CYCLE)
+
+    //12
+    #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000000f0a7bb96900f2f1d204dededede6f6f6f6fd3dd1140000001007d00004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
@@ -297,7 +339,7 @@ initial begin
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
 
-    //9
+    //13
      #(20*CYCLE)
     s_axis_tdata <= 512'h00000000000000000000000000000001000aa4b13400f2f1d204dededede6f6f6f6f08de1140000001004800004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -315,8 +357,8 @@ initial begin
 	s_axis_tlast <= 1'b0;
 
 
-    //9
-     #(20*CYCLE)
+    //14
+    #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000010f0a8b806900f2f1d204dededede6f6f6f6fd3dd1140000001007d00004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
@@ -333,15 +375,15 @@ initial begin
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
-    s_axis_tlast <= 1'b0;
+    s_axis_tlast <= 1'b1;
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
 
-    //999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+    // ctrl pkts for vid2
 
 
-    //9
+    //1
      #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000020000d1e13b00f2f1d204dededede6f6f6f6f01de1140000001004f00004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -359,7 +401,7 @@ initial begin
 	s_axis_tlast <= 1'b0;
 
 
-    //9
+    //2
      #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000020005d1dc3b00f2f1d204dededede6f6f6f6f01de1140000001004f00004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -377,7 +419,7 @@ initial begin
 	s_axis_tlast <= 1'b0;
 
 
-    //9
+    //3
      #(20*CYCLE)
     s_axis_tdata <= 512'h00000000000000000000000000000002001153591d00f2f1d204dededede6f6f6f6f1fde1140000001003100004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -393,9 +435,9 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
-         #(20*CYCLE)
+	// 4
+    #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000020f1117613300f2f1d204dededede6f6f6f6f09de1140000001004700004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
@@ -410,9 +452,9 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
-         #(20*CYCLE)
+	// 5
+    #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000040012a2c63400f2f1d204dededede6f6f6f6f08de1140000001004800004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
@@ -427,9 +469,9 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
 
+	// 6
     #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000040f12bff56900f2f1d204dededede6f6f6f6fd3dd1140000001007d00004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -451,9 +493,8 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
-
+	// 7
     #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000050012a3f53400f2f1d204dededede6f6f6f6f08de1140000001004800004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -469,8 +510,8 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
+	// 8
     #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000050f128ff46900f2f1d204dededede6f6f6f6fd3dd1140000001007d00004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -492,9 +533,8 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
-
+	// 9
     #(20*CYCLE)
     s_axis_tdata <= 512'h00000000000000000000000000000002001953511d00f2f1d204dededede6f6f6f6f1fde1140000001003100004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -510,9 +550,9 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
 
+	// 10
     #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000020f1917593300f2f1d204dededede6f6f6f6f09de1140000001004700004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -528,9 +568,9 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
 
+	// 11
     #(20*CYCLE)
     s_axis_tdata <= 512'h00000000000000000000000000000004001aa47e3400f2f1d204dededede6f6f6f6f08de1140000001004800004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -546,9 +586,9 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
 
+	// 12
     #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000040f1a7ba56900f2f1d204dededede6f6f6f6fd3dd1140000001007d00004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -570,8 +610,8 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
+	// 13
     #(20*CYCLE)
     s_axis_tdata <= 512'h00000000000000000000000000000005001aa48d3400f2f1d204dededede6f6f6f6f08de1140000001004800004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -587,8 +627,8 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
 
+	// 14
     #(20*CYCLE)
     s_axis_tdata <= 512'h000000000000000000000000000000050f1a8b6c6900f2f1d204dededede6f6f6f6fd3dd1140000001007d00004500080f0000810504030201000b0a09080706; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -610,7 +650,6 @@ initial begin
     #CYCLE
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
-	// test for rmt_wrapper
    
     /*
     data packets
@@ -657,12 +696,12 @@ initial begin
 	s_axis_tvalid <= 1'b0;
 	s_axis_tlast <= 1'b0;
 
+    #(10*CYCLE)
     s_axis_tdata <= 512'b0; 
     s_axis_tkeep <= 64'h0;
     s_axis_tuser <= 128'h0;
     s_axis_tvalid <= 1'b0;
     s_axis_tlast <= 1'b0;
-    #(10*CYCLE);
 
 end
 
