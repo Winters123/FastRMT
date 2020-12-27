@@ -482,6 +482,24 @@ generate
             .doutb(action_wire),
             .enb(1'b1)
         );
+
+        (*mark_debug = "true"*) wire        c_wr_en_cam_dbg;
+        (*mark_debug = "true"*) wire        c_wr_en_act_dbg;
+        (*mark_debug = "true"*) wire [3:0]  c_index_act_dbg;
+        (*mark_debug = "true"*) wire [3:0]  c_index_cam_dbg;
+        (* mark_debug= "true"*) wire [15:0] cam_entry_reg_dbg;
+        (* mark_debug= "true"*) wire [24:0] dbg_action_in;
+        (* mark_debug= "true"*) wire [24:0] dbg_action_out;
+        
+        assign c_wr_en_act_dbg = c_wr_en_act;
+        assign c_wr_en_cam_dbg = c_wr_en_cam;
+        assign c_index_act_dbg = c_index_act;
+        assign c_index_cam_dbg = c_index_cam;
+        assign cam_entry_reg_dbg = cam_entry_reg[36 -: 16];
+        assign dbg_action_in = act_entry_tmp[275 +: 25];
+        assign dbg_action_out = action_wire[275 +: 25];
+
+
     end
     //NOTE: data width is 256b
     else begin

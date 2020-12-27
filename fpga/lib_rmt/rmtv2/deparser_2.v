@@ -39,15 +39,15 @@ module deparser #(
 
 );
 
-/* setup debug core
-*/
-(*mark_debug = "true"*) wire [31:0] debug_depar_out_tdata;
-(*mark_debug = "true"*) wire        debug_depar_out_tvalid;
-(*mark_debug = "true"*) wire        debug_depar_out_tlast;
+// /* setup debug core
+// */
+// (*mark_debug = "true"*) wire [31:0] debug_depar_out_tdata;
+// (*mark_debug = "true"*) wire        debug_depar_out_tvalid;
+// (*mark_debug = "true"*) wire        debug_depar_out_tlast;
 
-assign debug_depar_out_tdata = depar_out_tdata[31:0];
-assign debug_depar_out_tvalid = depar_out_tvalid;
-assign debug_depar_out_tlast = depar_out_tlast;
+// assign debug_depar_out_tdata = depar_out_tdata[31:0];
+// assign debug_depar_out_tvalid = depar_out_tvalid;
+// assign debug_depar_out_tlast = depar_out_tlast;
 
 
 // TODO: retrive vlan_id from PHV vector

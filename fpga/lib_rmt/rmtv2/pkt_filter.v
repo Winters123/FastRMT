@@ -37,30 +37,30 @@ module pkt_filter #(
 
 );
 
-(*mark_debug = "true"*) wire [31:0] s_axis_tdata_dbg;
-(*mark_debug = "true"*) wire 	    s_axis_tvalid_dbg;
-(*mark_debug = "true"*) wire 	    s_axis_tlast_dbg;
+// (*mark_debug = "true"*) wire [31:0] s_axis_tdata_dbg;
+// (*mark_debug = "true"*) wire 	    s_axis_tvalid_dbg;
+// (*mark_debug = "true"*) wire 	    s_axis_tlast_dbg;
 
 
-(*mark_debug = "true"*) wire [31:0] m_axis_tdata_dbg;
-(*mark_debug = "true"*) wire 	    m_axis_tvalid_dbg;
-(*mark_debug = "true"*) wire 	    m_axis_tlast_dbg;
+// (*mark_debug = "true"*) wire [31:0] m_axis_tdata_dbg;
+// (*mark_debug = "true"*) wire 	    m_axis_tvalid_dbg;
+// (*mark_debug = "true"*) wire 	    m_axis_tlast_dbg;
 
-(*mark_debug = "true"*) wire [31:0] c_m_axis_tdata_dbg;
-(*mark_debug = "true"*) wire 	    c_m_axis_tvalid_dbg;
-(*mark_debug = "true"*) wire 	    c_m_axis_tlast_dbg;
+// (*mark_debug = "true"*) wire [31:0] c_m_axis_tdata_dbg;
+// (*mark_debug = "true"*) wire 	    c_m_axis_tvalid_dbg;
+// (*mark_debug = "true"*) wire 	    c_m_axis_tlast_dbg;
 
-assign s_axis_tdata_dbg = s_axis_tdata[47 +: 32];
-assign s_axis_tvalid_dbg = s_axis_tvalid;
-assign s_axis_tlast_dbg = s_axis_tlast;
+// assign s_axis_tdata_dbg = s_axis_tdata[48 +: 32];
+// assign s_axis_tvalid_dbg = s_axis_tvalid;
+// assign s_axis_tlast_dbg = s_axis_tlast;
 
-assign m_axis_tdata_dbg = m_axis_tdata[47 +: 32];
-assign m_axis_tvalid_dbg = m_axis_tvalid;
-assign m_axis_tlast_dbg = m_axis_tlast;
+// assign m_axis_tdata_dbg = m_axis_tdata[48 +: 32];
+// assign m_axis_tvalid_dbg = m_axis_tvalid;
+// assign m_axis_tlast_dbg = m_axis_tlast;
 
-assign c_m_axis_tdata_dbg = c_m_axis_tdata[47 +: 32];
-assign c_m_axis_tvalid_dbg = c_m_axis_tvalid;
-assign c_m_axis_tlast_dbg = c_m_axis_tlast;
+// assign c_m_axis_tdata_dbg = c_m_axis_tdata[48 +: 32];
+// assign c_m_axis_tvalid_dbg = c_m_axis_tvalid;
+// assign c_m_axis_tlast_dbg = c_m_axis_tlast;
 
 
 localparam WAIT_FIRST_PKT=0, 
