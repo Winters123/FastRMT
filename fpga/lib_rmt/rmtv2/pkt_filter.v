@@ -118,13 +118,13 @@ always @(*) begin
 		end
 		FLUSH_CTL: begin
 			c_switch = 1'b1;
-			if (s_axis_tlast) begin
+			if (s_axis_tvalid && s_axis_tlast) begin
 				state_next = WAIT_FIRST_PKT;
 			end
 		end
 		DROP_PKT: begin
 			r_tvalid = 0;
-			if (s_axis_tlast) begin
+			if (s_axis_tvalid && s_axis_tlast) begin
 				state_next = WAIT_FIRST_PKT;
 			end
 		end

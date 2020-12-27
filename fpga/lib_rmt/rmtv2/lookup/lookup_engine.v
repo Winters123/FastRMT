@@ -149,6 +149,7 @@ reg  [7:0]          c_index_act;
 reg                 c_wr_en_act;
 reg  [ACT_LEN-1:0]  act_entry_tmp;             
 reg                 continous_flag;
+reg [200:0]         cam_entry_reg;
 
 
 reg [2:0]           c_state;
@@ -165,10 +166,11 @@ reg [C_S_AXIS_DATA_WIDTH-1:0]       tcam_data_val;
 localparam IDLE_C = 0,
            PARSE_C = 1,
            CAM_TMP_ENTRY = 2,
-           ACT_TMP_ENTRY_WAIT = 3,
-           ACT_TMP_ENTRY_WAIT_2 = 4,
-           ACT_TMP_ENTRY = 5,
-		   FLUSH_REST_C = 6;
+           SU_CAM_TMP_ENTRY = 3,
+           ACT_TMP_ENTRY_WAIT = 4,
+           ACT_TMP_ENTRY_WAIT_2 = 5,
+           ACT_TMP_ENTRY = 6,
+		   FLUSH_REST_C = 7;
 
 generate 
     if(C_S_AXIS_DATA_WIDTH == 512) begin
@@ -252,6 +254,7 @@ generate
                 c_wr_en_act <= 0;
 
                 act_entry_tmp <= 0;
+                cam_entry_reg <= 0;
                 continous_flag <= 0;
 
                 c_m_axis_tdata <= 0;
@@ -271,7 +274,7 @@ generate
                             if(mod_id[7:3] == STAGE_ID && mod_id[2:0] == LOOKUP_ID && control_flag == 16'hf2f1) begin
                                 //TCAM entry
                                 if(resv == 4'b0) begin
-                                    c_wr_en_cam <= 1'b1;
+                                    c_wr_en_cam <= 1'b0;
                                     c_index_cam <= c_s_axis_tdata[384+:8];
                                     c_state <= CAM_TMP_ENTRY;
                                 end
@@ -324,19 +327,35 @@ generate
                     end
 
                     CAM_TMP_ENTRY: begin
-                        if(c_s_axis_tvalid && c_s_axis_tlast) begin
-                            c_wr_en_cam <= 1'b0;
-                            c_state <= IDLE_C;
-                        end
-                        else if (c_s_axis_tvalid) begin
+                        if(c_s_axis_tvalid) begin
+                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 201];
                             c_wr_en_cam <= 1'b1;
-                            c_index_cam <= c_index_cam + 8'b1;
-                            c_state <= CAM_TMP_ENTRY;
+                            if(c_s_axis_tlast) begin
+                                c_state <= IDLE_C;
+                            end
+                            else begin
+                                c_state <= SU_CAM_TMP_ENTRY;
+                            end
                         end
                         else begin
-                            c_wr_en_cam <= c_wr_en_cam;
-                            c_index_cam <= c_index_cam;
-                            c_state <= c_state;
+                            c_wr_en_cam <= 1'b0;
+                        end
+                    end
+
+                    SU_CAM_TMP_ENTRY: begin
+                        if(c_s_axis_tvalid) begin
+                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 201];
+                            c_wr_en_cam <= 1'b1;
+                            c_index_cam <= c_index_cam + 1'b1;
+                            if(c_s_axis_tlast) begin
+                                c_state <= IDLE_C;
+                            end
+                            else begin
+                                c_state <= SU_CAM_TMP_ENTRY;
+                            end
+                        end
+                        else begin
+                            c_wr_en_cam <= 1'b0;
                         end
                     end
 
@@ -408,7 +427,7 @@ generate
         	    .WE                 (c_wr_en_cam),
         	    .WR_ADDR            (c_index_cam[3:0]),
         	    .DATA_MASK          (),  //TODO do we need ternary matching?
-        	    .DIN                (c_s_axis_tdata_swapped[511-:201]),
+        	    .DIN                (cam_entry_reg),
         	    .EN					(1'b1)
         	);
 		end
@@ -438,7 +457,7 @@ generate
         	    .WE                 (c_wr_en_cam),
         	    .WR_ADDR            (c_index_cam[3:0]),
         	    .DATA_MASK          (),  //TODO do we need ternary matching?
-        	    .DIN                (c_s_axis_tdata_swapped[511-:201]),
+        	    .DIN                (cam_entry_reg),
         	    .EN					(1'b1)
         	);
 		end

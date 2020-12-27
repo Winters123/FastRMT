@@ -71,7 +71,6 @@ initial begin
         here you give values to stimulates per CYCLE
     */
 
-
     // test for rmt_wrapper
     m_axis_tready <= 1'b1;
     s_axis_tdata <= 512'b0; 
@@ -122,7 +121,13 @@ initial begin
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
-	#CYCLE
+    #CYCLE
+    s_axis_tdata <= 512'h0; 
+    s_axis_tkeep <= 64'h00000001ffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tlast <= 1'b1;
+    #CYCLE
     s_axis_tdata <= 512'h000000000000000000000000000000000000000000000000000000000000000000300000030030000003003000000000000000000000250e230d210c910b3100; 
     s_axis_tkeep <= 64'h00000001ffffffff;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
@@ -156,6 +161,13 @@ initial begin
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
+    
+    #CYCLE
+    s_axis_tdata <= 512'h0; 
+    s_axis_tkeep <= 64'h00000001ffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tlast <= 1'b1;
 	#CYCLE
     s_axis_tdata <= 512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -190,6 +202,12 @@ initial begin
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= 512'h0; 
+    s_axis_tkeep <= 64'h00000001ffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tlast <= 1'b1;
 	#CYCLE
     s_axis_tdata <= 512'h0000000000000000000000000000000000000000000000000000000000000000000000000000800f00d002000000000000000000000000000000000000000010; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -233,6 +251,12 @@ initial begin
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= 512'h0; 
+    s_axis_tkeep <= 64'h00000001ffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tlast <= 1'b1;
 	#CYCLE
     s_axis_tdata <= 512'h0000000000000000000000000000000000000000000000000000000000000000000000000000800f009000000000000000000000000000000000000000000010; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -276,6 +300,12 @@ initial begin
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= 512'h0; 
+    s_axis_tkeep <= 64'h00000001ffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tlast <= 1'b1;
 	#CYCLE
     s_axis_tdata <= 512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -355,6 +385,12 @@ initial begin
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= 512'h0; 
+    s_axis_tkeep <= 64'h00000001ffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tlast <= 1'b1;
 	#CYCLE
     s_axis_tdata <= 512'h0000000000000000000000000000000000000000000000000000000000000000000000000000800f000000000000000000000000000000000090000000000010; 
     s_axis_tkeep <= 64'hffffffffffffffff;
@@ -400,6 +436,12 @@ initial begin
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
+    #CYCLE
+    s_axis_tdata <= 512'h0; 
+    s_axis_tkeep <= 64'h00000001ffffffff;
+    s_axis_tuser <= 128'h00000000000000000000000000000040;
+    s_axis_tvalid <= 1'b0;
+    s_axis_tlast <= 1'b1;
 	#CYCLE
     s_axis_tdata <= 512'h00000000000000000000000000000000000000000000000000000000000000000030000003003000000300300000000000000000000000002f0d910b210c3100; 
     s_axis_tkeep <= 64'hffffffffffffffff;

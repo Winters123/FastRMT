@@ -371,7 +371,8 @@ reg  [259:0]        entry_reg;
 reg  [2:0]          c_state;
 
 localparam IDLE_C = 1,
-           WRITE_C = 2;
+           WRITE_C  =2,
+           SU_WRITE_C = 3;
 
 assign mod_id = c_s_axis_tdata[368+:8];
 assign control_flag = c_s_axis_tdata[335:320];
@@ -454,6 +455,7 @@ always @(posedge axis_clk or negedge aresetn) begin
         c_m_axis_tkeep <= 0;
         c_m_axis_tvalid <= 0;
         c_m_axis_tlast <= 0;
+        entry_reg <= 0;
 
         c_state <= IDLE_C;
     end
@@ -461,7 +463,7 @@ always @(posedge axis_clk or negedge aresetn) begin
         case(c_state)
             IDLE_C: begin
                 if(c_s_axis_tvalid && mod_id[2:0] == PARSER_ID && control_flag == 16'hf2f1)begin
-                    c_wr_en <= 1'b1;
+                    c_wr_en <= 1'b0;
                     c_index <= c_s_axis_tdata[384+:8];
 
                     c_m_axis_tdata <= 0;
@@ -476,6 +478,7 @@ always @(posedge axis_clk or negedge aresetn) begin
                 else begin
                     c_wr_en <= 1'b0;
                     c_index <= 4'b0; 
+                    entry_reg <= 0;
 
                     c_m_axis_tdata <= c_s_axis_tdata;
                     c_m_axis_tuser <= c_s_axis_tuser;
@@ -488,17 +491,35 @@ always @(posedge axis_clk or negedge aresetn) begin
             end
             //support full table flush
             WRITE_C: begin
-                if(c_s_axis_tlast && c_s_axis_tvalid) begin
-                    c_wr_en <= 1'b0;
-                    c_index <= 4'b0;
-                    c_state <= IDLE_C;
+                if(c_s_axis_tvalid) begin
+                    c_wr_en <= 1'b1;
+                    entry_reg <= c_s_axis_tdata_swapped[511 -: 260];
+                    if(c_s_axis_tlast) begin
+                        c_state <= IDLE_C;
+                    end
+                    else begin
+                        c_state <= SU_WRITE_C;
+                    end
                 end
                 else begin
-                    if (c_s_axis_tvalid) begin
-                        c_wr_en <= 1'b1;
-                        c_index <= c_index + 4'b1;
+                    c_wr_en <= 1'b0;
+                end
+            end
+
+            SU_WRITE_C: begin
+                if(c_s_axis_tvalid) begin
+                    entry_reg <= c_s_axis_tdata_swapped[511 -: 260];
+                    c_wr_en <= 1'b1;
+                    c_index <= c_index + 1'b1;
+                    if(c_s_axis_tlast) begin
+                        c_state <= IDLE_C;
                     end
-                    c_state <= WRITE_C;
+                    else begin
+                        c_state <= SU_WRITE_C;
+                    end
+                end
+                else begin
+                    c_wr_en <= 1'b0;
                 end
             end
         endcase
@@ -518,7 +539,7 @@ parse_act_ram
 	// write port
 	.clka		(axis_clk),
 	.addra		(c_index[3:0]),
-	.dina		(c_s_axis_tdata_swapped[C_S_AXIS_DATA_WIDTH-1 -: 260]),
+	.dina		(entry_reg),
 	.ena		(1'b1),
 	.wea		(c_wr_en),
 

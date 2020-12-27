@@ -264,8 +264,10 @@ reg                                 c_m_axis_tlast_r;
 localparam IDLE_C = 0,
            PARSE_C = 1,
            WRITE_OFF_C = 2,
-           WRITE_MASK_C = 3,
-		   FLUSH_PKT_C = 4;
+           SU_WRITE_OFF_C = 3,
+           WRITE_MASK_C = 4,
+           SU_WRITE_MASK_C = 5,
+		   FLUSH_PKT_C = 6;
 
 generate 
     if(C_S_AXIS_DATA_WIDTH == 512) begin
@@ -274,6 +276,9 @@ generate
         //4'b1 for key mask
         assign resv = c_s_axis_tdata[376+:4];
         assign control_flag = c_s_axis_tdata[335:320];
+
+        reg [17:0]                    key_off_entry_reg;
+        reg [196:0]                   key_mask_entry_reg;
         //LE to BE switching
         wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
 
@@ -353,6 +358,9 @@ generate
                 c_m_axis_tkeep <= 0;
                 c_m_axis_tvalid <= 0;
                 c_m_axis_tlast <= 0;
+
+                key_off_entry_reg <= 0;
+                key_mask_entry_reg <= 0;
         
                 c_state <= IDLE_C;
         
@@ -373,11 +381,11 @@ generate
         
                             //c_state <= WRITE_C;
                             if(resv == 4'b0) begin
-                                c_wr_en_off <= 1'b1;
+                                c_wr_en_off <= 1'b0;
                                 c_state <= WRITE_OFF_C;
                             end
                             else begin
-                                c_wr_en_mask <= 1'b1;
+                                c_wr_en_mask <= 1'b0;
                                 c_state <= WRITE_MASK_C;
                             end
                         end
@@ -397,29 +405,71 @@ generate
                     end
                     //support full table flush
                     WRITE_OFF_C: begin
-                        if(c_s_axis_tvalid && c_s_axis_tlast) begin
-                            c_wr_en_off <= 1'b0;
-                            c_index <= 8'b0;
-                            c_state <= IDLE_C;
-                        end
-                        else if(c_s_axis_tvalid) begin
-                            c_wr_en_off <= 1'b1;
-                            c_index <= c_index + 8'b1;
-                            c_state <= WRITE_OFF_C;
-                        end
-                    end
-                    WRITE_MASK_C: begin
-                        if(c_s_axis_tvalid && c_s_axis_tlast) begin
-                            c_wr_en_mask <= 1'b0;
-                            c_index <= 8'b0;
-                            c_state <= IDLE_C;
-                        end
-                        else if(c_s_axis_tvalid) begin
+                        if(c_s_axis_tvalid) begin
+                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 18];
                             c_wr_en_mask <= 1'b1;
-                            c_index <= c_index + 8'b1;
-                            c_state <= WRITE_MASK_C;
+                            if(c_s_axis_tlast) begin
+                                c_state <= IDLE_C;
+                            end
+                            else begin
+                                c_state <= SU_WRITE_OFF_C;
+                            end
+                        end
+                        else begin
+                            c_wr_en_off <= 0;
                         end
                     end
+
+                    SU_WRITE_OFF_C: begin
+                        if(c_s_axis_tvalid) begin
+                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 18];
+                            c_wr_en_off <= 1'b1;
+                            c_index <= c_index + 1'b1;
+                            if(c_s_axis_tlast) begin
+                                c_state <= IDLE_C;
+                            end
+                            else begin
+                                c_state <= SU_WRITE_OFF_C;
+                            end
+                        end
+                        else begin
+                            c_wr_en_off <= 1'b0;
+                        end
+                    end
+
+                    WRITE_MASK_C: begin
+                        if(c_s_axis_tvalid) begin
+                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 197];
+                            c_wr_en_mask <= 1'b1;
+                            if(c_s_axis_tlast) begin
+                                c_state <= IDLE_C;
+                            end
+                            else begin
+                                c_state <= SU_WRITE_MASK_C;
+                            end
+                        end
+                        else begin
+                            c_wr_en_mask <= 0;
+                        end
+                    end
+
+                    SU_WRITE_MASK_C: begin
+                        if(c_s_axis_tvalid) begin
+                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 197];
+                            c_wr_en_mask <= 1'b1;
+                            c_index <= c_index + 1'b1;
+                            if(c_s_axis_tlast) begin
+                                c_state <= IDLE_C;
+                            end
+                            else begin
+                                c_state <= SU_WRITE_MASK_C;
+                            end
+                        end
+                        else begin
+                            c_wr_en_mask <= 1'b0;
+                        end
+                    end
+
                     default: begin
                         c_wr_en_off <= 1'b0;
                         c_wr_en_mask <= 1'b0;
@@ -445,7 +495,7 @@ generate
         (
             .addra(c_index[3:0]),
             .clka(clk),
-            .dina(c_s_axis_tdata_swapped[511 -: 18]),
+            .dina(key_off_entry_reg),
             .ena(1'b1),
             .wea(c_wr_en_off),
 
@@ -461,7 +511,7 @@ generate
         (
             .addra(c_index[3:0]),
             .clka(clk),
-            .dina(c_s_axis_tdata_swapped[511 -: 197]),
+            .dina(key_mask_entry_reg),
             .ena(1'b1),
             .wea(c_wr_en_mask),
 

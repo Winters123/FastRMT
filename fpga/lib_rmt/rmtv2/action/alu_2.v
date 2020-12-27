@@ -272,11 +272,13 @@ generate
 		wire [15:0]         control_flag; //dst udp port num
 		reg  [7:0]          c_index; //table index(addr)
 		reg                 c_wr_en; //enable table write(wen)
+		reg [15:0]			entry_reg;
 		
 		reg  [2:0]          c_state;
 		
 		localparam IDLE_C = 0,
-		           WRITE_C = 1;
+		           WRITE_C = 1,
+				   SU_WRITE_C = 2;
 		
 		assign mod_id = c_s_axis_tdata[368+:8];
 		assign control_flag = c_s_axis_tdata[335:320];
@@ -359,6 +361,8 @@ generate
 		        c_m_axis_tkeep <= 0;
 		        c_m_axis_tvalid <= 0;
 		        c_m_axis_tlast <= 0;
+
+				entry_reg <= 0;
 		
 		        c_state <= IDLE_C;
 		    end
@@ -366,7 +370,7 @@ generate
 		        case(c_state)
 		            IDLE_C: begin
 		                if(c_s_axis_tvalid && mod_id[7:3] == STAGE_ID && mod_id[2:0] == ACTION_ID && control_flag == 16'hf2f1)begin
-		                    c_wr_en <= 1'b1;
+		                    c_wr_en <= 1'b0;
 		                    c_index <= c_s_axis_tdata[384+:8];
 		
 		                    c_m_axis_tdata <= 0;
@@ -392,20 +396,38 @@ generate
 		                end
 		            end
 		            //support full table flush
-		            WRITE_C: begin
-		                if(c_s_axis_tlast && c_s_axis_tvalid) begin
-		                    c_wr_en <= 1'b0;
-		                    c_index <= 4'b0;
-		                    c_state <= IDLE_C;
-		                end
-		                else begin
-		                    if (c_s_axis_tvalid) begin
-		                        c_wr_en <= 1'b1;
-		                        c_index <= c_index + 4'b1;
-		                    end
-		                    c_state <= WRITE_C;
-		                end
-		            end
+					WRITE_C: begin
+						if(c_s_axis_tvalid) begin
+							c_wr_en <= 1'b1;
+							entry_reg <= c_s_axis_tdata_swapped[511 -: 16];
+							if(c_s_axis_tlast) begin
+								c_state <= IDLE_C;
+							end
+							else begin
+								c_state <= SU_WRITE_C;
+							end
+						end
+						else begin
+							c_wr_en <= 1'b0;
+						end
+					end
+
+					SU_WRITE_C: begin
+						if(c_s_axis_tvalid) begin
+							entry_reg <= c_s_axis_tdata_swapped[511 -: 16];
+							c_wr_en <= 1'b1;
+							c_index <= c_index + 1'b1;
+							if(c_s_axis_tlast) begin
+								c_state <= IDLE_C;
+							end
+							else begin
+								c_state <= SU_WRITE_C;
+							end
+						end
+						else begin
+							c_wr_en <= 1'b0;
+						end
+					end
 		        endcase
 		
 		    end
@@ -419,7 +441,7 @@ generate
 		    //write
 		    .addra(c_index),
 		    .clka(clk),
-		    .dina(c_s_axis_tdata_swapped[C_S_AXIS_DATA_WIDTH-1 -: 16]),
+		    .dina(entry_reg),
 		    .ena(1'b1),
 		    .wea(c_wr_en),
 		

@@ -574,13 +574,17 @@ wire [15:0]         control_flag; //dst udp port num
 reg  [7:0]          c_index; //table index(addr)
 reg                 c_wr_en; //enable table write(wen)
 
+reg [259:0]         entry_reg;
+
 reg [2:0]           c_state;
 
 localparam IDLE_C = 1,
-           WRITE_C = 2;
+           WRITE_C = 2,
+           SU_WRITE_C = 3;
 
 assign mod_id = c_s_axis_tdata[368+:8];
 assign control_flag = c_s_axis_tdata[335:320];
+
 //LE to BE switching
 wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
 assign c_s_axis_tdata_swapped = {	c_s_axis_tdata[0+:8],
@@ -653,6 +657,7 @@ always @(posedge clk or negedge aresetn) begin
     if(~aresetn) begin
         c_wr_en <= 1'b0;
         c_index <= 4'b0;
+        entry_reg <= 0;
 
         c_state <= IDLE_C;
     end
@@ -660,7 +665,7 @@ always @(posedge clk or negedge aresetn) begin
         case(c_state)
             IDLE_C: begin
                 if(c_s_axis_tvalid && mod_id[2:0] == DEPARSER_ID && control_flag == 16'hf2f1)begin
-                    c_wr_en <= 1'b1;
+                    c_wr_en <= 1'b0;
                     c_index <= c_s_axis_tdata[384+:8];
 
                     c_state <= WRITE_C;
@@ -669,23 +674,42 @@ always @(posedge clk or negedge aresetn) begin
                 else begin
                     c_wr_en <= 1'b0;
                     c_index <= 4'b0; 
+                    entry_reg <= 0;
 
                     c_state <= IDLE_C;
                 end
             end  
-            //support full table flush
+//support full table flush
             WRITE_C: begin
-                if(c_s_axis_tlast && c_s_axis_tvalid) begin
-                    c_wr_en <= 1'b0;
-                    c_index <= 4'b0;
-                    c_state <= IDLE_C;
+                if(c_s_axis_tvalid) begin
+                    c_wr_en <= 1'b1;
+                    entry_reg <= c_s_axis_tdata_swapped[511 -: 260];
+                    if(c_s_axis_tlast) begin
+                        c_state <= IDLE_C;
+                    end
+                    else begin
+                        c_state <= SU_WRITE_C;
+                    end
                 end
                 else begin
-                    if(c_s_axis_tvalid) begin
-                        c_wr_en <= 1'b1;
-                        c_index <= c_index + 4'b1;
+                    c_wr_en <= 1'b0;
+                end
+            end
+
+            SU_WRITE_C: begin
+                if(c_s_axis_tvalid) begin
+                    entry_reg <= c_s_axis_tdata_swapped[511 -: 260];
+                    c_wr_en <= 1'b1;
+                    c_index <= c_index + 1'b1;
+                    if(c_s_axis_tlast) begin
+                        c_state <= IDLE_C;
                     end
-                    c_state <= WRITE_C;
+                    else begin
+                        c_state <= SU_WRITE_C;
+                    end
+                end
+                else begin
+                    c_wr_en <= 1'b0;
                 end
             end
         endcase
@@ -694,14 +718,13 @@ always @(posedge clk or negedge aresetn) begin
 end
 
 
-
 parse_act_ram_ip
 parse_act_ram
 (
 	// write port
 	.clka		(clk),
 	.addra		(c_index[3:0]),
-	.dina		(c_s_axis_tdata_swapped[511 -: 260]),
+	.dina		(entry_reg),
 	.ena		(1'b1),
 	.wea		(c_wr_en),
 
