@@ -72,9 +72,10 @@ localparam WAIT_PKT_1 = 1;
 localparam WAIT_PKT_2 = 2;
 localparam WAIT_PKT_3 = 3;
 localparam BEGIN_SUB_DEPARSER = 4;
-localparam FINISH_SUB_DEPARSER_0 = 5;
-localparam FINISH_SUB_DEPARSER_1 = 6;
-localparam FINISH_SUB_DEPARSER_2 = 7;
+localparam EMPTY_FINISH = 5;
+localparam FINISH_SUB_DEPARSER_0 = 6;
+localparam FINISH_SUB_DEPARSER_1 = 7;
+localparam FINISH_SUB_DEPARSER_2 = 8;
 
 localparam FLUSH_PKT_0 = 44;
 localparam FLUSH_PKT_1 = 45;
@@ -281,6 +282,10 @@ always @(*) begin
 			sub_depar_act[8] = parse_action[8][5:0];
 			sub_depar_act[9] = parse_action[9][5:0];
 
+			state_next = EMPTY_FINISH;
+		end
+
+		EMPTY_FINISH: begin
 			state_next = FINISH_SUB_DEPARSER_0;
 		end
 
