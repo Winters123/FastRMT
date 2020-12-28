@@ -49,6 +49,7 @@ module stage #(
 //key_extract to lookup_engine
 wire [KEY_LEN-1:0]           key2lookup_key;
 wire                         key2lookup_key_valid;
+wire                         key2lookup_phv_valid;
 wire [PHV_LEN-1:0]           key2lookup_phv;
 wire [KEY_LEN-1:0]           key2lookup_key_mask;
 
@@ -92,7 +93,7 @@ key_extract_2 #(
     .phv_valid_in(phv_in_valid),
 
     .phv_out(key2lookup_phv),
-    .phv_valid_out(key2lookup_key_valid),
+    .phv_valid_out(key2lookup_phv_valid),
     .key_out(key2lookup_key),
     .key_valid_out(key2lookup_key_valid),
     .key_mask_out(key2lookup_key_mask),
@@ -128,6 +129,7 @@ lookup_engine #(
     .extract_key(key2lookup_key),
     .extract_mask(key2lookup_key_mask),
     .key_valid(key2lookup_key_valid),
+    .phv_valid(key2lookup_phv_valid),
     .phv_in(key2lookup_phv),
 
     //output to the action engine

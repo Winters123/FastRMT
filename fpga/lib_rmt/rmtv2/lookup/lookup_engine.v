@@ -25,6 +25,7 @@ module lookup_engine #(
     input [KEY_LEN-1:0]           extract_key,
     input [KEY_LEN-1:0]           extract_mask,
     input                         key_valid,
+	input 					      phv_valid,
     input [PHV_LEN-1:0]           phv_in,
 
     //output to the action engine
@@ -49,10 +50,12 @@ module lookup_engine #(
 );
 
 (*mark_debug = "true"*) wire            key_valid_dbg;
+(*mark_debug = "true"*) wire            phv_valid_dbg;
 (*mark_debug = "true"*) wire [15:0]     key_dbg;
 (*mark_debug = "true"*) wire [15:0]     key_mask_dbg;
 
 assign key_valid_dbg = key_valid;
+assign phv_valid_dbg = phv_valid;
 assign key_dbg = extract_key[36 -: 16];
 assign key_mask_dbg = extract_mask[36 -: 16];
 
