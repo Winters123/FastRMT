@@ -407,8 +407,8 @@ generate
         	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(201),
-        	    .C_MEM_INIT			(0),
-        	    .C_MEM_INIT_FILE	()
+        	    .C_MEM_INIT			(1),
+        	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
         	cam_0
         	(
@@ -437,8 +437,8 @@ generate
         	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(201),
-        	    .C_MEM_INIT			(0),
-        	    .C_MEM_INIT_FILE	()
+        	    .C_MEM_INIT			(1),
+        	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
         	cam_0
         	(
@@ -483,21 +483,31 @@ generate
             .enb(1'b1)
         );
 
-        (*mark_debug = "true"*) wire        c_wr_en_cam_dbg;
-        (*mark_debug = "true"*) wire        c_wr_en_act_dbg;
-        (*mark_debug = "true"*) wire [3:0]  c_index_act_dbg;
-        (*mark_debug = "true"*) wire [3:0]  c_index_cam_dbg;
-        (* mark_debug= "true"*) wire [15:0] cam_entry_reg_dbg;
-        (* mark_debug= "true"*) wire [24:0] dbg_action_in;
-        (* mark_debug= "true"*) wire [24:0] dbg_action_out;
+        // (*mark_debug = "true"*) wire        c_wr_en_cam_dbg;
+        // (*mark_debug = "true"*) wire        c_wr_en_act_dbg;
+        // (*mark_debug = "true"*) wire [3:0]  c_index_act_dbg;
+        // (*mark_debug = "true"*) wire [3:0]  c_index_cam_dbg;
+        // (* mark_debug= "true"*) wire [15:0] cam_entry_reg_dbg;
+        // (* mark_debug= "true"*) wire [24:0] dbg_action_in;
+        // (* mark_debug= "true"*) wire [24:0] dbg_action_out;
         
-        assign c_wr_en_act_dbg = c_wr_en_act;
-        assign c_wr_en_cam_dbg = c_wr_en_cam;
-        assign c_index_act_dbg = c_index_act;
-        assign c_index_cam_dbg = c_index_cam;
-        assign cam_entry_reg_dbg = cam_entry_reg[36 -: 16];
-        assign dbg_action_in = act_entry_tmp[275 +: 25];
-        assign dbg_action_out = action_wire[275 +: 25];
+        // assign c_wr_en_act_dbg = c_wr_en_act;
+        // assign c_wr_en_cam_dbg = c_wr_en_cam;
+        // assign c_index_act_dbg = c_index_act;
+        // assign c_index_cam_dbg = c_index_cam;
+        // assign cam_entry_reg_dbg = cam_entry_reg[36 -: 16];
+        // assign dbg_action_in = act_entry_tmp[275 +: 25];
+        // assign dbg_action_out = action_wire[275 +: 25];
+
+        (*mark_debug = "true"*) wire            match_dbg;
+        (*mark_debug = "true"*) wire [3:0]      match_addr_dbg;
+        (*mark_debug = "true"*) wire [24:0]     action_out_dbg;
+        (*mark_debug = "true"*) wire [3:0]      vlan_id_dbg;
+
+        assign match_dbg = match;
+        assign match_addr_dbg = match_addr;
+        assign action_out_dbg = action_wire[275 +: 25];
+        assign vlan_id_dbg = vlan_id[7:4];
 
 
     end
