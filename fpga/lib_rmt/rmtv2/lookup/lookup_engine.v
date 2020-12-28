@@ -48,6 +48,15 @@ module lookup_engine #(
 
 );
 
+(*mark_debug = "true"*) wire            key_valid_dbg;
+(*mark_debug = "true"*) wire [15:0]     key_dbg;
+(*mark_debug = "true"*) wire [15:0]     key_mask_dbg;
+
+assign key_valid_dbg = key_valid;
+assign key_dbg = extract_key[36 -: 16];
+assign key_mask_dbg = extract_mask[36 -: 16];
+
+
 /********intermediate variables declared here********/
 wire [3:0]  match_addr;
 wire        match;
@@ -414,7 +423,7 @@ generate
         	(
         	    .CLK				(clk),
         	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b0000, extract_mask}),
+        	    .CMP_DATA_MASK		({4'b1111, extract_mask}),
         	    .BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr),
@@ -444,7 +453,7 @@ generate
         	(
         	    .CLK				(clk),
         	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b1111, extract_mask}),
+        	    .CMP_DATA_MASK		({4'b0000, extract_mask}),
         	    .BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr),
