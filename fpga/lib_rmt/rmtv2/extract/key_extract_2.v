@@ -57,8 +57,8 @@ reg [width_2B-1:0]    cont_2B [0:7];
 reg [width_4B-1:0]    cont_4B [0:7];
 reg [width_6B-1:0]    cont_6B [0:7];
 
-reg [PHV_LEN-1:0]     phv_out_delay[0:1];
-reg                   phv_valid_out_delay[0:1];
+reg [PHV_LEN-1:0]     phv_out_delay[0:2];
+reg                   phv_valid_out_delay[0:2];
 
 reg  [19:0]            com_op[0:4];
 reg  [7:0]             com_op_1;
@@ -68,6 +68,7 @@ reg  [7:0]             com_op_2;
 wire  [11:0]             vlan_id; 
 
 wire [KEY_OFF-1:0]      key_offset;
+reg  [KEY_OFF-1:0]      key_offset_r;
 wire [196:0]        key_mask_out_w;
 
 /********intermediate variables declared here********/
@@ -111,35 +112,35 @@ assign vlan_id = phv_in[140:129];
 
 //locate those containers
 always @(posedge clk) begin
-    cont_6B[7] <= phv_out_delay[0][PHV_LEN-1            -: width_6B];
-    cont_6B[6] <= phv_out_delay[0][PHV_LEN-1-  width_6B -: width_6B];
-    cont_6B[5] <= phv_out_delay[0][PHV_LEN-1-2*width_6B -: width_6B];
-    cont_6B[4] <= phv_out_delay[0][PHV_LEN-1-3*width_6B -: width_6B];
-    cont_6B[3] <= phv_out_delay[0][PHV_LEN-1-4*width_6B -: width_6B];
-    cont_6B[2] <= phv_out_delay[0][PHV_LEN-1-5*width_6B -: width_6B];
-    cont_6B[1] <= phv_out_delay[0][PHV_LEN-1-6*width_6B -: width_6B];
-    cont_6B[0] <= phv_out_delay[0][PHV_LEN-1-7*width_6B -: width_6B];
-    cont_4B[7] <= phv_out_delay[0][PHV_LEN-1-8*width_6B           -: width_4B];
-    cont_4B[6] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-  width_4B -: width_4B];
-    cont_4B[5] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-2*width_4B -: width_4B];
-    cont_4B[4] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-3*width_4B -: width_4B];
-    cont_4B[3] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-4*width_4B -: width_4B];
-    cont_4B[2] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-5*width_4B -: width_4B];
-    cont_4B[1] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-6*width_4B -: width_4B];
-    cont_4B[0] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-7*width_4B -: width_4B];
-    cont_2B[7] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B            -: width_2B];
-    cont_2B[6] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-  width_2B -: width_2B];
-    cont_2B[5] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-2*width_2B -: width_2B];
-    cont_2B[4] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-3*width_2B -: width_2B];
-    cont_2B[3] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-4*width_2B -: width_2B];
-    cont_2B[2] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-5*width_2B -: width_2B];
-    cont_2B[1] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-6*width_2B -: width_2B];
-    cont_2B[0] <= phv_out_delay[0][PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
-    com_op[0]  <= phv_out_delay[0][255+100 -: 20];
-    com_op[1]  <= phv_out_delay[0][255+80  -: 20];
-    com_op[2]  <= phv_out_delay[0][255+60  -: 20];
-    com_op[3]  <= phv_out_delay[0][255+40  -: 20];
-    com_op[4]  <= phv_out_delay[0][255+20  -: 20];
+    cont_6B[7] <= phv_out_delay[1][PHV_LEN-1            -: width_6B];
+    cont_6B[6] <= phv_out_delay[1][PHV_LEN-1-  width_6B -: width_6B];
+    cont_6B[5] <= phv_out_delay[1][PHV_LEN-1-2*width_6B -: width_6B];
+    cont_6B[4] <= phv_out_delay[1][PHV_LEN-1-3*width_6B -: width_6B];
+    cont_6B[3] <= phv_out_delay[1][PHV_LEN-1-4*width_6B -: width_6B];
+    cont_6B[2] <= phv_out_delay[1][PHV_LEN-1-5*width_6B -: width_6B];
+    cont_6B[1] <= phv_out_delay[1][PHV_LEN-1-6*width_6B -: width_6B];
+    cont_6B[0] <= phv_out_delay[1][PHV_LEN-1-7*width_6B -: width_6B];
+    cont_4B[7] <= phv_out_delay[1][PHV_LEN-1-8*width_6B           -: width_4B];
+    cont_4B[6] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-  width_4B -: width_4B];
+    cont_4B[5] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-2*width_4B -: width_4B];
+    cont_4B[4] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-3*width_4B -: width_4B];
+    cont_4B[3] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-4*width_4B -: width_4B];
+    cont_4B[2] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-5*width_4B -: width_4B];
+    cont_4B[1] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-6*width_4B -: width_4B];
+    cont_4B[0] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-7*width_4B -: width_4B];
+    cont_2B[7] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-8*width_4B            -: width_2B];
+    cont_2B[6] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-8*width_4B-  width_2B -: width_2B];
+    cont_2B[5] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-8*width_4B-2*width_2B -: width_2B];
+    cont_2B[4] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-8*width_4B-3*width_2B -: width_2B];
+    cont_2B[3] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-8*width_4B-4*width_2B -: width_2B];
+    cont_2B[2] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-8*width_4B-5*width_2B -: width_2B];
+    cont_2B[1] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-8*width_4B-6*width_2B -: width_2B];
+    cont_2B[0] <= phv_out_delay[1][PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
+    com_op[0]  <= phv_out_delay[1][255+100 -: 20];
+    com_op[1]  <= phv_out_delay[1][255+80  -: 20];
+    com_op[2]  <= phv_out_delay[1][255+60  -: 20];
+    com_op[3]  <= phv_out_delay[1][255+40  -: 20];
+    com_op[4]  <= phv_out_delay[1][255+20  -: 20];
     key_mask_out <= key_mask_out_w;
 end
 
@@ -191,29 +192,35 @@ always @(posedge clk or negedge rst_n) begin
         phv_valid_out <= 1'b0;
         phv_out_delay[0] <= 0;
         phv_out_delay[1] <= 0;
+        phv_out_delay[2] <= 0;
         phv_valid_out_delay[0] <= 1'b0;
         phv_valid_out_delay[1] <= 1'b0;
+        phv_valid_out_delay[2] <= 1'b0;
     end
     else begin
         //output PHV
         phv_out_delay[0] <= phv_in;
         phv_out_delay[1] <= phv_out_delay[0];
-        phv_out <= phv_out_delay[1];
+        phv_out_delay[2] <= phv_out_delay[1];
+        phv_out <= phv_out_delay[2];
         phv_valid_out_delay[0] <= phv_valid_in;
         phv_valid_out_delay[1] <= phv_valid_out_delay[0];
-        phv_valid_out <= phv_valid_out_delay[1];
+        phv_valid_out_delay[2] <= phv_valid_out_delay[1];
+        phv_valid_out <= phv_valid_out_delay[2];
+
+        key_offset_r <= key_offset;
 
         //extract keys according to key_off
-        if(phv_valid_out_delay[1]) begin
+        if(phv_valid_out_delay[2]) begin
             //optimize for `if`
             key_valid_out <= 1'b1; 
 
-            key_out[KEY_LEN-1                                     -: width_6B] <= cont_6B[key_offset[KEY_OFF-1     -: 3]];
-            key_out[KEY_LEN-1- 1*width_6B                         -: width_6B] <= cont_6B[key_offset[KEY_OFF-1-1*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B                         -: width_4B] <= cont_4B[key_offset[KEY_OFF-1-2*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B - 1*width_4B            -: width_4B] <= cont_4B[key_offset[KEY_OFF-1-3*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B            -: width_2B] <= cont_2B[key_offset[KEY_OFF-1-4*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B - width_2B -: width_2B] <= cont_2B[key_offset[KEY_OFF-1-5*3 -: 3]];
+            key_out[KEY_LEN-1                                     -: width_6B] <= cont_6B[key_offset_r[KEY_OFF-1     -: 3]];
+            key_out[KEY_LEN-1- 1*width_6B                         -: width_6B] <= cont_6B[key_offset_r[KEY_OFF-1-1*3 -: 3]];
+            key_out[KEY_LEN-1- 2*width_6B                         -: width_4B] <= cont_4B[key_offset_r[KEY_OFF-1-2*3 -: 3]];
+            key_out[KEY_LEN-1- 2*width_6B - 1*width_4B            -: width_4B] <= cont_4B[key_offset_r[KEY_OFF-1-3*3 -: 3]];
+            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B            -: width_2B] <= cont_2B[key_offset_r[KEY_OFF-1-4*3 -: 3]];
+            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B - width_2B -: width_2B] <= cont_2B[key_offset_r[KEY_OFF-1-5*3 -: 3]];
             //deal with comparators
             case(com_op[STAGE_ID][19:18])
                 2'b00: begin
