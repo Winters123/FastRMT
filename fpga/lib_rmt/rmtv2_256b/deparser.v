@@ -1,21 +1,30 @@
 `timescale 1ns / 1ps
 
-`define SUB_DEPARSE(idx) \
+`define SUB_DEPARSE_1P(idx) \
 	if(parse_action[idx][0]) begin \
-		case(sub_depar_val_out_type[idx]) \
-			2'b01: pkts_tdata_stored_r[parse_action_ind_10b[idx]<<3 +: 16] = sub_depar_val_out_swapped[idx][32+:16]; \
-			2'b10: pkts_tdata_stored_r[parse_action_ind_10b[idx]<<3 +: 32] = sub_depar_val_out_swapped[idx][16+:32]; \
-			2'b11: pkts_tdata_stored_r[parse_action_ind_10b[idx]<<3 +: 48] = sub_depar_val_out_swapped[idx][0+:48]; \
+		case(sub_depar_val_out_type_r[idx]) \
+			2'b01: pkts_tdata_stored_r_1p[parse_action_ind_10b[idx]<<3 +: 16] = sub_depar_val_out_swapped[idx][32+:16]; \
+			2'b10: pkts_tdata_stored_r_1p[parse_action_ind_10b[idx]<<3 +: 32] = sub_depar_val_out_swapped[idx][16+:32]; \
+			2'b11: pkts_tdata_stored_r_1p[parse_action_ind_10b[idx]<<3 +: 48] = sub_depar_val_out_swapped[idx][0+:48]; \
+		endcase \
+	end \
+
+`define SUB_DEPARSE_2P(idx) \
+	if(parse_action[idx][0]) begin \
+		case(sub_depar_val_out_type_r[idx]) \
+			2'b01: pkts_tdata_stored_r_2p[parse_action_ind_10b[idx]<<3 +: 16] = sub_depar_val_out_swapped[idx][32+:16]; \
+			2'b10: pkts_tdata_stored_r_2p[parse_action_ind_10b[idx]<<3 +: 32] = sub_depar_val_out_swapped[idx][16+:32]; \
+			2'b11: pkts_tdata_stored_r_2p[parse_action_ind_10b[idx]<<3 +: 48] = sub_depar_val_out_swapped[idx][0+:48]; \
 		endcase \
 	end \
 
 `define SWAP_BYTE_ORDER(idx) \
-	assign sub_depar_val_out_swapped[idx] = {	sub_depar_val_out[idx][0+:8], \
-												sub_depar_val_out[idx][8+:8], \
-												sub_depar_val_out[idx][16+:8], \
-												sub_depar_val_out[idx][24+:8], \
-												sub_depar_val_out[idx][32+:8], \
-												sub_depar_val_out[idx][40+:8]}; \
+	assign sub_depar_val_out_swapped[idx] = {	sub_depar_val_out_r[idx][0+:8], \
+												sub_depar_val_out_r[idx][8+:8], \
+												sub_depar_val_out_r[idx][16+:8], \
+												sub_depar_val_out_r[idx][24+:8], \
+												sub_depar_val_out_r[idx][32+:8], \
+												sub_depar_val_out_r[idx][40+:8]}; \
 
 module deparser #(
 	//in corundum with 100g ports, data width is 512b
@@ -63,7 +72,9 @@ localparam WAIT_PKT_1 = 1;
 localparam WAIT_PKT_2 = 2;
 localparam WAIT_PKT_3 = 3;
 localparam BEGIN_SUB_DEPARSER = 4;
-localparam FINISH_SUB_DEPARSER = 5;
+localparam FINISH_SUB_DEPARSER_0 = 5;
+localparam FINISH_SUB_DEPARSER_1 = 6;
+localparam FINISH_SUB_DEPARSER_2 = 7;
 
 localparam FLUSH_PKT_0 = 44;
 localparam FLUSH_PKT_1 = 45;
@@ -72,14 +83,14 @@ localparam FLUSH_PKT_3 = 47;
 localparam FLUSH_PKT = 48;
 localparam DROP_PKT = 49;
 
-reg [4*C_AXIS_DATA_WIDTH-1:0]		pkts_tdata_stored_r;
-reg [4*C_AXIS_DATA_WIDTH-1:0]		pkts_tdata_stored;
-reg [4*C_AXIS_TUSER_WIDTH-1:0]		pkts_tuser_stored_r;
-reg [4*C_AXIS_TUSER_WIDTH-1:0]		pkts_tuser_stored;
-reg [4*(C_AXIS_DATA_WIDTH/8)-1:0]	pkts_tkeep_stored_r;
-reg [4*(C_AXIS_DATA_WIDTH/8)-1:0]	pkts_tkeep_stored;
-reg [4:0]							pkts_tlast_stored_r;
-reg [4:0]							pkts_tlast_stored;
+reg [2*C_AXIS_DATA_WIDTH-1:0]		pkts_tdata_stored_r_1p, pkts_tdata_stored_r_2p;
+reg [2*C_AXIS_DATA_WIDTH-1:0]		pkts_tdata_stored_1p, pkts_tdata_stored_2p;
+reg [2*C_AXIS_TUSER_WIDTH-1:0]		pkts_tuser_stored_r_1p, pkts_tuser_stored_r_2p;
+reg [2*C_AXIS_TUSER_WIDTH-1:0]		pkts_tuser_stored_1p, pkts_tuser_stored_2p;
+reg [2*(C_AXIS_DATA_WIDTH/8)-1:0]	pkts_tkeep_stored_r_1p, pkts_tkeep_stored_r_2p;
+reg [2*(C_AXIS_DATA_WIDTH/8)-1:0]	pkts_tkeep_stored_1p, pkts_tkeep_stored_2p;
+reg [2:0]							pkts_tlast_stored_r_1p, pkts_tlast_stored_r_2p;
+reg [2:0]							pkts_tlast_stored_1p, pkts_tlast_stored_2p;
 
 reg [7:0] state, state_next;
 
@@ -135,14 +146,13 @@ localparam PHV_6B_START_POS = 20*5+256+16*8+32*8;
 
 reg	[C_PKT_VEC_WIDTH-1:0]	sub_depar_phv_fifo_out_r;
 reg	[9:0]					sub_depar_act_valid;
-reg	[9:0]					sub_depar_act_valid_nxt;
-reg [9:0]					sub_depar_phv_in_valid;
-reg [9:0]					sub_depar_phv_in_valid_nxt;
 reg [5:0]					sub_depar_act[0:9];
 
 wire [47:0]					sub_depar_val_out [0:9];
+reg [47:0]					sub_depar_val_out_r [0:9];
 wire [47:0]					sub_depar_val_out_swapped [0:9];
 wire [1:0]					sub_depar_val_out_type [0:9];
+reg [1:0]					sub_depar_val_out_type_r [0:9];
 wire [9:0]					sub_depar_val_out_valid;
 
 // for debug
@@ -182,10 +192,14 @@ always @(*) begin
 	pkt_fifo_rd_en = 0;
 	phv_fifo_rd_en = 0;
 
-	pkts_tdata_stored_r = pkts_tdata_stored;
-	pkts_tuser_stored_r = pkts_tuser_stored;
-	pkts_tkeep_stored_r = pkts_tkeep_stored;
-	pkts_tlast_stored_r = pkts_tlast_stored;
+	pkts_tdata_stored_r_1p = pkts_tdata_stored_1p;
+	pkts_tuser_stored_r_1p = pkts_tuser_stored_1p;
+	pkts_tkeep_stored_r_1p = pkts_tkeep_stored_1p;
+	pkts_tlast_stored_r_1p = pkts_tlast_stored_1p;
+	pkts_tdata_stored_r_2p = pkts_tdata_stored_2p;
+	pkts_tuser_stored_r_2p = pkts_tuser_stored_2p;
+	pkts_tkeep_stored_r_2p = pkts_tkeep_stored_2p;
+	pkts_tlast_stored_r_2p = pkts_tlast_stored_2p;
 
 	sub_depar_act_valid = 10'b0;
 	sub_depar_phv_fifo_out_r = phv_fifo_out;
@@ -195,10 +209,10 @@ always @(*) begin
 	case (state)
 		WAIT_TILL_PARSE_DONE: begin // later will be modifed to PROCESSING done
 			if (!pkt_fifo_empty && !phv_fifo_empty) begin // both pkt and phv fifo are not empty
-				pkts_tdata_stored_r[0+:C_AXIS_DATA_WIDTH] = pkt_fifo_tdata;
-				pkts_tuser_stored_r[0+:C_AXIS_TUSER_WIDTH] = phv_fifo_out[0+:128]; // first 128b of PHV
-				pkts_tkeep_stored_r[0+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tkeep;
-				pkts_tlast_stored_r[0] = pkt_fifo_tlast;
+				pkts_tdata_stored_r_1p[0+:C_AXIS_DATA_WIDTH] = pkt_fifo_tdata;
+				pkts_tuser_stored_r_1p[0+:C_AXIS_TUSER_WIDTH] = phv_fifo_out[0+:128]; // first 128b of PHV
+				pkts_tkeep_stored_r_1p[0+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tkeep;
+				pkts_tlast_stored_r_1p[0] = pkt_fifo_tlast;
 				
 				pkt_fifo_rd_en = 1;
 
@@ -214,10 +228,10 @@ always @(*) begin
 			end
 		end
 		WAIT_PKT_1: begin
-			pkts_tdata_stored_r[(C_AXIS_DATA_WIDTH*1)+:C_AXIS_DATA_WIDTH] = pkt_fifo_tdata;
-			pkts_tuser_stored_r[(C_AXIS_TUSER_WIDTH*1)+:C_AXIS_TUSER_WIDTH] = pkt_fifo_tuser;
-			pkts_tkeep_stored_r[(C_AXIS_DATA_WIDTH/8*1)+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tkeep;
-			pkts_tlast_stored_r[1] = pkt_fifo_tlast;
+			pkts_tdata_stored_r_1p[(C_AXIS_DATA_WIDTH*1)+:C_AXIS_DATA_WIDTH] = pkt_fifo_tdata;
+			pkts_tuser_stored_r_1p[(C_AXIS_TUSER_WIDTH*1)+:C_AXIS_TUSER_WIDTH] = pkt_fifo_tuser;
+			pkts_tkeep_stored_r_1p[(C_AXIS_DATA_WIDTH/8*1)+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tkeep;
+			pkts_tlast_stored_r_1p[1] = pkt_fifo_tlast;
 
 			pkt_fifo_rd_en = 1;
 
@@ -230,10 +244,10 @@ always @(*) begin
 
 		end
 		WAIT_PKT_2: begin
-			pkts_tdata_stored_r[(C_AXIS_DATA_WIDTH*2)+:C_AXIS_DATA_WIDTH] = pkt_fifo_tdata;
-			pkts_tuser_stored_r[(C_AXIS_TUSER_WIDTH*2)+:C_AXIS_TUSER_WIDTH] = pkt_fifo_tuser;
-			pkts_tkeep_stored_r[(C_AXIS_DATA_WIDTH/8*2)+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tkeep;
-			pkts_tlast_stored_r[2] = pkt_fifo_tlast;
+			pkts_tdata_stored_r_2p[0+:C_AXIS_DATA_WIDTH] = pkt_fifo_tdata;
+			pkts_tuser_stored_r_2p[0+:C_AXIS_TUSER_WIDTH] = pkt_fifo_tuser;
+			pkts_tkeep_stored_r_2p[0+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tkeep;
+			pkts_tlast_stored_r_2p[0] = pkt_fifo_tlast;
 
 			pkt_fifo_rd_en = 1;
 			if (pkt_fifo_tlast) begin
@@ -244,10 +258,10 @@ always @(*) begin
 			end
 		end
 		WAIT_PKT_3: begin
-			pkts_tdata_stored_r[(C_AXIS_DATA_WIDTH*3)+:C_AXIS_DATA_WIDTH] = pkt_fifo_tdata;
-			pkts_tuser_stored_r[(C_AXIS_TUSER_WIDTH*3)+:C_AXIS_TUSER_WIDTH] = pkt_fifo_tuser;
-			pkts_tkeep_stored_r[(C_AXIS_DATA_WIDTH/8*3)+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tkeep;
-			pkts_tlast_stored_r[3] = pkt_fifo_tlast;
+			pkts_tdata_stored_r_2p[(C_AXIS_DATA_WIDTH*1)+:C_AXIS_DATA_WIDTH] = pkt_fifo_tdata;
+			pkts_tuser_stored_r_2p[(C_AXIS_TUSER_WIDTH*1)+:C_AXIS_TUSER_WIDTH] = pkt_fifo_tuser;
+			pkts_tkeep_stored_r_2p[(C_AXIS_DATA_WIDTH/8*1)+:(C_AXIS_DATA_WIDTH/8)] = pkt_fifo_tkeep;
+			pkts_tlast_stored_r_2p[1] = pkt_fifo_tlast;
 
 			pkt_fifo_rd_en = 1;
 			state_next = BEGIN_SUB_DEPARSER;
@@ -267,34 +281,44 @@ always @(*) begin
 			sub_depar_act[8] = parse_action[8][5:0];
 			sub_depar_act[9] = parse_action[9][5:0];
 
-			state_next = FINISH_SUB_DEPARSER;
+			state_next = FINISH_SUB_DEPARSER_0;
 		end
 
-		FINISH_SUB_DEPARSER: begin
-			`SUB_DEPARSE(0)
-			`SUB_DEPARSE(1)
-			`SUB_DEPARSE(2)
-			`SUB_DEPARSE(3)
-			`SUB_DEPARSE(4)
-			`SUB_DEPARSE(5)
-			`SUB_DEPARSE(6)
-			`SUB_DEPARSE(7)
-			`SUB_DEPARSE(8)
-			`SUB_DEPARSE(9)
+		FINISH_SUB_DEPARSER_0: begin
+			`SUB_DEPARSE_1P(0)
+			`SUB_DEPARSE_1P(1)
+			`SUB_DEPARSE_2P(5)
+
+			state_next = FINISH_SUB_DEPARSER_1;
+		end
+
+		FINISH_SUB_DEPARSER_1: begin
+			`SUB_DEPARSE_1P(2)
+			`SUB_DEPARSE_2P(6)
+			`SUB_DEPARSE_2P(7)
+
+			state_next = FINISH_SUB_DEPARSER_2;
+		end
+
+		FINISH_SUB_DEPARSER_2: begin
+			`SUB_DEPARSE_1P(3)
+			`SUB_DEPARSE_1P(4)
+			`SUB_DEPARSE_2P(8)
+			`SUB_DEPARSE_2P(9)
 
 			state_next = FLUSH_PKT_0;
 		end
 
 		FLUSH_PKT_0: begin
 			phv_fifo_rd_en = 1;
-			depar_out_tdata = pkts_tdata_stored[(C_AXIS_DATA_WIDTH*0)+:C_AXIS_DATA_WIDTH];
-			depar_out_tuser = pkts_tuser_stored[(C_AXIS_TUSER_WIDTH*0)+:C_AXIS_TUSER_WIDTH];
-			depar_out_tkeep = pkts_tkeep_stored[(C_AXIS_DATA_WIDTH/8*0)+:(C_AXIS_DATA_WIDTH/8)];
-			depar_out_tlast = pkts_tlast_stored[0];
+			depar_out_tdata = pkts_tdata_stored_1p[(C_AXIS_DATA_WIDTH*0)+:C_AXIS_DATA_WIDTH];
+			depar_out_tuser = pkts_tuser_stored_1p[(C_AXIS_TUSER_WIDTH*0)+:C_AXIS_TUSER_WIDTH];
+			depar_out_tkeep = pkts_tkeep_stored_1p[(C_AXIS_DATA_WIDTH/8*0)+:(C_AXIS_DATA_WIDTH/8)];
+			depar_out_tlast = pkts_tlast_stored_1p[0];
 			depar_out_tvalid = 1;
 
 			if (depar_out_tready) begin
-				if (pkts_tlast_stored[0]) begin
+				if (pkts_tlast_stored_1p[0]) begin
 					state_next = WAIT_TILL_PARSE_DONE;
 				end
 				else begin
@@ -304,14 +328,14 @@ always @(*) begin
 		end
 
 		FLUSH_PKT_1: begin
-			depar_out_tdata = pkts_tdata_stored[(C_AXIS_DATA_WIDTH*1)+:C_AXIS_DATA_WIDTH];
-			depar_out_tuser = pkts_tuser_stored[(C_AXIS_TUSER_WIDTH*1)+:C_AXIS_TUSER_WIDTH];
-			depar_out_tkeep = pkts_tkeep_stored[(C_AXIS_DATA_WIDTH/8*1)+:(C_AXIS_DATA_WIDTH/8)];
-			depar_out_tlast = pkts_tlast_stored[1];
+			depar_out_tdata = pkts_tdata_stored_1p[(C_AXIS_DATA_WIDTH*1)+:C_AXIS_DATA_WIDTH];
+			depar_out_tuser = pkts_tuser_stored_1p[(C_AXIS_TUSER_WIDTH*1)+:C_AXIS_TUSER_WIDTH];
+			depar_out_tkeep = pkts_tkeep_stored_1p[(C_AXIS_DATA_WIDTH/8*1)+:(C_AXIS_DATA_WIDTH/8)];
+			depar_out_tlast = pkts_tlast_stored_1p[1];
 			depar_out_tvalid = 1;
 
 			if (depar_out_tready) begin
-				if (pkts_tlast_stored[1]) begin
+				if (pkts_tlast_stored_1p[1]) begin
 					state_next = WAIT_TILL_PARSE_DONE;
 				end
 				else begin
@@ -320,14 +344,14 @@ always @(*) begin
 			end
 		end
 		FLUSH_PKT_2: begin
-			depar_out_tdata = pkts_tdata_stored[(C_AXIS_DATA_WIDTH*2)+:C_AXIS_DATA_WIDTH];
-			depar_out_tuser = pkts_tuser_stored[(C_AXIS_TUSER_WIDTH*2)+:C_AXIS_TUSER_WIDTH];
-			depar_out_tkeep = pkts_tkeep_stored[(C_AXIS_DATA_WIDTH/8*2)+:(C_AXIS_DATA_WIDTH/8)];
-			depar_out_tlast = pkts_tlast_stored[2];
+			depar_out_tdata = pkts_tdata_stored_2p[(C_AXIS_DATA_WIDTH*0)+:C_AXIS_DATA_WIDTH];
+			depar_out_tuser = pkts_tuser_stored_2p[(C_AXIS_TUSER_WIDTH*0)+:C_AXIS_TUSER_WIDTH];
+			depar_out_tkeep = pkts_tkeep_stored_2p[(C_AXIS_DATA_WIDTH/8*0)+:(C_AXIS_DATA_WIDTH/8)];
+			depar_out_tlast = pkts_tlast_stored_2p[0];
 			depar_out_tvalid = 1;
 
 			if (depar_out_tready) begin
-				if (pkts_tlast_stored[2]) begin
+				if (pkts_tlast_stored_2p[0]) begin
 					state_next = WAIT_TILL_PARSE_DONE;
 				end
 				else begin
@@ -336,14 +360,14 @@ always @(*) begin
 			end
 		end
 		FLUSH_PKT_3: begin
-			depar_out_tdata = pkts_tdata_stored[(C_AXIS_DATA_WIDTH*3)+:C_AXIS_DATA_WIDTH];
-			depar_out_tuser = pkts_tuser_stored[(C_AXIS_TUSER_WIDTH*3)+:C_AXIS_TUSER_WIDTH];
-			depar_out_tkeep = pkts_tkeep_stored[(C_AXIS_DATA_WIDTH/8*3)+:(C_AXIS_DATA_WIDTH/8)];
-			depar_out_tlast = pkts_tlast_stored[3];
+			depar_out_tdata = pkts_tdata_stored_2p[(C_AXIS_DATA_WIDTH*1)+:C_AXIS_DATA_WIDTH];
+			depar_out_tuser = pkts_tuser_stored_2p[(C_AXIS_TUSER_WIDTH*1)+:C_AXIS_TUSER_WIDTH];
+			depar_out_tkeep = pkts_tkeep_stored_2p[(C_AXIS_DATA_WIDTH/8*1)+:(C_AXIS_DATA_WIDTH/8)];
+			depar_out_tlast = pkts_tlast_stored_2p[1];
 			depar_out_tvalid = 1;
 
 			if (depar_out_tready) begin
-				if (pkts_tlast_stored[3]) begin
+				if (pkts_tlast_stored_2p[1]) begin
 					state_next = WAIT_TILL_PARSE_DONE;
 				end
 				else begin
@@ -382,20 +406,79 @@ always @(posedge clk) begin
 	if (~aresetn) begin
 		state <= WAIT_TILL_PARSE_DONE;
 
-		pkts_tdata_stored <= 0;
-		pkts_tuser_stored <= 0;
-		pkts_tkeep_stored <= 0;
-		pkts_tlast_stored <= 0;
+		pkts_tdata_stored_1p <= 0;
+		pkts_tuser_stored_1p <= 0;
+		pkts_tkeep_stored_1p <= 0;
+		pkts_tlast_stored_1p <= 0;
+		pkts_tdata_stored_2p <= 0;
+		pkts_tuser_stored_2p <= 0;
+		pkts_tkeep_stored_2p <= 0;
+		pkts_tlast_stored_2p <= 0;
 
 	end
 	else begin
 		state <= state_next;
 
-		pkts_tdata_stored <= pkts_tdata_stored_r;
-		pkts_tuser_stored <= pkts_tuser_stored_r;
-		pkts_tkeep_stored <= pkts_tkeep_stored_r;
-		pkts_tlast_stored <= pkts_tlast_stored_r;
+		pkts_tdata_stored_1p <= pkts_tdata_stored_r_1p;
+		pkts_tuser_stored_1p <= pkts_tuser_stored_r_1p;
+		pkts_tkeep_stored_1p <= pkts_tkeep_stored_r_1p;
+		pkts_tlast_stored_1p <= pkts_tlast_stored_r_1p;
 
+		pkts_tdata_stored_2p <= pkts_tdata_stored_r_2p;
+		pkts_tuser_stored_2p <= pkts_tuser_stored_r_2p;
+		pkts_tkeep_stored_2p <= pkts_tkeep_stored_r_2p;
+		pkts_tlast_stored_2p <= pkts_tlast_stored_r_2p;
+	end
+end
+
+always @(posedge clk) begin
+	if (~aresetn) begin
+		sub_depar_val_out_r[0] <= 0;
+		sub_depar_val_out_r[1] <= 0;
+		sub_depar_val_out_r[2] <= 0;
+		sub_depar_val_out_r[3] <= 0;
+		sub_depar_val_out_r[4] <= 0;
+		sub_depar_val_out_r[5] <= 0;
+		sub_depar_val_out_r[6] <= 0;
+		sub_depar_val_out_r[7] <= 0;
+		sub_depar_val_out_r[8] <= 0;
+		sub_depar_val_out_r[9] <= 0;
+
+		sub_depar_val_out_type_r[0] <= 0;
+		sub_depar_val_out_type_r[1] <= 0;
+		sub_depar_val_out_type_r[2] <= 0;
+		sub_depar_val_out_type_r[3] <= 0;
+		sub_depar_val_out_type_r[4] <= 0;
+		sub_depar_val_out_type_r[5] <= 0;
+		sub_depar_val_out_type_r[6] <= 0;
+		sub_depar_val_out_type_r[7] <= 0;
+		sub_depar_val_out_type_r[8] <= 0;
+		sub_depar_val_out_type_r[9] <= 0;
+	end
+	else begin
+		if (sub_depar_val_out_valid[0]) begin
+			sub_depar_val_out_r[0] <= sub_depar_val_out[0];
+			sub_depar_val_out_r[1] <= sub_depar_val_out[1];
+			sub_depar_val_out_r[2] <= sub_depar_val_out[2];
+			sub_depar_val_out_r[3] <= sub_depar_val_out[3];
+			sub_depar_val_out_r[4] <= sub_depar_val_out[4];
+			sub_depar_val_out_r[5] <= sub_depar_val_out[5];
+			sub_depar_val_out_r[6] <= sub_depar_val_out[6];
+			sub_depar_val_out_r[7] <= sub_depar_val_out[7];
+			sub_depar_val_out_r[8] <= sub_depar_val_out[8];
+			sub_depar_val_out_r[9] <= sub_depar_val_out[9];
+
+			sub_depar_val_out_type_r[0] <= sub_depar_val_out_type[0];
+			sub_depar_val_out_type_r[1] <= sub_depar_val_out_type[1];
+			sub_depar_val_out_type_r[2] <= sub_depar_val_out_type[2];
+			sub_depar_val_out_type_r[3] <= sub_depar_val_out_type[3];
+			sub_depar_val_out_type_r[4] <= sub_depar_val_out_type[4];
+			sub_depar_val_out_type_r[5] <= sub_depar_val_out_type[5];
+			sub_depar_val_out_type_r[6] <= sub_depar_val_out_type[6];
+			sub_depar_val_out_type_r[7] <= sub_depar_val_out_type[7];
+			sub_depar_val_out_type_r[8] <= sub_depar_val_out_type[8];
+			sub_depar_val_out_type_r[9] <= sub_depar_val_out_type[9];
+		end
 	end
 end
 
@@ -481,7 +564,7 @@ always @(*) begin
 	case (ctrl_state)
 		WAIT_FIRST_PKT: begin
 			// 1st ctrl packet
-			if (ctrl_s_axis_tvalid) begin
+			if (ctrl_s_axis_tvalid && ~ctrl_s_axis_tlast) begin
 				ctrl_state_next = WAIT_SECOND_PKT;
 			end
 		end
