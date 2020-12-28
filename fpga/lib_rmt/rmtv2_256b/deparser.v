@@ -157,15 +157,17 @@ reg [1:0]					sub_depar_val_out_type_r [0:9];
 wire [9:0]					sub_depar_val_out_valid;
 
 // for debug
-// (* mark_debug = "true" *) wire val_valid;
-// (* mark_debug = "true" *) wire [31:0] val_2b_0;
-// (* mark_debug = "true" *) wire [31:0] val_2b_1;
-// (* mark_debug = "true" *) wire [31:0] val_2b_2;
-// 
-// assign val_valid = sub_depar_val_out_valid[0];
-// assign val_2b_0 = phv_fifo_out[PHV_4B_START_POS+0 +: 32];
-// assign val_2b_1 = phv_fifo_out[PHV_4B_START_POS+32 +: 32];
-// assign val_2b_2 = phv_fifo_out[PHV_4B_START_POS+32*2 +: 32];
+(* mark_debug = "true" *) wire val_valid;
+(* mark_debug = "true" *) wire [31:0] val_2b_0;
+(* mark_debug = "true" *) wire [31:0] val_2b_1;
+(* mark_debug = "true" *) wire [31:0] val_2b_3;
+(* mark_debug = "true" *) wire [7:0] dst_port;
+
+assign val_valid = sub_depar_val_out_valid[0];
+assign val_2b_0 = phv_fifo_out[PHV_4B_START_POS+0 +: 32];
+assign val_2b_1 = phv_fifo_out[PHV_4B_START_POS+32 +: 32];
+assign val_2b_3 = phv_fifo_out[PHV_4B_START_POS+32*3 +: 32];
+assign dst_port = phv_fifo_out[24+:8];
 
 
 //
