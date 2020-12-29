@@ -309,11 +309,11 @@ stage1
 	.c_s_axis_tvalid(c_s_axis_tvalid_3),
 	.c_s_axis_tlast(c_s_axis_tlast_3),
 
-	.c_m_axis_tdata(c_s_axis_tdata_4),
-	.c_m_axis_tuser(c_s_axis_tuser_4),
-	.c_m_axis_tkeep(c_s_axis_tkeep_4),
-	.c_m_axis_tvalid(c_s_axis_tvalid_4),
-	.c_m_axis_tlast(c_s_axis_tlast_4)
+	.c_m_axis_tdata(c_s_axis_tdata_5),
+	.c_m_axis_tuser(c_s_axis_tuser_5),
+	.c_m_axis_tkeep(c_s_axis_tkeep_5),
+	.c_m_axis_tvalid(c_s_axis_tvalid_5),
+	.c_m_axis_tlast(c_s_axis_tlast_5)
 );
 
 stage #(

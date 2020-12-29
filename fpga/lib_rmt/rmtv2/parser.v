@@ -117,16 +117,7 @@ wire [2:0]                   val_seq_select[0:9];
 wire [9:0]                   val_valid_out;
 
 
-always @(posedge axis_clk or negedge aresetn) begin
-    if(~aresetn) begin
-        vlan_id <= 12'b0;
-    end
-    else begin
-        if(s_axis_tvalid && ~s_axis_tvalid_before) begin
-            vlan_id <= s_axis_tdata[116 +: 12];
-        end
-    end
-end
+
 
 assign parse_action[9] = bram_out[100+:16];
 assign parse_action[8] = bram_out[116+:16];
@@ -186,6 +177,19 @@ always @(posedge axis_clk) begin
     end
     else begin
         pkt_seg_cnt <= pkt_seg_cnt;
+    end
+end
+
+
+
+always @(posedge axis_clk or negedge aresetn) begin
+    if(~aresetn) begin
+        vlan_id <= 12'b0;
+    end
+    else begin
+        if(s_axis_tvalid && ~s_axis_tvalid_before) begin
+            vlan_id <= s_axis_tdata[116 +: 12];
+        end
     end
 end
 
