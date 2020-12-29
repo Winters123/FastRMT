@@ -9,9 +9,9 @@ module rmt_wrapper #(
 	// Master
 	// self-defined
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
-    parameter KEY_LEN = 48+32+16+5,
+    parameter KEY_LEN = 48*2+32*2+16*2+5,
     parameter ACT_LEN = 625,
-    parameter KEY_OFF = 3*3
+    parameter KEY_OFF = 6*3
 
 )
 (
