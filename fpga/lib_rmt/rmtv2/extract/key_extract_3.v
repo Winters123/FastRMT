@@ -60,8 +60,8 @@ reg [PHV_LEN-1:0]     phv_out_delay[0:2];
 reg                   phv_valid_out_delay[0:2];
 
 reg  [19:0]            com_op[0:4];
-reg  [7:0]             com_op_1;
-reg  [7:0]             com_op_2;
+reg  [7:0]             com_op_1, com_op_1_next;
+reg  [7:0]             com_op_2, com_op_2_next;
 
 //vlan_id extracted from metadata
 wire  [11:0]             vlan_id; 
@@ -110,39 +110,52 @@ end
 
 //have to extract comparators within 1 cycle
 always @(*) begin
+	com_op_1_next = com_op_1;
+	com_op_2_next = com_op_2;
+
     if(com_op[STAGE_ID][17] == 1'b1) begin
-        com_op_1 = com_op[STAGE_ID][16:9];
+        com_op_1_next = com_op[STAGE_ID][16:9];
     end
     else begin
         case(com_op[STAGE_ID][13:12])
             2'b10: begin
-                com_op_1 = cont_6B[com_op[STAGE_ID][11:9]][7:0];
+                com_op_1_next = cont_6B[com_op[STAGE_ID][11:9]][7:0];
             end
             2'b01: begin
-                com_op_1 = cont_4B[com_op[STAGE_ID][11:9]][7:0];
+                com_op_1_next = cont_4B[com_op[STAGE_ID][11:9]][7:0];
             end
             2'b00: begin
-                com_op_1 = cont_2B[com_op[STAGE_ID][11:9]][7:0];
+                com_op_1_next = cont_2B[com_op[STAGE_ID][11:9]][7:0];
             end
         endcase
     end
     if(com_op[STAGE_ID][8] == 1'b1) begin
-        com_op_2 = com_op[STAGE_ID][7:0];
+        com_op_2_next = com_op[STAGE_ID][7:0];
     end
     else begin
         case(com_op[STAGE_ID][4:3])
             2'b10: begin
-                com_op_2 = cont_6B[com_op[STAGE_ID][2:0]][7:0];
+                com_op_2_next = cont_6B[com_op[STAGE_ID][2:0]][7:0];
             end
             2'b01: begin
-                com_op_2 = cont_4B[com_op[STAGE_ID][2:0]][7:0];
+                com_op_2_next = cont_4B[com_op[STAGE_ID][2:0]][7:0];
             end
             2'b00: begin
-                com_op_2 = cont_2B[com_op[STAGE_ID][2:0]][7:0];
+                com_op_2_next = cont_2B[com_op[STAGE_ID][2:0]][7:0];
             end
         endcase
     end
+end
 
+always @(posedge clk) begin
+	if (~rst_n) begin
+		com_op_1 <= 0;
+		com_op_2 <= 0;
+	end
+	else begin
+		com_op_1 <= com_op_1_next;
+		com_op_2 <= com_op_2_next;
+	end
 end
 
 //extract keys from PHV
@@ -531,9 +544,11 @@ generate
         assign resv = c_s_axis_tdata[120+:4];
         assign control_flag = c_s_axis_tdata[64+:16];
 
+		reg [7:0] c_index_next;
 		reg [2:0] c_state_next;
-		reg [8:0] key_off_entry_reg;
-		reg [100:0] key_mask_entry_reg;
+		reg c_wr_en_off_next, c_wr_en_mask_next;
+		reg [8:0] key_off_entry_reg, key_off_entry_reg_next;
+		reg [100:0] key_mask_entry_reg, key_mask_entry_reg_next;
 
 		reg [C_S_AXIS_DATA_WIDTH-1:0]		r_tdata, c_s_axis_tdata_d1;
 		reg [C_S_AXIS_TUSER_WIDTH-1:0]		r_tuser, c_s_axis_tuser_d1;
@@ -562,8 +577,11 @@ generate
 			r_1st_tlast_next = r_1st_tlast;
 			r_1st_tvalid_next = r_1st_tvalid;
 
-			c_wr_en_mask = 0;
-			c_wr_en_off = 0;
+			c_wr_en_mask_next = 0;
+			c_wr_en_off_next = 0;
+			c_index_next = c_index;
+			key_off_entry_reg_next = key_off_entry_reg;
+			key_mask_entry_reg_next = key_mask_entry_reg;
 
 			case (c_state)
 				IDLE_C: begin
@@ -583,11 +601,11 @@ generate
 					if (mod_id[7:3] == STAGE_ID && mod_id[2:0] == KEY_EX_ID &&
 							control_flag == 16'hf2f1 && c_s_axis_tvalid) begin
 						if (resv == 4'b0 && c_s_axis_tvalid) begin
-							c_index = c_s_axis_tdata[128+:8];
+							c_index_next = c_s_axis_tdata[128+:8];
 							c_state_next = WRITE_OFF_C;
 						end
 						else begin
-							c_index = c_s_axis_tdata[128+:8];
+							c_index_next = c_s_axis_tdata[128+:8];
 							c_state_next = WRITE_MASK_C;
 						end
 					end
@@ -605,23 +623,23 @@ generate
 				end
 				WRITE_OFF_C: begin
 					if (c_s_axis_tvalid) begin
-						c_wr_en_off = 1;
-						key_off_entry_reg = c_s_axis_tdata_swapped[255-:9];
+						c_wr_en_off_next = 1;
+						key_off_entry_reg_next = c_s_axis_tdata_swapped[255-:9];
 
 						c_state_next = FLUSH_PKT_C;
 					end
 				end
 				WRITE_MASK_C: begin
 					if (c_s_axis_tvalid) begin
-						c_wr_en_mask = 1;
-						key_mask_entry_reg = c_s_axis_tdata_swapped[255-:101];
+						c_wr_en_mask_next = 1;
+						key_mask_entry_reg_next = c_s_axis_tdata_swapped[255-:101];
 
 						c_state_next = FLUSH_PKT_C;
 					end
 				end
 				FLUSH_PKT_C: begin
-					c_wr_en_off = 0;
-					c_wr_en_mask = 0;
+					c_wr_en_off_next = 0;
+					c_wr_en_mask_next = 0;
 					r_tdata = c_s_axis_tdata_d1;
 					r_tkeep = c_s_axis_tkeep_d1;
 					r_tuser = c_s_axis_tuser_d1;
@@ -644,6 +662,12 @@ generate
 				c_m_axis_tkeep <= 0;
 				c_m_axis_tlast <= 0;
 				c_m_axis_tvalid <= 0;
+				//
+				c_index <= 0;
+				c_wr_en_off <= 0;
+				c_wr_en_mask <= 0;
+				key_off_entry_reg <= 0;
+				key_mask_entry_reg <= 0;
 			end
 			else begin
 				c_state <= c_state_next;
@@ -653,6 +677,12 @@ generate
 				c_m_axis_tuser <= r_tuser;
 				c_m_axis_tlast <= r_tlast;
 				c_m_axis_tvalid <= r_tvalid;
+				//
+				c_index <= c_index_next;
+				c_wr_en_off <= c_wr_en_off_next;
+				c_wr_en_mask <= c_wr_en_mask_next;
+				key_off_entry_reg <= key_off_entry_reg_next;
+				key_mask_entry_reg <= key_mask_entry_reg_next;
 			end
 		end
 
