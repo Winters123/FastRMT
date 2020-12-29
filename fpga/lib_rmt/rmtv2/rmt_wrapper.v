@@ -5,9 +5,14 @@ module rmt_wrapper #(
 	// AXI Stream parameters
 	// Slave
 	parameter C_S_AXIS_DATA_WIDTH = 512,
-	parameter C_S_AXIS_TUSER_WIDTH = 128
+	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	// Master
 	// self-defined
+    parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
+    parameter KEY_LEN = 48+32+16+5,
+    parameter ACT_LEN = 625,
+    parameter KEY_OFF = 3*3
+
 )
 (
 	input										clk,		// axis clk
@@ -257,9 +262,13 @@ phv_parser
 
 
 stage #(
-    .C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(0)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(0),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage0
 (
@@ -287,9 +296,13 @@ stage0
 );
 
 stage #(
-	.C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(1)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(1),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage1
 (
@@ -317,9 +330,13 @@ stage1
 );
 
 stage #(
-	.C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(2)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(2),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage2
 (
@@ -347,9 +364,13 @@ stage2
 );
 
 stage #(
-	.C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(3)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(3),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage3
 (
@@ -377,9 +398,13 @@ stage3
 );
 
 stage #(
-	.C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(4)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(4),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage4
 (

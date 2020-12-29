@@ -80,9 +80,9 @@ key_extract_2 #(
     .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
     .STAGE_ID(STAGE_ID),
     .PHV_LEN(),
-    .KEY_LEN(),
+    .KEY_LEN(KEY_LEN),
     // format of KEY_OFF entry: |--3(6B)--|--3(6B)--|--3(4B)--|--3(4B)--|--3(2B)--|--3(2B)--|
-    .KEY_OFF(),
+    .KEY_OFF(KEY_OFF),
     .AXIL_WIDTH(),
     .KEY_OFF_ADDR_WIDTH(),
     .KEY_EX_ID()
@@ -118,7 +118,7 @@ lookup_engine #(
     .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
     .STAGE_ID(STAGE_ID),
     .PHV_LEN(),
-    .KEY_LEN(),
+    .KEY_LEN(KEY_LEN),
     .ACT_LEN(),
     .LOOKUP_ID()
 ) lookup_engine(

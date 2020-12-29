@@ -12,7 +12,7 @@ module lookup_engine #(
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter STAGE_ID = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
-    parameter KEY_LEN = 48*2+32*2+16*2+5,
+    parameter KEY_LEN = 48+32+16+5,
     parameter ACT_LEN = 625,
     parameter LOOKUP_ID = 2
 )
@@ -83,7 +83,6 @@ localparam IDLE_S = 2'd0,
            TRANS_S = 2'd3;
 
 always @(posedge clk or negedge rst_n) begin
-
     if (~rst_n) begin
         phv_reg <= 0;
         action_valid <= 1'b0;
@@ -161,7 +160,7 @@ reg  [7:0]          c_index_act;
 reg                 c_wr_en_act;
 reg  [ACT_LEN-1:0]  act_entry_tmp;             
 reg                 continous_flag;
-reg [200:0]         cam_entry_reg;
+reg [105:0]         cam_entry_reg;
 
 
 reg [2:0]           c_state;
@@ -340,7 +339,7 @@ generate
 
                     CAM_TMP_ENTRY: begin
                         if(c_s_axis_tvalid) begin
-                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 201];
+                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 106];
                             c_wr_en_cam <= 1'b1;
                             if(c_s_axis_tlast) begin
                                 c_state <= IDLE_C;
@@ -356,7 +355,7 @@ generate
 
                     SU_CAM_TMP_ENTRY: begin
                         if(c_s_axis_tvalid) begin
-                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 201];
+                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 106];
                             c_wr_en_cam <= 1'b1;
                             c_index_cam <= c_index_cam + 1'b1;
                             if(c_s_axis_tlast) begin
@@ -418,7 +417,7 @@ generate
         	cam_top # ( 
         	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
-        	    .C_WIDTH			(201),
+        	    .C_WIDTH			(106),
         	    .C_MEM_INIT			(1),
         	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
@@ -448,7 +447,7 @@ generate
         	cam_top # ( 
         	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
-        	    .C_WIDTH			(201),
+        	    .C_WIDTH			(106),
         	    .C_MEM_INIT			(1),
         	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
@@ -515,13 +514,11 @@ generate
         (*mark_debug = "true"*) wire [3:0]      match_addr_dbg;
         (*mark_debug = "true"*) wire [24:0]     action_out_dbg;
         (*mark_debug = "true"*) wire [3:0]      vlan_id_dbg;
-		(*mark_debug = "true"*) wire  	        clk_dbg;
 
         assign match_dbg = match;
         assign match_addr_dbg = match_addr;
         assign action_out_dbg = action_wire[275 +: 25];
         assign vlan_id_dbg = vlan_id[7:4];
-		assign clk_dbg = clk;
 
 
     end
@@ -840,18 +837,18 @@ generate
         );
 		// debug
 		localparam PHV_4B_START_POS = 16*8+5*20+256;
-
+		
 		(* mark_debug="true" *) wire dbg_ram_wr_en;
 		(* mark_debug="true" *) wire dbg_cam_wr_en;
 		(* mark_debug="true" *) wire dbg_action_valid;
-		(* mark_debug="true" *) wire [7:0] dbg_key_val_2B;
+		(* mark_debug="true" *) wire [15:0] dbg_key_val_2B;
 		(* mark_debug="true" *) wire [24:0] dbg_action_in;
 		(* mark_debug="true" *) wire [24:0] dbg_action_out;
 		
 		assign dbg_ram_wr_en = c_wr_en_act;
 		assign dbg_cam_wr_en = c_wr_en_cam;
 		assign dbg_action_valid = action_valid;
-		assign dbg_key_val_2B = c_s_axis_tdata_swapped[59+5+16*2-1-8 -: 8];
+		assign dbg_key_val_2B = c_s_axis_tdata_swapped[59+5+16*2-1 -: 16];
 		assign dbg_action_in = c_wr_act_data[275 +: 25];
 		assign dbg_action_out = action_wire[275 +: 25];
     end

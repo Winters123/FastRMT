@@ -12,9 +12,9 @@ module key_extract_2 #(
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter STAGE_ID = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
-    parameter KEY_LEN = 48*2+32*2+16*2+5,
-    // format of KEY_OFF entry: |--3(6B)--|--3(6B)--|--3(4B)--|--3(4B)--|--3(2B)--|--3(2B)--|
-    parameter KEY_OFF = (3+3)*3,
+    parameter KEY_LEN = 48+32+16+5,
+    // format of KEY_OFF entry: |--3(6B)--|--3(4B)--|--3(2B)--|
+    parameter KEY_OFF = 3*3,
     parameter AXIL_WIDTH = 32,
     parameter KEY_OFF_ADDR_WIDTH = 4,
     parameter KEY_EX_ID = 1
@@ -85,7 +85,7 @@ wire  [11:0]             vlan_id;
 
 wire [KEY_OFF-1:0]      key_offset;
 reg  [KEY_OFF-1:0]      key_offset_r;
-wire [196:0]        key_mask_out_w;
+wire [KEY_LEN-1:0]      key_mask_out_w;
 
 /********intermediate variables declared here********/
 
@@ -232,11 +232,8 @@ always @(posedge clk or negedge rst_n) begin
             key_valid_out <= 1'b1; 
 
             key_out[KEY_LEN-1                                     -: width_6B] <= cont_6B[key_offset_r[KEY_OFF-1     -: 3]];
-            key_out[KEY_LEN-1- 1*width_6B                         -: width_6B] <= cont_6B[key_offset_r[KEY_OFF-1-1*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B                         -: width_4B] <= cont_4B[key_offset_r[KEY_OFF-1-2*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B - 1*width_4B            -: width_4B] <= cont_4B[key_offset_r[KEY_OFF-1-3*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B            -: width_2B] <= cont_2B[key_offset_r[KEY_OFF-1-4*3 -: 3]];
-            key_out[KEY_LEN-1- 2*width_6B - 2*width_4B - width_2B -: width_2B] <= cont_2B[key_offset_r[KEY_OFF-1-5*3 -: 3]];
+            key_out[KEY_LEN-1- 1*width_6B                         -: width_4B] <= cont_4B[key_offset_r[KEY_OFF-1-1*3 -: 3]];
+            key_out[KEY_LEN-1- 1*width_6B - 1*width_4B            -: width_2B] <= cont_2B[key_offset_r[KEY_OFF-1-2*3 -: 3]];
             //deal with comparators
             case(com_op[STAGE_ID][19:18])
                 2'b00: begin
@@ -300,8 +297,8 @@ generate
         assign resv = c_s_axis_tdata[376+:4];
         assign control_flag = c_s_axis_tdata[335:320];
 
-        reg [17:0]                    key_off_entry_reg;
-        reg [196:0]                   key_mask_entry_reg;
+        reg [8:0]                     key_off_entry_reg;
+        reg [100:0]                   key_mask_entry_reg;
         //LE to BE switching
         wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
 
@@ -429,7 +426,7 @@ generate
                     //support full table flush
                     WRITE_OFF_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 18];
+                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 9];
                             c_wr_en_mask <= 1'b1;
                             if(c_s_axis_tlast) begin
                                 c_state <= IDLE_C;
@@ -445,7 +442,7 @@ generate
 
                     SU_WRITE_OFF_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 18];
+                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 9];
                             c_wr_en_off <= 1'b1;
                             c_index <= c_index + 1'b1;
                             if(c_s_axis_tlast) begin
@@ -462,7 +459,7 @@ generate
 
                     WRITE_MASK_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 197];
+                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 101];
                             c_wr_en_mask <= 1'b1;
                             if(c_s_axis_tlast) begin
                                 c_state <= IDLE_C;
@@ -478,7 +475,7 @@ generate
 
                     SU_WRITE_MASK_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 197];
+                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 101];
                             c_wr_en_mask <= 1'b1;
                             c_index <= c_index + 1'b1;
                             if(c_s_axis_tlast) begin
@@ -513,8 +510,8 @@ generate
         // 	.C_INIT_FILE_NAME	("./key_extract.mif"),
         // 	.C_LOAD_INIT_FILE	(1)
         // )
-        blk_mem_gen_2
-        key_ram_18w_16d
+        key_offset_ram_9w_16d
+        key_ram_9w_16d
         (
             .addra(c_index[3:0]),
             .clka(clk),
@@ -529,8 +526,8 @@ generate
             .enb(1'b1)
         );
 
-        blk_mem_gen_3
-        mask_ram_197w_16d
+        key_mask_ram_101w_16d
+        mask_ram_101w_16d
         (
             .addra(c_index[3:0]),
             .clka(clk),
