@@ -5,9 +5,14 @@ module rmt_wrapper #(
 	// AXI Stream parameters
 	// Slave
 	parameter C_S_AXIS_DATA_WIDTH = 512,
-	parameter C_S_AXIS_TUSER_WIDTH = 128
+	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	// Master
 	// self-defined
+    parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
+    parameter KEY_LEN = 48*2+32*2+16*2+5,
+    parameter ACT_LEN = 625,
+    parameter KEY_OFF = 6*3
+
 )
 (
 	input										clk,		// axis clk
@@ -257,9 +262,13 @@ phv_parser
 
 
 stage #(
-    .C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(0)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(0),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage0
 (
@@ -287,9 +296,13 @@ stage0
 );
 
 stage #(
-	.C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(1)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(1),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage1
 (
@@ -309,17 +322,21 @@ stage1
 	.c_s_axis_tvalid(c_s_axis_tvalid_3),
 	.c_s_axis_tlast(c_s_axis_tlast_3),
 
-	.c_m_axis_tdata(c_s_axis_tdata_4),
-	.c_m_axis_tuser(c_s_axis_tuser_4),
-	.c_m_axis_tkeep(c_s_axis_tkeep_4),
-	.c_m_axis_tvalid(c_s_axis_tvalid_4),
-	.c_m_axis_tlast(c_s_axis_tlast_4)
+	.c_m_axis_tdata(c_s_axis_tdata_5),
+	.c_m_axis_tuser(c_s_axis_tuser_5),
+	.c_m_axis_tkeep(c_s_axis_tkeep_5),
+	.c_m_axis_tvalid(c_s_axis_tvalid_5),
+	.c_m_axis_tlast(c_s_axis_tlast_5)
 );
 
 stage #(
-	.C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(2)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(2),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage2
 (
@@ -347,9 +364,13 @@ stage2
 );
 
 stage #(
-	.C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(3)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(3),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage3
 (
@@ -377,9 +398,13 @@ stage3
 );
 
 stage #(
-	.C_S_AXIS_DATA_WIDTH(512),
-    .C_S_AXIS_TUSER_WIDTH(128),
-    .STAGE_ID(4)  //valid: 0-4
+    .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+    .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
+    .STAGE_ID(4),  //valid: 0-4
+    .PHV_LEN(PHV_LEN),
+    .KEY_LEN(KEY_LEN),
+    .ACT_LEN(ACT_LEN),
+    .KEY_OFF(KEY_OFF)
 )
 stage4
 (

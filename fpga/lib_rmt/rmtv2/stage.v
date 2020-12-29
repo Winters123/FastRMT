@@ -12,9 +12,9 @@ module stage #(
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter STAGE_ID = 0,  //valid: 0-4
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
-    parameter KEY_LEN = 48*2+32*2+16*2+5,
+    parameter KEY_LEN = 48+32+16+5,
     parameter ACT_LEN = 25,
-    parameter KEY_OFF = 3*6
+    parameter KEY_OFF = 3*3
 )
 (
     input                        axis_clk,
@@ -80,9 +80,9 @@ key_extract_2 #(
     .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
     .STAGE_ID(STAGE_ID),
     .PHV_LEN(),
-    .KEY_LEN(),
+    .KEY_LEN(KEY_LEN),
     // format of KEY_OFF entry: |--3(6B)--|--3(6B)--|--3(4B)--|--3(4B)--|--3(2B)--|--3(2B)--|
-    .KEY_OFF(),
+    .KEY_OFF(KEY_OFF),
     .AXIL_WIDTH(),
     .KEY_OFF_ADDR_WIDTH(),
     .KEY_EX_ID()
@@ -118,7 +118,7 @@ lookup_engine #(
     .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
     .STAGE_ID(STAGE_ID),
     .PHV_LEN(),
-    .KEY_LEN(),
+    .KEY_LEN(KEY_LEN),
     .ACT_LEN(),
     .LOOKUP_ID()
 ) lookup_engine(
