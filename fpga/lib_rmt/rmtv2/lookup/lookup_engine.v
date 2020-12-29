@@ -49,15 +49,15 @@ module lookup_engine #(
 
 );
 
-(*mark_debug = "true"*) wire            key_valid_dbg;
-(*mark_debug = "true"*) wire            phv_valid_dbg;
-(*mark_debug = "true"*) wire [15:0]     key_dbg;
-(*mark_debug = "true"*) wire [15:0]     key_mask_dbg;
+// (*mark_debug = "true"*) wire            key_valid_dbg;
+// (*mark_debug = "true"*) wire            phv_valid_dbg;
+// (*mark_debug = "true"*) wire [15:0]     key_dbg;
+// (*mark_debug = "true"*) wire [15:0]     key_mask_dbg;
 
-assign key_valid_dbg = key_valid;
-assign phv_valid_dbg = phv_valid;
-assign key_dbg = extract_key[36 -: 16];
-assign key_mask_dbg = extract_mask[36 -: 16];
+// assign key_valid_dbg = key_valid;
+// assign phv_valid_dbg = phv_valid;
+// assign key_dbg = extract_key[36 -: 16];
+// assign key_mask_dbg = extract_mask[36 -: 16];
 
 
 /********intermediate variables declared here********/

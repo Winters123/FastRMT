@@ -46,6 +46,22 @@ module key_extract_2 #(
 
 
 /********intermediate variables declared here********/
+(*mark_debug = "true"*) wire         phv_in_valid_dbg;
+(*mark_debug = "true"*) wire [15:0]  phv_in_2B_dbg;
+(*mark_debug = "true"*) wire [3:0]   vlan_id_in_dbg;
+(*mark_debug = "true"*) wire         phv_out_valid_dbg;
+(*mark_debug = "true"*) wire [15:0]  phv_out_2B_dbg;
+(*mark_debug = "true"*) wire [3:0]   vlan_id_out_dbg;
+
+assign phv_in_valid_dbg = phv_valid_in;
+assign phv_in_2B_dbg = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
+assign vlan_id_in_dbg = phv_in[136:133];
+
+assign phv_out_valid_dbg = phv_valid_out;
+assign phv_out_2B_dbg = phv_out[PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
+assign vlan_id_out_dbg = phv_out[136:133];
+
+
 integer i;
 
 localparam width_2B = 16;
