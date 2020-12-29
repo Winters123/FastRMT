@@ -157,17 +157,21 @@ reg [1:0]					sub_depar_val_out_type_r [0:9];
 wire [9:0]					sub_depar_val_out_valid;
 
 // for debug
+reg [7:0] cnt, cnt_next;
 (* mark_debug = "true" *) wire val_valid;
 (* mark_debug = "true" *) wire [31:0] val_2b_0;
-(* mark_debug = "true" *) wire [31:0] val_2b_1;
 (* mark_debug = "true" *) wire [31:0] val_2b_3;
 (* mark_debug = "true" *) wire [7:0] dst_port;
+(* mark_debug = "true" *) wire [7:0] dbg_cnt;
+(* mark_debug = "true" *) wire [5:0] dbg_sub_depar_act;
+
 
 assign val_valid = sub_depar_val_out_valid[0];
 assign val_2b_0 = phv_fifo_out[PHV_4B_START_POS+0 +: 32];
-assign val_2b_1 = phv_fifo_out[PHV_4B_START_POS+32 +: 32];
 assign val_2b_3 = phv_fifo_out[PHV_4B_START_POS+32*3 +: 32];
 assign dst_port = phv_fifo_out[24+:8];
+assign dbg_cnt = cnt;
+assign dbg_sub_depar_act = sub_depar_act[0];
 
 
 //
@@ -208,6 +212,7 @@ always @(*) begin
 	sub_depar_phv_fifo_out_r = phv_fifo_out;
 
 	state_next = state;
+	cnt_next = cnt;
 	//
 	case (state)
 		WAIT_TILL_PARSE_DONE: begin // later will be modifed to PROCESSING done
@@ -324,6 +329,8 @@ always @(*) begin
 			depar_out_tlast = pkts_tlast_stored_1p[0];
 			depar_out_tvalid = 1;
 
+			cnt_next = cnt+1;
+
 			if (depar_out_tready) begin
 				if (pkts_tlast_stored_1p[0]) begin
 					state_next = WAIT_TILL_PARSE_DONE;
@@ -412,6 +419,7 @@ end
 always @(posedge clk) begin
 	if (~aresetn) begin
 		state <= WAIT_TILL_PARSE_DONE;
+		cnt <= 0;
 
 		pkts_tdata_stored_1p <= 0;
 		pkts_tuser_stored_1p <= 0;
@@ -425,6 +433,7 @@ always @(posedge clk) begin
 	end
 	else begin
 		state <= state_next;
+		cnt <= cnt_next;
 
 		pkts_tdata_stored_1p <= pkts_tdata_stored_r_1p;
 		pkts_tuser_stored_1p <= pkts_tuser_stored_r_1p;

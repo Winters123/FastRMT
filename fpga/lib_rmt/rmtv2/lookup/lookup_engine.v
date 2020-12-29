@@ -838,19 +838,19 @@ generate
         );
 		// debug
 		localparam PHV_4B_START_POS = 16*8+5*20+256;
-		// (* mark_debug="true" *) wire dbg_ram_wr_en;
-		// (* mark_debug="true" *) wire dbg_cam_wr_en;
-		// (* mark_debug="true" *) wire dbg_action_valid;
-		// (* mark_debug="true" *) wire [15:0] dbg_key_val_2B;
-		// (* mark_debug="true" *) wire [24:0] dbg_action_in;
-		// (* mark_debug="true" *) wire [24:0] dbg_action_out;
+		(* mark_debug="true" *) wire dbg_ram_wr_en;
+		(* mark_debug="true" *) wire dbg_cam_wr_en;
+		(* mark_debug="true" *) wire dbg_action_valid;
+		(* mark_debug="true" *) wire [32:0] dbg_key_val_4B;
+		(* mark_debug="true" *) wire [24:0] dbg_action_in;
+		(* mark_debug="true" *) wire [24:0] dbg_action_out;
 		
-		// assign dbg_ram_wr_en = c_wr_en_act;
-		// assign dbg_cam_wr_en = c_wr_en_cam;
-		// assign dbg_action_valid = action_valid;
-		// assign dbg_key_val_2B = c_s_axis_tdata_swapped[59+5+16*2-1 -: 16];
-		// assign dbg_action_in = c_wr_act_data[275 +: 25];
-		// assign dbg_action_out = action_wire[275 +: 25];
+		assign dbg_ram_wr_en = c_wr_en_act;
+		assign dbg_cam_wr_en = c_wr_en_cam;
+		assign dbg_action_valid = action_valid;
+		assign dbg_key_val_4B = c_s_axis_tdata_swapped[55+5+16*2+32*2-1 -: 32];
+		assign dbg_action_in = c_wr_act_data[0 +: 25];
+		assign dbg_action_out = action_wire[0 +: 25];
     end
 
 endgenerate
