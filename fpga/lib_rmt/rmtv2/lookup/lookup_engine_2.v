@@ -577,7 +577,7 @@ generate
 
 		reg [7:0]							c_index_cam_next, c_index_act_next;
 		reg									c_wr_en_cam_next, c_wr_en_act_next;
-		reg [200:0]							c_wr_cam_data, c_wr_cam_data_next;
+		reg [104:0]							c_wr_cam_data, c_wr_cam_data_next;
 		reg [ACT_LEN-1:0]					c_wr_act_data, c_wr_act_data_next;
 
 		always @(*) begin
@@ -644,7 +644,7 @@ generate
 				CAM_TMP_ENTRY: begin
 					if (c_s_axis_tvalid) begin
 						c_wr_en_cam_next = 1; // next clk to write
-						c_wr_cam_data_next = c_s_axis_tdata_swapped[55+:201];
+						c_wr_cam_data_next = c_s_axis_tdata_swapped[255-:105];
 						
 						c_state_next = FLUSH_REST_C;
 					end
@@ -757,7 +757,7 @@ generate
         	cam_top # ( 
         	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
-        	    .C_WIDTH			(201),
+        	    .C_WIDTH			(105),
         	    .C_MEM_INIT			(1),
         	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
@@ -788,7 +788,7 @@ generate
         	cam_top # ( 
         	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
-        	    .C_WIDTH			(201),
+        	    .C_WIDTH			(105),
         	    .C_MEM_INIT			(1),
         	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
@@ -841,16 +841,20 @@ generate
 		(* mark_debug="true" *) wire dbg_ram_wr_en;
 		(* mark_debug="true" *) wire dbg_cam_wr_en;
 		(* mark_debug="true" *) wire dbg_action_valid;
-		(* mark_debug="true" *) wire [15:0] dbg_key_val_2B;
+		(* mark_debug="true" *) wire dbg_match;
+		(* mark_debug="true" *) wire [1:0] dbg_state;
+		(* mark_debug="true" *) wire [3:0] dbg_match_addr;
 		(* mark_debug="true" *) wire [24:0] dbg_action_in;
 		(* mark_debug="true" *) wire [24:0] dbg_action_out;
 		
 		assign dbg_ram_wr_en = c_wr_en_act;
 		assign dbg_cam_wr_en = c_wr_en_cam;
+		assign dbg_match = match;
+		assign dbg_state = lookup_state;
+		assign dbg_match_addr = match_addr;
 		assign dbg_action_valid = action_valid;
-		assign dbg_key_val_2B = c_s_axis_tdata_swapped[59+5+16*2-1 -: 16];
-		assign dbg_action_in = c_wr_act_data[275 +: 25];
-		assign dbg_action_out = action_wire[275 +: 25];
+		assign dbg_action_in = c_wr_act_data[0 +: 25];
+		assign dbg_action_out = action_wire[0 +: 25];
     end
 
 endgenerate

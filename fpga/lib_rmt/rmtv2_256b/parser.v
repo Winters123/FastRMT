@@ -269,8 +269,8 @@ always@(*) begin
 							val_2B_swapped[7], val_2B_swapped[6], val_2B_swapped[5], val_2B_swapped[4], val_2B_swapped[3], val_2B_swapped[2], val_2B_swapped[1], val_2B_swapped[0],
 							cond_action[0], cond_action[1], cond_action[2], cond_action[3], cond_action[4],
 							// Tao: manually set output port to 1 for eazy test
-							{115{1'b0}}, vlan_id, 1'b0, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
-							// {115{1'b0}}, vlan_id, 1'b0, tuser_1st};
+							// {115{1'b0}}, vlan_id, 1'b0, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
+							{115{1'b0}}, vlan_id, 1'b0, tuser_1st};
 							// {128{1'b0}}, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
 		end
 	endcase
