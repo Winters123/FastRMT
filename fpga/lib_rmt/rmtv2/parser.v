@@ -43,7 +43,8 @@ reg phv_valid_out_reg;
 
 assign phv_valid_out = phv_valid_out_reg;
 
-reg [11:0] vlan_id;
+wire [11:0] vlan_id_w;
+reg  [11:0] vlan_id;
 
 //Parse Action RAM
 wire [259:0] bram_out;
@@ -180,7 +181,7 @@ always @(posedge axis_clk) begin
     end
 end
 
-
+assign vlan_id_w = s_axis_tdata[116 +: 12];
 
 always @(posedge axis_clk or negedge aresetn) begin
     if(~aresetn) begin
@@ -557,7 +558,7 @@ parse_act_ram
 
 	//
 	.clkb		(axis_clk),
-	.addrb		(vlan_id[7:4]), // TODO: note that we may change due to little or big endian
+	.addrb		(vlan_id_w[7:4]), // TODO: note that we may change due to little or big endian
 	.doutb		(bram_out),
 	.enb		(1'b1) // always set to 1
 );
