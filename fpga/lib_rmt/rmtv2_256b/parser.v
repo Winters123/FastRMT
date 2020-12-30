@@ -13,9 +13,9 @@
 
 `define SUB_PARSE(idx) \
 	case(sub_parse_val_out_type[idx]) \
-		2'b01: val_2B[sub_parse_val_out_seq[idx]] = sub_parse_val_out[idx][15:0]; \
-		2'b10: val_4B[sub_parse_val_out_seq[idx]] = sub_parse_val_out[idx][31:0]; \
-		2'b11: val_6B[sub_parse_val_out_seq[idx]] = sub_parse_val_out[idx][47:0]; \
+		2'b01: val_2B_nxt[sub_parse_val_out_seq[idx]] = sub_parse_val_out[idx][15:0]; \
+		2'b10: val_4B_nxt[sub_parse_val_out_seq[idx]] = sub_parse_val_out[idx][31:0]; \
+		2'b11: val_6B_nxt[sub_parse_val_out_seq[idx]] = sub_parse_val_out[idx][47:0]; \
 	endcase \
 
 `define SWAP_BYTE_ORDER(idx) \
@@ -36,7 +36,6 @@ module parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 256,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	parameter PKT_HDR_LEN = (6+4+2)*8*8+20*5+256, // check with the doc
-	parameter PARSE_ACT_RAM_WIDTH = 167,
 	parameter PARSER_MOD_ID = 3'b0
 )
 (
@@ -68,17 +67,14 @@ module parser #(
 	output reg								ctrl_m_axis_tlast
 );
 
-reg		parser_valid_r;
-reg [PKT_HDR_LEN-1:0]	pkt_hdr_vec_r;
 
 /*
 *
 */
-localparam TOT_HDR_LEN = 1024;
+reg parser_valid_next;
+reg [PKT_HDR_LEN-1:0]	pkt_hdr_vec_next;
+localparam TOT_HDR_LEN = 4*C_S_AXIS_DATA_WIDTH;
 reg [C_S_AXIS_TUSER_WIDTH-1:0] tuser_1st, tuser_1st_next;
-
-/****** parse ******/
-// all the Ether, VLAN, IP, UDP headers are static
 
 reg [TOT_HDR_LEN-1:0] pkt_hdr_field, pkt_hdr_field_next;
 
@@ -87,7 +83,8 @@ localparam	IDLE=0,
 			WAIT_3RD_SEG=2,
 			WAIT_4TH_SEG=3,
 			START_PARSING=4, 
-			FINISH_SUB_PARSE=5;
+			FINISH_SUB_PARSE=5,
+			OUTPUT=6;
 
 wire [259:0] bram_out;
 reg [3:0] state, state_next;
@@ -127,6 +124,9 @@ wire [2:0] sub_parse_val_out_seq [0:9];
 reg [47:0] val_6B [0:7];
 reg [31:0] val_4B [0:7];
 reg [15:0] val_2B [0:7];
+reg [47:0] val_6B_nxt [0:7];
+reg [31:0] val_4B_nxt [0:7];
+reg [15:0] val_2B_nxt [0:7];
 
 wire [47:0] val_6B_swapped [0:7];
 wire [31:0] val_4B_swapped [0:7];
@@ -144,13 +144,34 @@ wire [15:0] val_2B_swapped [0:7];
 
 always@(*) begin
 	state_next = state;
-	parser_valid_r = 0;
-
-	pkt_hdr_vec_r = pkt_hdr_vec;
+	// two output
+	parser_valid_next = 0;
+	pkt_hdr_vec_next = pkt_hdr_vec;
 	// zero out
-	val_2B[0]=0;val_2B[1]=0;val_2B[2]=0;val_2B[3]=0;val_2B[4]=0;val_2B[5]=0;val_2B[6]=0;val_2B[7]=0;
-	val_4B[0]=0;val_4B[1]=0;val_4B[2]=0;val_4B[3]=0;val_4B[4]=0;val_4B[5]=0;val_4B[6]=0;val_4B[7]=0;
-	val_6B[0]=0;val_6B[1]=0;val_6B[2]=0;val_6B[3]=0;val_6B[4]=0;val_6B[5]=0;val_6B[6]=0;val_6B[7]=0;
+	val_2B_nxt[0]=val_2B[0];
+	val_2B_nxt[1]=val_2B[1];
+	val_2B_nxt[2]=val_2B[2];
+	val_2B_nxt[3]=val_2B[3];
+	val_2B_nxt[4]=val_2B[4];
+	val_2B_nxt[5]=val_2B[5];
+	val_2B_nxt[6]=val_2B[6];
+	val_2B_nxt[7]=val_2B[7];
+	val_4B_nxt[0]=val_4B[0];
+	val_4B_nxt[1]=val_4B[1];
+	val_4B_nxt[2]=val_4B[2];
+	val_4B_nxt[3]=val_4B[3];
+	val_4B_nxt[4]=val_4B[4];
+	val_4B_nxt[5]=val_4B[5];
+	val_4B_nxt[6]=val_4B[6];
+	val_4B_nxt[7]=val_4B[7];
+	val_6B_nxt[0]=val_6B[0];
+	val_6B_nxt[1]=val_6B[1];
+	val_6B_nxt[2]=val_6B[2];
+	val_6B_nxt[3]=val_6B[3];
+	val_6B_nxt[4]=val_6B[4];
+	val_6B_nxt[5]=val_6B[5];
+	val_6B_nxt[6]=val_6B[6];
+	val_6B_nxt[7]=val_6B[7];
 	// 
 	sub_parse_act_valid = 10'b0;
 	//
@@ -160,7 +181,7 @@ always@(*) begin
 	case (state) 
 		IDLE: begin
 			if (s_axis_tvalid) begin
-				pkt_hdr_field_next[0+:255] = s_axis_tdata;
+				pkt_hdr_field_next[0+:256] = s_axis_tdata;
 				tuser_1st_next = s_axis_tuser;
 
 				state_next = WAIT_2ND_SEG;
@@ -168,7 +189,7 @@ always@(*) begin
 		end
 		WAIT_2ND_SEG: begin
 			if (s_axis_tvalid) begin
-				pkt_hdr_field_next[256+:255] = s_axis_tdata;
+				pkt_hdr_field_next[256+:256] = s_axis_tdata;
 
 				if (s_axis_tlast) begin
 					state_next = START_PARSING;
@@ -180,7 +201,7 @@ always@(*) begin
 		end
 		WAIT_3RD_SEG: begin
 			if (s_axis_tvalid) begin
-				pkt_hdr_field_next[512+:255] = s_axis_tdata;
+				pkt_hdr_field_next[512+:256] = s_axis_tdata;
 
 				if (s_axis_tlast) begin
 					state_next = START_PARSING;
@@ -192,7 +213,7 @@ always@(*) begin
 		end
 		WAIT_4TH_SEG: begin
 			if (s_axis_tvalid) begin
-				pkt_hdr_field_next[768+:255] = s_axis_tdata;
+				pkt_hdr_field_next[768+:256] = s_axis_tdata;
 
 				state_next = START_PARSING;
 			end
@@ -200,22 +221,21 @@ always@(*) begin
 		START_PARSING: begin
 			sub_parse_act_valid = 10'b1111111111;
 
-			sub_parse_act[0] = parse_action[0];
-			sub_parse_act[1] = parse_action[1];
-			sub_parse_act[2] = parse_action[2];
-			sub_parse_act[3] = parse_action[3];
-			sub_parse_act[4] = parse_action[4];
-			sub_parse_act[5] = parse_action[5];
-			sub_parse_act[6] = parse_action[6];
-			sub_parse_act[7] = parse_action[7];
-			sub_parse_act[8] = parse_action[8];
-			sub_parse_act[9] = parse_action[9];
+			// sub_parse_act[0] = parse_action[0];
+			// sub_parse_act[1] = parse_action[1];
+			// sub_parse_act[2] = parse_action[2];
+			// sub_parse_act[3] = parse_action[3];
+			// sub_parse_act[4] = parse_action[4];
+			// sub_parse_act[5] = parse_action[5];
+			// sub_parse_act[6] = parse_action[6];
+			// sub_parse_act[7] = parse_action[7];
+			// sub_parse_act[8] = parse_action[8];
+			// sub_parse_act[9] = parse_action[9];
 
 			state_next = FINISH_SUB_PARSE;
 		end
 		FINISH_SUB_PARSE: begin
-			parser_valid_r = 1;
-			state_next = IDLE;
+			state_next = OUTPUT;
 
 			`SUB_PARSE(0)
 			`SUB_PARSE(1)
@@ -228,7 +248,11 @@ always@(*) begin
 			`SUB_PARSE(8)
 			`SUB_PARSE(9)
 
-			pkt_hdr_vec_r ={val_6B_swapped[7], val_6B_swapped[6], val_6B_swapped[5], val_6B_swapped[4], val_6B_swapped[3], val_6B_swapped[2], val_6B_swapped[1], val_6B_swapped[0],
+		end
+		OUTPUT: begin
+			parser_valid_next = 1;
+			state_next = IDLE;
+			pkt_hdr_vec_next ={val_6B_swapped[7], val_6B_swapped[6], val_6B_swapped[5], val_6B_swapped[4], val_6B_swapped[3], val_6B_swapped[2], val_6B_swapped[1], val_6B_swapped[0],
 							val_4B_swapped[7], val_4B_swapped[6], val_4B_swapped[5], val_4B_swapped[4], val_4B_swapped[3], val_4B_swapped[2], val_4B_swapped[1], val_4B_swapped[0],
 							val_2B_swapped[7], val_2B_swapped[6], val_2B_swapped[5], val_2B_swapped[4], val_2B_swapped[3], val_2B_swapped[2], val_2B_swapped[1], val_2B_swapped[0],
 							cond_action[0], cond_action[1], cond_action[2], cond_action[3], cond_action[4],
@@ -250,28 +274,80 @@ always@(posedge axis_clk) begin
 		//
 		tuser_1st <= 0;
 		pkt_hdr_field <= 0;
+		//
+		val_2B[0] <= 0;
+		val_2B[1] <= 0;
+		val_2B[2] <= 0;
+		val_2B[3] <= 0;
+		val_2B[4] <= 0;
+		val_2B[5] <= 0;
+		val_2B[6] <= 0;
+		val_2B[7] <= 0;
+		val_4B[0] <= 0;
+		val_4B[1] <= 0;
+		val_4B[2] <= 0;
+		val_4B[3] <= 0;
+		val_4B[4] <= 0;
+		val_4B[5] <= 0;
+		val_4B[6] <= 0;
+		val_4B[7] <= 0;
+		val_6B[0] <= 0;
+		val_6B[1] <= 0;
+		val_6B[2] <= 0;
+		val_6B[3] <= 0;
+		val_6B[4] <= 0;
+		val_6B[5] <= 0;
+		val_6B[6] <= 0;
+		val_6B[7] <= 0;
 	end
 	else begin
 		state <= state_next;
 
-		pkt_hdr_vec <= pkt_hdr_vec_r;
+		pkt_hdr_vec <= pkt_hdr_vec_next;
 		// pkt_hdr_vec <= {1124{1'b0}};
-		parser_valid <= parser_valid_r;
+		parser_valid <= parser_valid_next;
 		//
 		tuser_1st <= tuser_1st_next;
 		pkt_hdr_field <= pkt_hdr_field_next;
+		//
+		val_2B[0] <= val_2B_nxt[0];
+		val_2B[1] <= val_2B_nxt[1];
+		val_2B[2] <= val_2B_nxt[2];
+		val_2B[3] <= val_2B_nxt[3];
+		val_2B[4] <= val_2B_nxt[4];
+		val_2B[5] <= val_2B_nxt[5];
+		val_2B[6] <= val_2B_nxt[6];
+		val_2B[7] <= val_2B_nxt[7];
+		val_4B[0] <= val_4B_nxt[0];
+		val_4B[1] <= val_4B_nxt[1];
+		val_4B[2] <= val_4B_nxt[2];
+		val_4B[3] <= val_4B_nxt[3];
+		val_4B[4] <= val_4B_nxt[4];
+		val_4B[5] <= val_4B_nxt[5];
+		val_4B[6] <= val_4B_nxt[6];
+		val_4B[7] <= val_4B_nxt[7];
+		val_6B[0] <= val_6B_nxt[0];
+		val_6B[1] <= val_6B_nxt[1];
+		val_6B[2] <= val_6B_nxt[2];
+		val_6B[3] <= val_6B_nxt[3];
+		val_6B[4] <= val_6B_nxt[4];
+		val_6B[5] <= val_6B_nxt[5];
+		val_6B[6] <= val_6B_nxt[6];
+		val_6B[7] <= val_6B_nxt[7];
 	end
 end
 // debug
 (* mark_debug="true" *) wire dbg_parser_valid;
 (* mark_debug="true" *) wire[31:0] dbg_phv_out_4B_1;
+(* mark_debug="true" *) wire[31:0] dbg_phv_out_4B_1_o;
 (* mark_debug="true" *) wire[11:0] dbg_vid;
 (* mark_debug="true" *) wire[15:0] dbg_pat_0;
 (* mark_debug="true" *) wire[15:0] dbg_pat_1;
 (* mark_debug="true" *) wire[2:0] dbg_state;
 
 assign dbg_parser_valid = parser_valid;
-assign dbg_phv_out_4B_1 = pkt_hdr_vec[256+100+16*8+32 +: 32];
+assign dbg_phv_out_4B_1 = sub_parse_val_out[0][0+:32];
+assign dbg_phv_out_4B_1_o = sub_parse_val_out[2][0+:32];
 assign dbg_vid = pkt_hdr_vec[140:129];
 assign dbg_pat_0 = parse_action[0];
 assign dbg_pat_1 = parse_action[1];
@@ -292,7 +368,8 @@ generate
 			.aresetn			(aresetn),
 
 			.parse_act_valid	(sub_parse_act_valid[index]),
-			.parse_act			(sub_parse_act[index]),
+			// .parse_act			(sub_parse_act[index]),
+			.parse_act			(parse_action[index]),
 
 			.pkts_hdr			(pkt_hdr_field),
 			.val_out_valid		(sub_parse_val_out_valid[index]),
