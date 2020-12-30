@@ -74,83 +74,27 @@ reg [PKT_HDR_LEN-1:0]	pkt_hdr_vec_r;
 /*
 *
 */
-integer idx;
 localparam TOT_HDR_LEN = 1024;
-localparam C_VALID_NUM_HDR_PKTS = 4;		// 4*32B = 128B = 1024b
-wire [TOT_HDR_LEN-1:0] w_pkts;
-reg [3:0] pkt_cnt;
-reg [C_S_AXIS_DATA_WIDTH-1:0] pkts[0:C_VALID_NUM_HDR_PKTS-1];
-reg [C_S_AXIS_TUSER_WIDTH-1:0] tuser_1st;
-
-/****** store all or at-most 4 pkt segments ******/
-reg if_last_d1; // indicate whether the last valid packet 
-// 
-always @(posedge axis_clk) begin
-	if (~aresetn) begin
-		if_last_d1 <= 0;
-	end
-	else begin
-		if_last_d1 <= s_axis_tvalid & s_axis_tlast;
-	end
-end
-
-// update pkt_cnt;
-always @(posedge axis_clk) begin
-	if (~aresetn) begin
-		pkt_cnt <= 0;
-	end
-	else if (if_last_d1) begin
-		pkt_cnt <= 0;
-	end
-	else if (pkt_cnt > C_VALID_NUM_HDR_PKTS) begin
-		pkt_cnt <= pkt_cnt;
-	end
-	else if (s_axis_tvalid) begin
-		pkt_cnt <= pkt_cnt+1;
-	end
-end
-
-// hdr_window, #pkt_cnt 
-wire hdr_window = s_axis_tvalid && pkt_cnt<=C_VALID_NUM_HDR_PKTS;
-// store into pkts
-always @(posedge axis_clk) begin
-	if (~aresetn) begin
-		for (idx=0; idx<-C_VALID_NUM_HDR_PKTS; idx=idx+1) begin
-			pkts[idx] <= 0;
-		end
-
-		tuser_1st <= 0;
-	end
-	else if (hdr_window && pkt_cnt==0) begin
-		for (idx=0; idx<C_VALID_NUM_HDR_PKTS; idx=idx+1) begin
-			pkts[idx] <= 0;
-		end
-		pkts[pkt_cnt] <= s_axis_tdata;
-		tuser_1st <= s_axis_tuser;
-	end
-	else if (hdr_window) begin
-		pkts[pkt_cnt] <= s_axis_tdata;
-	end
-end
-/****** store all or at-most 4 pkt segments ******/
+reg [C_S_AXIS_TUSER_WIDTH-1:0] tuser_1st, tuser_1st_next;
 
 /****** parse ******/
 // all the Ether, VLAN, IP, UDP headers are static
-assign w_pkts = {pkts[3], pkts[2], pkts[1], pkts[0]};
 
+reg [TOT_HDR_LEN-1:0] pkt_hdr_field, pkt_hdr_field_next;
 
+localparam	IDLE=0, 
+			WAIT_2ND_SEG=1,
+			WAIT_3RD_SEG=2,
+			WAIT_4TH_SEG=3,
+			START_PARSING=4, 
+			FINISH_SUB_PARSE=5;
 
-localparam WAIT_FOR_PKTS=0, START_PARSING=1;
-localparam WAIT_BRAM_OUT_1=2, BEGIN_SUB_PARSE=3, FINISH_SUB_PARSE=4;
 wire [259:0] bram_out;
 reg [3:0] state, state_next;
 
 // common headers
-reg [11:0] vlan_id; // vlan id
-reg [15:0] eth_type_r;
-reg [7:0] ip_prot_r;
-reg [15:0] eth_type;
-reg [7:0] ip_prot;
+wire [11:0] vlan_id; // vlan id
+assign vlan_id = pkt_hdr_field_next[116+:12];
 
 // parsing actions
 wire [15:0] parse_action [0:9];		// we have 10 parse action
@@ -202,9 +146,6 @@ always@(*) begin
 	state_next = state;
 	parser_valid_r = 0;
 
-	eth_type_r = eth_type;
-	ip_prot_r = ip_prot;
-
 	pkt_hdr_vec_r = pkt_hdr_vec;
 	// zero out
 	val_2B[0]=0;val_2B[1]=0;val_2B[2]=0;val_2B[3]=0;val_2B[4]=0;val_2B[5]=0;val_2B[6]=0;val_2B[7]=0;
@@ -212,28 +153,51 @@ always@(*) begin
 	val_6B[0]=0;val_6B[1]=0;val_6B[2]=0;val_6B[3]=0;val_6B[4]=0;val_6B[5]=0;val_6B[6]=0;val_6B[7]=0;
 	// 
 	sub_parse_act_valid = 10'b0;
+	//
+	pkt_hdr_field_next = pkt_hdr_field;
+	tuser_1st_next = tuser_1st;
 
 	case (state) 
-		WAIT_FOR_PKTS: begin
-			if (if_last_d1||pkt_cnt>=C_VALID_NUM_HDR_PKTS) begin
+		IDLE: begin
+			if (s_axis_tvalid) begin
+				pkt_hdr_field_next[0+:255] = s_axis_tdata;
+				tuser_1st_next = s_axis_tuser;
+
+				state_next = WAIT_2ND_SEG;
+			end
+		end
+		WAIT_2ND_SEG: begin
+			if (s_axis_tvalid) begin
+				pkt_hdr_field_next[256+:255] = s_axis_tdata;
+
+				if (s_axis_tlast) begin
+					state_next = START_PARSING;
+				end
+				else begin
+					state_next = WAIT_3RD_SEG;
+				end
+			end
+		end
+		WAIT_3RD_SEG: begin
+			if (s_axis_tvalid) begin
+				pkt_hdr_field_next[512+:255] = s_axis_tdata;
+
+				if (s_axis_tlast) begin
+					state_next = START_PARSING;
+				end
+				else begin
+					state_next = WAIT_4TH_SEG;
+				end
+			end
+		end
+		WAIT_4TH_SEG: begin
+			if (s_axis_tvalid) begin
+				pkt_hdr_field_next[768+:255] = s_axis_tdata;
+
 				state_next = START_PARSING;
 			end
 		end
 		START_PARSING: begin
-			eth_type_r = w_pkts[128+:16]; // 144
-			// 
-			ip_prot_r = w_pkts[216+:8]; // 240
-			//
-			vlan_id = w_pkts[116+:12];
-	
-			state_next = WAIT_BRAM_OUT_1;
-		end
-		WAIT_BRAM_OUT_1: begin
-			// empty cycle
-			state_next = BEGIN_SUB_PARSE;
-		end
-		BEGIN_SUB_PARSE: begin
-
 			sub_parse_act_valid = 10'b1111111111;
 
 			sub_parse_act[0] = parse_action[0];
@@ -251,7 +215,7 @@ always@(*) begin
 		end
 		FINISH_SUB_PARSE: begin
 			parser_valid_r = 1;
-			state_next = WAIT_FOR_PKTS;
+			state_next = IDLE;
 
 			`SUB_PARSE(0)
 			`SUB_PARSE(1)
@@ -278,24 +242,40 @@ end
 
 always@(posedge axis_clk) begin
 	if (~aresetn) begin
-		state <= WAIT_FOR_PKTS;
+		state <= IDLE;
 
 		//
-		eth_type <= 0;
-		ip_prot <= 0;
 		pkt_hdr_vec <= 0;
 		parser_valid <= 0;
+		//
+		tuser_1st <= 0;
+		pkt_hdr_field <= 0;
 	end
 	else begin
 		state <= state_next;
 
-		eth_type <= eth_type_r;
-		ip_prot <= ip_prot_r;
 		pkt_hdr_vec <= pkt_hdr_vec_r;
 		// pkt_hdr_vec <= {1124{1'b0}};
 		parser_valid <= parser_valid_r;
+		//
+		tuser_1st <= tuser_1st_next;
+		pkt_hdr_field <= pkt_hdr_field_next;
 	end
 end
+// debug
+(* mark_debug="true" *) wire dbg_parser_valid;
+(* mark_debug="true" *) wire[31:0] dbg_phv_out_4B_1;
+(* mark_debug="true" *) wire[11:0] dbg_vid;
+(* mark_debug="true" *) wire[15:0] dbg_pat_0;
+(* mark_debug="true" *) wire[15:0] dbg_pat_1;
+(* mark_debug="true" *) wire[2:0] dbg_state;
+
+assign dbg_parser_valid = parser_valid;
+assign dbg_phv_out_4B_1 = pkt_hdr_vec[256+100+16*8+32 +: 32];
+assign dbg_vid = pkt_hdr_vec[140:129];
+assign dbg_pat_0 = parse_action[0];
+assign dbg_pat_1 = parse_action[1];
+assign dbg_state = state;
 
 // =============================================================== //
 generate
@@ -314,7 +294,7 @@ generate
 			.parse_act_valid	(sub_parse_act_valid[index]),
 			.parse_act			(sub_parse_act[index]),
 
-			.pkts_hdr			(w_pkts),
+			.pkts_hdr			(pkt_hdr_field),
 			.val_out_valid		(sub_parse_val_out_valid[index]),
 			.val_out			(sub_parse_val_out[index]),
 			.val_out_type		(sub_parse_val_out_type[index]),
