@@ -9,3 +9,6 @@ set_false_path -to [get_pins fpga_boot_sync_reg_0_reg/D]
 
 
 
+
+
+
