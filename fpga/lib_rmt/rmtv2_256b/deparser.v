@@ -95,7 +95,8 @@ reg [2:0]							pkts_tlast_stored_1p, pkts_tlast_stored_2p;
 
 reg [7:0] state, state_next;
 
-reg [11:0] vlan_id; // vlan id
+wire [11:0] vlan_id; // vlan id
+assign vlan_id = phv_fifo_out[129+:12];
 wire [259:0] bram_out;
 wire [6:0] parse_action_ind [0:9];
 wire [9:0] parse_action_ind_10b [0:9];
@@ -104,9 +105,6 @@ wire discard_signal;
 assign discard_signal = phv_fifo_out[128];
 
 wire [15:0] parse_action [0:9];		// we have 10 parse action
-
-
-
 
 assign parse_action[9] = bram_out[100+:16];
 assign parse_action[8] = bram_out[116+:16];
@@ -158,20 +156,23 @@ wire [9:0]					sub_depar_val_out_valid;
 
 // for debug
 reg [7:0] cnt, cnt_next;
-(* mark_debug = "true" *) wire val_valid;
-(* mark_debug = "true" *) wire [31:0] val_2b_0;
-(* mark_debug = "true" *) wire [31:0] val_2b_3;
-(* mark_debug = "true" *) wire [7:0] dst_port;
+(* mark_debug = "true" *) wire dbg_val_valid;
+(* mark_debug = "true" *) wire [31:0] dbg_val_2b_0;
+(* mark_debug = "true" *) wire [31:0] dbg_val_2b_3;
+(* mark_debug = "true" *) wire [31:0] dbg_val_2b_7;
+(* mark_debug = "true" *) wire [7:0] dbg_dst_port;
 (* mark_debug = "true" *) wire [7:0] dbg_cnt;
 (* mark_debug = "true" *) wire [5:0] dbg_sub_depar_act;
 
 
-assign val_valid = sub_depar_val_out_valid[0];
-assign val_2b_0 = phv_fifo_out[PHV_4B_START_POS+0 +: 32];
-assign val_2b_3 = phv_fifo_out[PHV_4B_START_POS+32*3 +: 32];
-assign dst_port = phv_fifo_out[24+:8];
+assign dbg_val_valid = sub_depar_val_out_valid[0];
+assign dbg_val_2b_0 = phv_fifo_out[PHV_4B_START_POS+0 +: 32];
+assign dbg_val_2b_3 = phv_fifo_out[PHV_4B_START_POS+32*2 +: 32];
+assign dbg_val_2b_7 = phv_fifo_out[PHV_4B_START_POS+32*7 +: 32];
+assign dbg_dst_port = phv_fifo_out[24+:8];
 assign dbg_cnt = cnt;
-assign dbg_sub_depar_act = sub_depar_act[0];
+// assign dbg_sub_depar_act = sub_depar_act[0];
+assign dbg_sub_depar_act = parse_action[0][5:0];
 
 
 //
@@ -209,7 +210,7 @@ always @(*) begin
 	pkts_tlast_stored_r_2p = pkts_tlast_stored_2p;
 
 	sub_depar_act_valid = 10'b0;
-	sub_depar_phv_fifo_out_r = phv_fifo_out;
+	// sub_depar_phv_fifo_out_r = phv_fifo_out;
 
 	state_next = state;
 	cnt_next = cnt;
@@ -224,7 +225,6 @@ always @(*) begin
 				
 				pkt_fifo_rd_en = 1;
 
-				vlan_id = phv_fifo_out[129+:12];
 
 				if (discard_signal == 1) begin
 					phv_fifo_rd_en = 1;
@@ -278,16 +278,16 @@ always @(*) begin
 		BEGIN_SUB_DEPARSER: begin
 			sub_depar_act_valid = 10'b1111111111;
 
-			sub_depar_act[0] = parse_action[0][5:0];
-			sub_depar_act[1] = parse_action[1][5:0];
-			sub_depar_act[2] = parse_action[2][5:0];
-			sub_depar_act[3] = parse_action[3][5:0];
-			sub_depar_act[4] = parse_action[4][5:0];
-			sub_depar_act[5] = parse_action[5][5:0];
-			sub_depar_act[6] = parse_action[6][5:0];
-			sub_depar_act[7] = parse_action[7][5:0];
-			sub_depar_act[8] = parse_action[8][5:0];
-			sub_depar_act[9] = parse_action[9][5:0];
+			// sub_depar_act[0] = parse_action[0][5:0];
+			// sub_depar_act[1] = parse_action[1][5:0];
+			// sub_depar_act[2] = parse_action[2][5:0];
+			// sub_depar_act[3] = parse_action[3][5:0];
+			// sub_depar_act[4] = parse_action[4][5:0];
+			// sub_depar_act[5] = parse_action[5][5:0];
+			// sub_depar_act[6] = parse_action[6][5:0];
+			// sub_depar_act[7] = parse_action[7][5:0];
+			// sub_depar_act[8] = parse_action[8][5:0];
+			// sub_depar_act[9] = parse_action[9][5:0];
 
 			state_next = EMPTY_FINISH;
 		end
@@ -510,8 +510,10 @@ generate
 			.clk				(clk),
 			.aresetn			(aresetn),
 			.parse_act_valid	(sub_depar_act_valid[index]),
-			.parse_act			(sub_depar_act[index]),
-			.phv_in				(sub_depar_phv_fifo_out_r),
+			// .parse_act			(sub_depar_act[index]),
+			.parse_act			(parse_action[index][5:0]),
+			// .phv_in				(sub_depar_phv_fifo_out_r),
+			.phv_in				(phv_fifo_out),
 			.val_out_valid		(sub_depar_val_out_valid[index]),
 			.val_out			(sub_depar_val_out[index]),
 			.val_out_type		(sub_depar_val_out_type[index])

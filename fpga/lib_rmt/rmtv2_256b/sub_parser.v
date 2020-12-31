@@ -29,10 +29,10 @@ reg [1:0]					val_out_type_nxt;
 reg [2:0]					val_out_seq_nxt;
 
 always @(*) begin
-	val_out_nxt = 0;
 	val_out_valid_nxt = 0;
-	val_out_type_nxt = 0;
-	val_out_seq_nxt = 0;
+	val_out_nxt = val_out;
+	val_out_type_nxt = val_out_type;
+	val_out_seq_nxt = val_out_seq;
 
 	if (parse_act_valid) begin
 		val_out_valid_nxt = 1;
@@ -53,6 +53,10 @@ always @(*) begin
 			3'b111: begin
 				val_out_type_nxt = 2'b11;
 				val_out_nxt[47:0] = pkts_hdr[(parse_act[12:6])*8 +: 48];
+			end
+			default: begin
+				val_out_type_nxt = 0;
+				val_out_nxt = 0;
 			end
 		endcase
 	end

@@ -30,8 +30,8 @@ reg [1:0]	val_out_type_nxt;
 
 always @(*) begin
 	val_out_valid_nxt = 0;
-	val_out_nxt = 0;
-	val_out_type_nxt = 0;
+	val_out_nxt = val_out;
+	val_out_type_nxt = val_out_type;
 
 	if (parse_act_valid) begin
 		val_out_valid_nxt = 1;
@@ -78,6 +78,10 @@ always @(*) begin
 					3'd6: val_out_nxt[47:0] = phv_in[PHV_6B_START_POS+48*6 +: 48];
 					3'd7: val_out_nxt[47:0] = phv_in[PHV_6B_START_POS+48*7 +: 48];
 				endcase
+			end
+			default: begin
+				val_out_type_nxt = 0;
+				val_out_nxt = 0;
 			end
 		endcase
 	end
