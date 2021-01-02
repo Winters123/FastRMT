@@ -164,6 +164,11 @@ always @(posedge clk or negedge rst_n) begin
                         alu_in_6B_1[(i+1)*width_6B-1 -: width_6B] <= cont_6B[sub_action[16+i+1][18:16]];
                         alu_in_6B_2[(i+1)*width_6B-1 -: width_6B] <= {32'b0,sub_action[16+i+1][15:0]};
                     end
+					// set operation, operand A set to 0, operand B set to imm
+					4'b1110: begin
+                        alu_in_6B_1[(i+1)*width_6B-1 -: width_6B] <= 48'b0;
+                        alu_in_6B_2[(i+1)*width_6B-1 -: width_6B] <= {32'b0,sub_action[16+i+1][15:0]};
+					end
                     //if there is no action to take, output the original value
                     default: begin
                         //alu_1 should be set to the phv value
@@ -185,6 +190,11 @@ always @(posedge clk or negedge rst_n) begin
                         alu_in_4B_1[(i+1)*width_4B-1 -: width_4B] <= cont_4B[sub_action[8+i+1][18:16]];
                         alu_in_4B_2[(i+1)*width_4B-1 -: width_4B] <= {16'b0,sub_action[8+i+1][15:0]};
                     end
+					// set operation, operand A set to 0, operand B set to imm
+					4'b1110: begin
+                        alu_in_4B_1[(i+1)*width_4B-1 -: width_4B] <= 32'b0;
+                        alu_in_4B_2[(i+1)*width_4B-1 -: width_4B] <= {16'b0,sub_action[16+i+1][15:0]};
+					end
                     //checkme: loadd put here
                     4'b1011, 4'b1000, 4'b0111: begin
                         alu_in_4B_1[(i+1)*width_4B-1 -: width_4B] <= cont_4B[sub_action[8+i+1][18:16]];
@@ -210,6 +220,11 @@ always @(posedge clk or negedge rst_n) begin
                         alu_in_2B_1[(i+1)*width_2B-1 -: width_2B] <= cont_2B[sub_action[16+i+1][18:16]];
                         alu_in_2B_2[(i+1)*width_2B-1 -: width_2B] <= sub_action[16+i+1][15:0];
                     end
+					// set operation, operand A set to 0, operand B set to imm
+					4'b1110: begin
+                        alu_in_2B_1[(i+1)*width_4B-1 -: width_2B] <= 16'b0;
+                        alu_in_2B_2[(i+1)*width_4B-1 -: width_2B] <= sub_action[16+i+1][15:0];
+					end
                     //if there is no action to take, output the original value
                     default: begin
                         //alu_1 should be set to the phv value

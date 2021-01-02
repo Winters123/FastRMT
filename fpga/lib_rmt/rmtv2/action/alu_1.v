@@ -65,6 +65,9 @@ always @(*) begin
             	    4'b0010, 4'b1010: begin
             	        container_out_r = operand_1_in - operand_2_in;
             	    end
+					4'b1110: begin
+						container_out_r = operand_2_in;
+					end
             	    //if its an empty (default) action
             	    default: begin
             	        container_out_r = operand_1_in;

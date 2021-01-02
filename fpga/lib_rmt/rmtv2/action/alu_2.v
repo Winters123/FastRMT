@@ -104,6 +104,8 @@ assign load_addr = operand_2_in[4:0] + base_addr;
 7. loadd:     0111
               load data from RAM, increment by 1 write it to container, and write it
               back to the RAM. 
+8. set:		  1110
+			  set to an immediate value
 */
 
 localparam  IDLE_S = 3'd0,
@@ -168,6 +170,10 @@ always @(*) begin
                         container_out_r = operand_3_in;
                         store_addr_r = operand_2_in[4:0];
                     end
+					// set operation
+					4'b1110: begin
+						container_out_r = operand_2_in;
+					end
                     //cannot go back to IDLE since this
                     //might be a legal action.
                     default: begin
