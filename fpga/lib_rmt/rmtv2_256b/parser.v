@@ -260,6 +260,31 @@ always@(*) begin
 							// {115{1'b0}}, vlan_id, 1'b0, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
 							{115{1'b0}}, vlan_id, 1'b0, tuser_1st};
 							// {128{1'b0}}, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
+			// zero out
+			val_2B_nxt[0]=0;
+			val_2B_nxt[1]=0;
+			val_2B_nxt[2]=0;
+			val_2B_nxt[3]=0;
+			val_2B_nxt[4]=0;
+			val_2B_nxt[5]=0;
+			val_2B_nxt[6]=0;
+			val_2B_nxt[7]=0;
+			val_4B_nxt[0]=0;
+			val_4B_nxt[1]=0;
+			val_4B_nxt[2]=0;
+			val_4B_nxt[3]=0;
+			val_4B_nxt[4]=0;
+			val_4B_nxt[5]=0;
+			val_4B_nxt[6]=0;
+			val_4B_nxt[7]=0;
+			val_6B_nxt[0]=0;
+			val_6B_nxt[1]=0;
+			val_6B_nxt[2]=0;
+			val_6B_nxt[3]=0;
+			val_6B_nxt[4]=0;
+			val_6B_nxt[5]=0;
+			val_6B_nxt[6]=0;
+			val_6B_nxt[7]=0;
 		end
 	endcase
 end
