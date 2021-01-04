@@ -222,8 +222,8 @@ always @(posedge clk or negedge rst_n) begin
                     end
 					// set operation, operand A set to 0, operand B set to imm
 					4'b1110: begin
-                        alu_in_2B_1[(i+1)*width_4B-1 -: width_2B] <= 16'b0;
-                        alu_in_2B_2[(i+1)*width_4B-1 -: width_2B] <= sub_action[i+1][15:0];
+                        alu_in_2B_1[(i+1)*width_2B-1 -: width_2B] <= 16'b0;
+                        alu_in_2B_2[(i+1)*width_2B-1 -: width_2B] <= sub_action[i+1][15:0];
 					end
                     //if there is no action to take, output the original value
                     default: begin

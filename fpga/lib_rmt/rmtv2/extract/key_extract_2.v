@@ -82,7 +82,7 @@ reg  [7:0]             com_op_1, com_op_1_next;
 reg  [7:0]             com_op_2, com_op_2_next;
 
 //vlan_id extracted from metadata
-wire  [11:0]             vlan_id; 
+wire  [11:0]            vlan_id; 
 
 wire [KEY_OFF-1:0]      key_offset; // output from RAM
 reg  [KEY_OFF-1:0]      key_offset_r;
