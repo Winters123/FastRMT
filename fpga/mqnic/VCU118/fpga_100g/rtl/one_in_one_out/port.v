@@ -376,6 +376,26 @@ wire [SCHED_COUNT*AXIL_DATA_WIDTH-1:0] axil_sched_rdata;
 wire [SCHED_COUNT*2-1:0]               axil_sched_rresp;
 wire [SCHED_COUNT-1:0]                 axil_sched_rvalid;
 wire [SCHED_COUNT-1:0]                 axil_sched_rready;
+//rmt related
+wire [SCHED_COUNT*AXIL_ADDR_WIDTH-1:0] axil_rmt_awaddr;
+wire [SCHED_COUNT*3-1:0]               axil_rmt_awprot;
+wire [SCHED_COUNT-1:0]                 axil_rmt_awvalid;
+wire [SCHED_COUNT-1:0]                 axil_rmt_awready;
+wire [SCHED_COUNT*AXIL_DATA_WIDTH-1:0] axil_rmt_wdata;
+wire [SCHED_COUNT*AXIL_STRB_WIDTH-1:0] axil_rmt_wstrb;
+wire [SCHED_COUNT-1:0]                 axil_rmt_wvalid;
+wire [SCHED_COUNT-1:0]                 axil_rmt_wready;
+wire [SCHED_COUNT*2-1:0]               axil_rmt_bresp;
+wire [SCHED_COUNT-1:0]                 axil_rmt_bvalid;
+wire [SCHED_COUNT-1:0]                 axil_rmt_bready;
+wire [SCHED_COUNT*AXIL_ADDR_WIDTH-1:0] axil_rmt_araddr;
+wire [SCHED_COUNT*3-1:0]               axil_rmt_arprot;
+wire [SCHED_COUNT-1:0]                 axil_rmt_arvalid;
+wire [SCHED_COUNT-1:0]                 axil_rmt_arready;
+wire [SCHED_COUNT*AXIL_DATA_WIDTH-1:0] axil_rmt_rdata;
+wire [SCHED_COUNT*2-1:0]               axil_rmt_rresp;
+wire [SCHED_COUNT-1:0]                 axil_rmt_rvalid;
+wire [SCHED_COUNT-1:0]                 axil_rmt_rready;
 
 // Checksumming and RSS
 wire [AXIS_DATA_WIDTH-1:0] rx_axis_tdata_int;
@@ -754,7 +774,7 @@ end
 
 // AXI lite interconnect
 parameter AXIL_S_COUNT = 1;
-parameter AXIL_M_COUNT = SCHED_COUNT+1;
+parameter AXIL_M_COUNT = SCHED_COUNT+2;
 
 axil_interconnect #(
     .DATA_WIDTH(AXIL_DATA_WIDTH),
@@ -788,25 +808,25 @@ axil_interconnect_inst (
     .s_axil_rresp(s_axil_rresp),
     .s_axil_rvalid(s_axil_rvalid),
     .s_axil_rready(s_axil_rready),
-    .m_axil_awaddr( {axil_sched_awaddr,  axil_ctrl_awaddr}),
-    .m_axil_awprot( {axil_sched_awprot,  axil_ctrl_awprot}),
-    .m_axil_awvalid({axil_sched_awvalid, axil_ctrl_awvalid}),
-    .m_axil_awready({axil_sched_awready, axil_ctrl_awready}),
-    .m_axil_wdata(  {axil_sched_wdata,   axil_ctrl_wdata}),
-    .m_axil_wstrb(  {axil_sched_wstrb,   axil_ctrl_wstrb}),
-    .m_axil_wvalid( {axil_sched_wvalid,  axil_ctrl_wvalid}),
-    .m_axil_wready( {axil_sched_wready,  axil_ctrl_wready}),
-    .m_axil_bresp(  {axil_sched_bresp,   axil_ctrl_bresp}),
-    .m_axil_bvalid( {axil_sched_bvalid,  axil_ctrl_bvalid}),
-    .m_axil_bready( {axil_sched_bready,  axil_ctrl_bready}),
-    .m_axil_araddr( {axil_sched_araddr,  axil_ctrl_araddr}),
-    .m_axil_arprot( {axil_sched_arprot,  axil_ctrl_arprot}),
-    .m_axil_arvalid({axil_sched_arvalid, axil_ctrl_arvalid}),
-    .m_axil_arready({axil_sched_arready, axil_ctrl_arready}),
-    .m_axil_rdata(  {axil_sched_rdata,   axil_ctrl_rdata}),
-    .m_axil_rresp(  {axil_sched_rresp,   axil_ctrl_rresp}),
-    .m_axil_rvalid( {axil_sched_rvalid,  axil_ctrl_rvalid}),
-    .m_axil_rready( {axil_sched_rready,  axil_ctrl_rready})
+    .m_axil_awaddr( {axil_sched_awaddr,  axil_ctrl_awaddr,  axil_rmt_awaddr}),
+    .m_axil_awprot( {axil_sched_awprot,  axil_ctrl_awprot,  axil_rmt_awprot}),
+    .m_axil_awvalid({axil_sched_awvalid, axil_ctrl_awvalid, axil_rmt_awvalid}),
+    .m_axil_awready({axil_sched_awready, axil_ctrl_awready, axil_rmt_awready}),
+    .m_axil_wdata(  {axil_sched_wdata,   axil_ctrl_wdata,   axil_rmt_wdata}),
+    .m_axil_wstrb(  {axil_sched_wstrb,   axil_ctrl_wstrb,   axil_rmt_wstrb}),
+    .m_axil_wvalid( {axil_sched_wvalid,  axil_ctrl_wvalid,  axil_rmt_wvalid}),
+    .m_axil_wready( {axil_sched_wready,  axil_ctrl_wready,  axil_rmt_wready}),
+    .m_axil_bresp(  {axil_sched_bresp,   axil_ctrl_bresp,   axil_rmt_bresp}),
+    .m_axil_bvalid( {axil_sched_bvalid,  axil_ctrl_bvalid,  axil_rmt_bvalid}),
+    .m_axil_bready( {axil_sched_bready,  axil_ctrl_bready,  axil_rmt_bready}),
+    .m_axil_araddr( {axil_sched_araddr,  axil_ctrl_araddr,  axil_rmt_araddr}),
+    .m_axil_arprot( {axil_sched_arprot,  axil_ctrl_arprot,  axil_rmt_arprot}),
+    .m_axil_arvalid({axil_sched_arvalid, axil_ctrl_arvalid, axil_rmt_arvalid}),
+    .m_axil_arready({axil_sched_arready, axil_ctrl_arready, axil_rmt_arready}),
+    .m_axil_rdata(  {axil_sched_rdata,   axil_ctrl_rdata,   axil_rmt_rdata}),
+    .m_axil_rresp(  {axil_sched_rresp,   axil_ctrl_rresp,   axil_rmt_rresp}),
+    .m_axil_rvalid( {axil_sched_rvalid,  axil_ctrl_rvalid,  axil_rmt_rvalid}),
+    .m_axil_rready( {axil_sched_rready,  axil_ctrl_rready,  axil_rmt_rready})
 );
 
 desc_op_mux #(
@@ -1882,8 +1902,31 @@ if (RMT_TX_ENABLE) begin
     	.m_axis_tuser(0),
     	.m_axis_tvalid(tx_axis_tvalid),
     	.m_axis_tready(tx_axis_tready),
-    	.m_axis_tlast(tx_axis_tlast)
-    
+    	.m_axis_tlast(tx_axis_tlast),
+
+        /*
+        * AXI-Lite slave interface
+        */
+        .s_axil_awaddr(axil_rmt_awaddr),
+        .s_axil_awprot(axil_rmt_awprot),
+        .s_axil_awvalid(axil_rmt_awvalid),
+        .s_axil_awready(axil_rmt_awready),
+        .s_axil_wdata(axil_rmt_wdata),
+        .s_axil_wstrb(axil_rmt_wstrb),
+        .s_axil_wvalid(axil_rmt_wvalid),
+        .s_axil_wready(axil_rmt_wready),
+        .s_axil_bresp(axil_rmt_bresp),
+        .s_axil_bvalid(axil_rmt_bvalid),
+        .s_axil_bready(axil_rmt_bready),
+
+        .s_axil_araddr(axil_rmt_araddr),
+        .s_axil_arprot(axil_rmt_arprot),
+        .s_axil_arvalid(axil_rmt_arvalid),
+        .s_axil_arready(axil_rmt_arready),
+        .s_axil_rdata(axil_rmt_rdata),
+        .s_axil_rresp(axil_rmt_rresp),
+        .s_axil_rvalid(axil_rmt_rvalid),
+        .s_axil_rready(axil_rmt_rready)
     );
 
 

@@ -12,6 +12,10 @@ module pkt_filter #(
 	input				clk,
 	input				aresetn,
 
+	input      [95:0]	time_stamp,
+	output reg [31:0]	cookie_val,
+	output reg [31:0]	ctrl_token,
+
 	// input Slave AXI Stream
 	input [C_S_AXIS_DATA_WIDTH-1:0]			s_axis_tdata,
 	input [((C_S_AXIS_DATA_WIDTH/8))-1:0]	s_axis_tkeep,
@@ -82,11 +86,13 @@ reg [1:0] state, state_next;
 reg 								c_switch;
 wire								w_c_switch;
 
-assign w_c_switch = c_switch;
+//for security and reliability 
+wire [31:0]							cookie_w;
+wire [31:0]							token_w;
 
-assign IP_flag = s_axis_tdata[143:128];
-assign UDP_flag = s_axis_tdata[223:216];
-assign CONTROL_flag = s_axis_tdata[335:320];
+assign w_c_switch = c_switch;
+assign cookie_w = {s_axis_tdata[399:392],s_axis_tdata[407:400],s_axis_tdata[415:408],s_axis_tdata[423:416]};
+assign token_w = {s_axis_tdata[431:424], s_axis_tdata[439:432], s_axis_tdata[447:440], s_axis_tdata[455:448]};
 
 
 always @(*) begin
@@ -108,9 +114,12 @@ always @(*) begin
 			if (m_axis_tready && s_axis_tvalid) begin
 				if ((s_axis_tdata[143:128]==`ETH_TYPE_IPV4) && 
 					(s_axis_tdata[223:216]==`IPPROT_UDP)) begin
-					if(s_axis_tdata[335:320] == `CONTROL_PORT) begin
+					//checkme: we put the security check here
+					if(s_axis_tdata[335:320] == `CONTROL_PORT && cookie_w == cookie_val && token_w == ctrl_token) begin
 						state_next = FLUSH_CTL;
 						c_switch = 1'b1;
+						//modify token once its true
+						ctrl_token = time_stamp[31:0];
 					end
 					else if (!s_axis_tlast) begin
 						state_next = FLUSH_DATA;
@@ -174,9 +183,11 @@ always @(posedge clk or negedge aresetn) begin
 		c_m_axis_tlast <= 0;
 
 		c_m_axis_tvalid <= 0;
-
 		s_axis_tready <= 0;
+
+		ctrl_token <= time_stamp[31:0];
 	end
+
 	else begin
 		state <= state_next;
 
@@ -193,7 +204,6 @@ always @(posedge clk or negedge aresetn) begin
 			c_m_axis_tkeep <= 0;
 			c_m_axis_tuser <= 0;
 			c_m_axis_tlast <= 0;
-	
 			c_m_axis_tvalid <= 0;
 		end
 		else begin
@@ -213,5 +223,14 @@ always @(posedge clk or negedge aresetn) begin
 		
 	end
 end
+
+cookie #(
+	.COOKIE_LEN()
+)cookie(
+	.clk(clk),
+	.rst_n(aresetn),
+	.time_stamp(time_stamp),
+	.cookie_val(cookie_val)
+);
 
 endmodule

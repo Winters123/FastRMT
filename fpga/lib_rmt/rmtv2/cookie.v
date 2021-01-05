@@ -8,7 +8,7 @@ module cookie #(
     input rst_n,
 
     input [95:0]        time_stamp,
-    output reg [31:0]   c_val
+    output reg [31:0]   cookie_val
 );
 
 localparam COOKIE_BASE = 32'hf1ec234d;
@@ -34,14 +34,14 @@ assign time_lsb = time_stamp[31:0];
 
 always @(posedge clk or negedge rst_n) begin
     if(~rst_n) begin
-        c_val <= COOKIE_BASE;
+        cookie_val <= COOKIE_BASE;
     end
     else begin
         if (cycle_cnt == 32'h8) begin
-            c_val <= c_val ^ (time_lsb>>16) ^ COOKIE_BASE;
+            cookie_val <= cookie_val ^ (time_lsb>>16) ^ COOKIE_BASE;
         end
         else begin
-            c_val <= c_val;
+            cookie_val <= cookie_val;
         end
     end
 end
