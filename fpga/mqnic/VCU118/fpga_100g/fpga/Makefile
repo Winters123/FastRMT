@@ -73,6 +73,7 @@ SYN_FILES += lib_rmt/rmtv2/action/alu_2.v
 SYN_FILES += lib_rmt/rmtv2/action/alu_3.v
 SYN_FILES += lib_rmt/rmtv2/action/crossbar.v
 SYN_FILES += lib_rmt/rmtv2/pkt_filter.v
+SYN_FILES += lib_rmt/rmtv2/cookie.v
 
 # XDC files
 XDC_FILES = fpga.xdc

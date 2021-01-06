@@ -13,7 +13,7 @@ module pkt_filter #(
 	input				aresetn,
 
 	input      [95:0]	time_stamp,
-	output reg [31:0]	cookie_val,
+	output     [31:0]	cookie_val,
 	output reg [31:0]	ctrl_token,
 
 	// input Slave AXI Stream
