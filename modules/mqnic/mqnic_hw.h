@@ -211,6 +211,9 @@ either expressed or implied, of The Regents of the University of California.
 #define MQNIC_PORT_REG_TDMA_ACTIVE_PERIOD_SEC_L   0x1048
 #define MQNIC_PORT_REG_TDMA_ACTIVE_PERIOD_SEC_H   0x104C
 
+#define MQNIC_PORT_REG_RMT_COOKIE                 0x2020
+#define MQNIC_PORT_REG_RMT_TOKEN                  0x2024
+
 #define MQNIC_PORT_FEATURE_RSS                    (1 << 0)
 #define MQNIC_PORT_FEATURE_PTP_TS                 (1 << 4)
 #define MQNIC_PORT_FEATURE_TX_CSUM                (1 << 8)

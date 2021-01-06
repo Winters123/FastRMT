@@ -142,6 +142,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+
     printf("FW ID: 0x%08x\n", dev->fw_id);
     printf("FW version: %d.%d\n", dev->fw_ver >> 16, dev->fw_ver & 0xffff);
     printf("Board ID: 0x%08x\n", dev->board_id);
@@ -152,6 +153,12 @@ int main(int argc, char *argv[])
     printf("IF count: %d\n", dev->if_count);
     printf("IF stride: 0x%08x\n", dev->if_stride);
     printf("IF CSR offset: 0x%08x\n", dev->if_csr_offset);
+
+    /*
+    *   checkme: hope its right for RMT
+    */
+    printf("token value of RMT: 0x%08x\n", dev->if_token);
+    printf("token value of RMT: 0x%08x\n", dev->if_cookie);
 
     if (dev->phc_count == 0)
     {

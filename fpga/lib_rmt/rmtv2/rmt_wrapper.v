@@ -152,7 +152,13 @@ reg [95:0] fake_timer;
 localparam FAKE_SEED = 96'hcecc666;
 
 always @(posedge clk) begin
-	fake_timer <= FAKE_SEED + 1'b1;
+	if(~aresetn) begin
+		fake_timer <= FAKE_SEED + 1'b1;
+	end
+	else begin
+		fake_timer <= fake_timer + 1'b1;
+	end
+
 end
 
 //two registers for AXI-Lite

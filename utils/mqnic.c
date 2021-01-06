@@ -137,6 +137,12 @@ struct mqnic *mqnic_open(const char *dev_name)
     dev->if_stride = mqnic_reg_read32(dev->regs, MQNIC_REG_IF_STRIDE);
     dev->if_csr_offset = mqnic_reg_read32(dev->regs, MQNIC_REG_IF_CSR_OFFSET);
 
+    /*
+     * inserted testcase for axil channel in RMT
+    */
+    dev->if_token = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_TOKEN);
+    dev->if_cookie = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_COOKIE);
+
     if (dev->if_count > MQNIC_MAX_IF)
         dev->if_count = MQNIC_MAX_IF;
 

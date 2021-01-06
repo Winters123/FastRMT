@@ -120,6 +120,9 @@ struct mqnic {
     uint32_t if_stride;
     uint32_t if_csr_offset;
 
+    uint32_t if_token;
+    uint32_t if_cookie;
+
     struct mqnic_if interfaces[MQNIC_MAX_IF];
 };
 
