@@ -623,10 +623,10 @@ always @(posedge clk or negedge aresetn) begin
 			axil_rmt_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
 
 			case ({s_axil_araddr[15:2], 2'b00})
-				16'h2021: begin
+				16'h2020: begin
 					axil_rmt_rdata_reg <= cookie_val;
 				end
-				16'h2022: begin
+				16'h2024: begin
 					axil_rmt_rdata_reg <= ctrl_token;
 				end
 			endcase
