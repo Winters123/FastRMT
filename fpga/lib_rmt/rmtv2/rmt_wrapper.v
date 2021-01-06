@@ -591,12 +591,6 @@ assign s_axil_rvalid = axil_rmt_rvalid_reg;
 	*control path of AXI-Lite
 */
 always @(posedge clk or negedge aresetn) begin
-    
-	axil_rmt_awready_reg <= 1'b0;
-    axil_rmt_wready_reg <= 1'b0;
-    axil_rmt_bvalid_reg <= axil_rmt_bvalid_reg && !s_axil_bready;
-    axil_rmt_arready_reg <= 1'b0;
-    axil_rmt_rvalid_reg <= axil_rmt_rvalid_reg && !s_axil_rready;
 
     if (~aresetn) begin
         axil_rmt_awready_reg <= 1'b0;
@@ -606,31 +600,39 @@ always @(posedge clk or negedge aresetn) begin
         axil_rmt_rvalid_reg <= 1'b0;
     end
 
-    // if (axil_rmt_awvalid && axil_rmt_wvalid && !axil_rmt_bvalid) begin
+	else begin
+		axil_rmt_awready_reg <= 1'b0;
+		axil_rmt_wready_reg <= 1'b0;
+		axil_rmt_bvalid_reg <= axil_rmt_bvalid_reg && !s_axil_bready;
+		axil_rmt_arready_reg <= 1'b0;
+		axil_rmt_rvalid_reg <= axil_rmt_rvalid_reg && !s_axil_rready;
+		// if (axil_rmt_awvalid && axil_rmt_wvalid && !axil_rmt_bvalid) begin
     //     // write operation
-    //     axil_rmt_awready_reg <= 1'b1;
-    //     axil_rmt_wready_reg <= 1'b1;
-    //     axil_rmt_bvalid_reg <= 1'b1;
+		//     axil_rmt_awready_reg <= 1'b1;
+		//     axil_rmt_wready_reg <= 1'b1;
+		//     axil_rmt_bvalid_reg <= 1'b1;
 
-    //     case ({axil_rmt_awaddr[15:2], 2'b00})
-    //     endcase
-    // end
+		//     case ({axil_rmt_awaddr[15:2], 2'b00})
+		//     endcase
+		// end
 
-    if (s_axil_arvalid && !s_axil_rvalid) begin
-        // read operation
-        axil_rmt_arready_reg <= 1'b1;
-        axil_rmt_rvalid_reg <= 1'b1;
-        axil_rmt_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
+		if (s_axil_arvalid && !s_axil_rvalid) begin
+			// read operation
+			axil_rmt_arready_reg <= 1'b1;
+			axil_rmt_rvalid_reg <= 1'b1;
+			axil_rmt_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
 
-        case ({s_axil_araddr[15:2], 2'b00})
-            16'h2021: begin
-                axil_rmt_rdata_reg <= cookie_val;
-            end
-            16'h2022: begin
-                axil_rmt_rdata_reg <= ctrl_token;
-            end
-        endcase
-    end
+			case ({s_axil_araddr[15:2], 2'b00})
+				16'h2021: begin
+					axil_rmt_rdata_reg <= cookie_val;
+				end
+				16'h2022: begin
+					axil_rmt_rdata_reg <= ctrl_token;
+				end
+			endcase
+		end
+	end
+
 
 end
 
