@@ -195,7 +195,7 @@ always @(*) begin
                 else begin
                     overflow_r = 1'b0;
                     //checkme: its the right time to write for `store`
-                    if(action_type == 4'b1000) begin
+                    if(action_type == 4'b1000 || action_type == 4'b0111) begin
                         store_addr_r = base_addr + op2_imm;
                         //store_din_r = operand_1_in;
                         store_en_r = 1'b1;
