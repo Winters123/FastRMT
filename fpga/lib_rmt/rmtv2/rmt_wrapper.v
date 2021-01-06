@@ -156,8 +156,8 @@ always @(posedge clk) begin
 end
 
 //two registers for AXI-Lite
-reg [31:0] cookie_val;
-reg [31:0] ctrl_token;
+wire [31:0] cookie_val;
+wire [31:0] ctrl_token;
 
 pkt_filter #(
 	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
