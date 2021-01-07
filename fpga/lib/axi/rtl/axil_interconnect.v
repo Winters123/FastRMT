@@ -135,7 +135,7 @@ parameter M_BASE_ADDR_INT = M_BASE_ADDR ? M_BASE_ADDR : calcBaseAddrs(0);
 
 integer i, j;
 
-// // check configuration
+// check configuration
 initial begin
     for (i = 0; i < M_COUNT*M_REGIONS; i = i + 1) begin
         if (M_ADDR_WIDTH[i*32 +: 32] && (M_ADDR_WIDTH[i*32 +: 32] < 0 || M_ADDR_WIDTH[i*32 +: 32] > ADDR_WIDTH)) begin

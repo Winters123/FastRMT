@@ -68,6 +68,9 @@ struct mqnic_port {
     uint32_t sched_stride;
     uint32_t sched_type;
 
+    uint32_t if_token;
+    uint32_t if_cookie;
+
     uint32_t tdma_timeslot_count;
 
     struct mqnic_sched sched[MQNIC_MAX_SCHED];
@@ -119,9 +122,6 @@ struct mqnic {
     uint32_t if_count;
     uint32_t if_stride;
     uint32_t if_csr_offset;
-
-    uint32_t if_token;
-    uint32_t if_cookie;
 
     struct mqnic_if interfaces[MQNIC_MAX_IF];
 };

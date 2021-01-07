@@ -23,6 +23,8 @@ module rmt_wrapper #(
 (
 	input										clk,		// axis clk
 	input										aresetn,	
+	output     [31:0]	cookie_val,
+	output     [31:0]	ctrl_token,
 
 	/*
      * input Slave AXI Stream
@@ -42,31 +44,31 @@ module rmt_wrapper #(
 	output     [C_S_AXIS_TUSER_WIDTH-1:0]		m_axis_tuser,
 	output    									m_axis_tvalid,
 	input										m_axis_tready,
-	output  									m_axis_tlast,
+	output  									m_axis_tlast
 
-	/*
-     * AXI-Lite slave interface
-     */
-    input  wire [AXIL_ADDR_WIDTH-1:0]           s_axil_awaddr,
-    input  wire [2:0]                           s_axil_awprot,
-    input  wire                                 s_axil_awvalid,
-    output wire                                 s_axil_awready,
-    input  wire [AXIL_DATA_WIDTH-1:0]           s_axil_wdata,
-    input  wire [AXIL_STRB_WIDTH-1:0]           s_axil_wstrb,
-    input  wire                                 s_axil_wvalid,
-    output wire                                 s_axil_wready,
-    output wire [1:0]                           s_axil_bresp,
-    output wire                                 s_axil_bvalid,
-    input  wire                                 s_axil_bready,
+	// /*
+    //  * AXI-Lite slave interface
+    //  */
+    // input  wire [AXIL_ADDR_WIDTH-1:0]           s_axil_awaddr,
+    // input  wire [2:0]                           s_axil_awprot,
+    // input  wire                                 s_axil_awvalid,
+    // output wire                                 s_axil_awready,
+    // input  wire [AXIL_DATA_WIDTH-1:0]           s_axil_wdata,
+    // input  wire [AXIL_STRB_WIDTH-1:0]           s_axil_wstrb,
+    // input  wire                                 s_axil_wvalid,
+    // output wire                                 s_axil_wready,
+    // output wire [1:0]                           s_axil_bresp,
+    // output wire                                 s_axil_bvalid,
+    // input  wire                                 s_axil_bready,
 
-    input  wire [AXIL_ADDR_WIDTH-1:0]           s_axil_araddr,
-    input  wire [2:0]                           s_axil_arprot,
-    input  wire                                 s_axil_arvalid,
-    output wire                                 s_axil_arready,
-    output wire [AXIL_DATA_WIDTH-1:0]           s_axil_rdata,
-    output wire [1:0]                           s_axil_rresp,
-    output wire                                 s_axil_rvalid,
-    input  wire                                 s_axil_rready
+    // input  wire [AXIL_ADDR_WIDTH-1:0]           s_axil_araddr,
+    // input  wire [2:0]                           s_axil_arprot,
+    // input  wire                                 s_axil_arvalid,
+    // output wire                                 s_axil_arready,
+    // output wire [AXIL_DATA_WIDTH-1:0]           s_axil_rdata,
+    // output wire [1:0]                           s_axil_rresp,
+    // output wire                                 s_axil_rvalid,
+    // input  wire                                 s_axil_rready
 	
 );
 
@@ -161,9 +163,6 @@ always @(posedge clk) begin
 
 end
 
-//two registers for AXI-Lite
-wire [31:0] cookie_val;
-wire [31:0] ctrl_token;
 
 pkt_filter #(
 	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
@@ -553,94 +552,94 @@ assign stg3_phv_out_valid_w = stg3_phv_out_valid ;//& ~stg3_phv_out_valid_r;
 assign stg4_phv_out_valid_w = stg4_phv_out_valid ;//& ~stg4_phv_out_valid_r;
 
 
-// Port control registers
-reg axil_rmt_awready_reg = 1'b0;
-reg axil_rmt_wready_reg = 1'b0;
-reg axil_rmt_bvalid_reg = 1'b0;
-reg axil_rmt_arready_reg = 1'b0;
-reg [AXIL_DATA_WIDTH-1:0] axil_rmt_rdata_reg = {AXIL_DATA_WIDTH{1'b0}};
-reg axil_rmt_rvalid_reg = 1'b0;
+// // Port control registers
+// reg axil_rmt_awready_reg = 1'b0;
+// reg axil_rmt_wready_reg = 1'b0;
+// reg axil_rmt_bvalid_reg = 1'b0;
+// reg axil_rmt_arready_reg = 1'b0;
+// reg [AXIL_DATA_WIDTH-1:0] axil_rmt_rdata_reg = {AXIL_DATA_WIDTH{1'b0}};
+// reg axil_rmt_rvalid_reg = 1'b0;
 
 
-// AXI lite connections
-wire [AXIL_ADDR_WIDTH-1:0] axil_rmt_awaddr;
-wire [2:0]                 axil_rmt_awprot;
-wire                       axil_rmt_awvalid;
-wire                       axil_rmt_awready;
-wire [AXIL_DATA_WIDTH-1:0] axil_rmt_wdata;
-wire [AXIL_STRB_WIDTH-1:0] axil_rmt_wstrb;
-wire                       axil_rmt_wvalid;
-wire                       axil_rmt_wready;
-wire [1:0]                 axil_rmt_bresp;
-wire                       axil_rmt_bvalid;
-wire                       axil_rmt_bready;
+// // AXI lite connections
+// wire [AXIL_ADDR_WIDTH-1:0] axil_rmt_awaddr;
+// wire [2:0]                 axil_rmt_awprot;
+// wire                       axil_rmt_awvalid;
+// wire                       axil_rmt_awready;
+// wire [AXIL_DATA_WIDTH-1:0] axil_rmt_wdata;
+// wire [AXIL_STRB_WIDTH-1:0] axil_rmt_wstrb;
+// wire                       axil_rmt_wvalid;
+// wire                       axil_rmt_wready;
+// wire [1:0]                 axil_rmt_bresp;
+// wire                       axil_rmt_bvalid;
+// wire                       axil_rmt_bready;
 
-wire [AXIL_ADDR_WIDTH-1:0] axil_rmt_araddr;
-wire [2:0]                 axil_rmt_arprot;
-wire                       axil_rmt_arvalid;
-wire                       axil_rmt_arready;
-wire [AXIL_DATA_WIDTH-1:0] axil_rmt_rdata;
-wire [1:0]                 axil_rmt_rresp;
-wire                       axil_rmt_rvalid;
-wire                       axil_rmt_rready;
+// wire [AXIL_ADDR_WIDTH-1:0] axil_rmt_araddr;
+// wire [2:0]                 axil_rmt_arprot;
+// wire                       axil_rmt_arvalid;
+// wire                       axil_rmt_arready;
+// wire [AXIL_DATA_WIDTH-1:0] axil_rmt_rdata;
+// wire [1:0]                 axil_rmt_rresp;
+// wire                       axil_rmt_rvalid;
+// wire                       axil_rmt_rready;
 
-assign s_axil_awready = axil_rmt_awready_reg;
-assign s_axil_wready = axil_rmt_wready_reg;
-assign s_axil_bresp = 2'b00;
-assign s_axil_bvalid = axil_rmt_bvalid_reg;
-assign s_axil_arready = axil_rmt_arready_reg;
-assign s_axil_rdata = axil_rmt_rdata_reg;
-assign s_axil_rresp = 2'b00;
-assign s_axil_rvalid = axil_rmt_rvalid_reg;
+// assign s_axil_awready = axil_rmt_awready_reg;
+// assign s_axil_wready = axil_rmt_wready_reg;
+// assign s_axil_bresp = 2'b00;
+// assign s_axil_bvalid = axil_rmt_bvalid_reg;
+// assign s_axil_arready = axil_rmt_arready_reg;
+// assign s_axil_rdata = axil_rmt_rdata_reg;
+// assign s_axil_rresp = 2'b00;
+// assign s_axil_rvalid = axil_rmt_rvalid_reg;
 
-/*
-	*control path of AXI-Lite
-*/
-always @(posedge clk or negedge aresetn) begin
+// /*
+// 	*control path of AXI-Lite
+// */
+// always @(posedge clk or negedge aresetn) begin
 
-    if (~aresetn) begin
-        axil_rmt_awready_reg <= 1'b0;
-        axil_rmt_wready_reg <= 1'b0;
-        axil_rmt_bvalid_reg <= 1'b0;
-        axil_rmt_arready_reg <= 1'b0;
-        axil_rmt_rvalid_reg <= 1'b0;
-    end
+//     if (~aresetn) begin
+//         axil_rmt_awready_reg <= 1'b0;
+//         axil_rmt_wready_reg <= 1'b0;
+//         axil_rmt_bvalid_reg <= 1'b0;
+//         axil_rmt_arready_reg <= 1'b0;
+//         axil_rmt_rvalid_reg <= 1'b0;
+//     end
 
-	else begin
-		axil_rmt_awready_reg <= 1'b0;
-		axil_rmt_wready_reg <= 1'b0;
-		axil_rmt_bvalid_reg <= axil_rmt_bvalid_reg && !s_axil_bready;
-		axil_rmt_arready_reg <= 1'b0;
-		axil_rmt_rvalid_reg <= axil_rmt_rvalid_reg && !s_axil_rready;
-		// if (axil_rmt_awvalid && axil_rmt_wvalid && !axil_rmt_bvalid) begin
-    //     // write operation
-		//     axil_rmt_awready_reg <= 1'b1;
-		//     axil_rmt_wready_reg <= 1'b1;
-		//     axil_rmt_bvalid_reg <= 1'b1;
+// 	else begin
+// 		axil_rmt_awready_reg <= 1'b0;
+// 		axil_rmt_wready_reg <= 1'b0;
+// 		axil_rmt_bvalid_reg <= axil_rmt_bvalid_reg && !s_axil_bready;
+// 		axil_rmt_arready_reg <= 1'b0;
+// 		axil_rmt_rvalid_reg <= axil_rmt_rvalid_reg && !s_axil_rready;
+// 		// if (axil_rmt_awvalid && axil_rmt_wvalid && !axil_rmt_bvalid) begin
+//     //     // write operation
+// 		//     axil_rmt_awready_reg <= 1'b1;
+// 		//     axil_rmt_wready_reg <= 1'b1;
+// 		//     axil_rmt_bvalid_reg <= 1'b1;
 
-		//     case ({axil_rmt_awaddr[15:2], 2'b00})
-		//     endcase
-		// end
+// 		//     case ({axil_rmt_awaddr[15:2], 2'b00})
+// 		//     endcase
+// 		// end
 
-		if (s_axil_arvalid && !s_axil_rvalid) begin
-			// read operation
-			axil_rmt_arready_reg <= 1'b1;
-			axil_rmt_rvalid_reg <= 1'b1;
-			axil_rmt_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
+// 		if (s_axil_arvalid && !s_axil_rvalid) begin
+// 			// read operation
+// 			axil_rmt_arready_reg <= 1'b1;
+// 			axil_rmt_rvalid_reg <= 1'b1;
+// 			axil_rmt_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
 
-			case ({s_axil_araddr[15:2], 2'b00})
-				16'h2020: begin
-					axil_rmt_rdata_reg <= cookie_val;
-				end
-				16'h2024: begin
-					axil_rmt_rdata_reg <= ctrl_token;
-				end
-			endcase
-		end
-	end
+// 			case ({s_axil_araddr[15:2], 2'b00})
+// 				16'h2020: begin
+// 					axil_rmt_rdata_reg <= cookie_val;
+// 				end
+// 				16'h2024: begin
+// 					axil_rmt_rdata_reg <= ctrl_token;
+// 				end
+// 			endcase
+// 		end
+// 	end
 
 
-end
+// end
 
 
 endmodule
