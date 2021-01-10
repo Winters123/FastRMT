@@ -91,6 +91,8 @@ wire								w_c_switch;
 wire [31:0]							cookie_w;
 wire [31:0]							token_w;
 
+reg  [31:0]							ctrl_token_next;
+
 assign w_c_switch = c_switch;
 assign cookie_w = {s_axis_tdata[399:392],s_axis_tdata[407:400],s_axis_tdata[415:408],s_axis_tdata[423:416]};
 assign token_w = {s_axis_tdata[431:424], s_axis_tdata[439:432], s_axis_tdata[447:440], s_axis_tdata[455:448]};
@@ -120,7 +122,7 @@ always @(*) begin
 						state_next = FLUSH_CTL;
 						c_switch = 1'b1;
 						//modify token once its true
-						ctrl_token = time_stamp[31:0];
+						ctrl_token_next = time_stamp[31:0];
 					end
 					else if (!s_axis_tlast) begin
 						state_next = FLUSH_DATA;
@@ -191,6 +193,7 @@ always @(posedge clk or negedge aresetn) begin
 
 	else begin
 		state <= state_next;
+		ctrl_token <= ctrl_token_next;
 
 		if(!w_c_switch) begin
 			m_axis_tdata <= r_tdata;
