@@ -22,10 +22,11 @@ module stage #(
 
     input  [PHV_LEN-1:0]         phv_in,
     input                        phv_in_valid,
+    output  					 stage_ready_out,
+
     output [PHV_LEN-1:0]         phv_out,
     output                       phv_out_valid,
-	//
-	output reg					 stg_ready,
+	input                        stage_ready_in,
 
     //input for the key extractor RAM
     // input  [KEY_OFF-1:0]         key_offset_in,
@@ -52,6 +53,7 @@ wire                         key2lookup_key_valid;
 wire                         key2lookup_phv_valid;
 wire [PHV_LEN-1:0]           key2lookup_phv;
 wire [KEY_LEN-1:0]           key2lookup_key_mask;
+wire                         lookup2key_ready;
 
 //control path 1 (key2lookup)
 wire [C_S_AXIS_DATA_WIDTH-1:0]				c_s_axis_tdata_1;
@@ -72,6 +74,7 @@ wire 										c_s_axis_tlast_2;
 wire [ACT_LEN*25-1:0]        lookup2action_action;
 wire                         lookup2action_action_valid;
 wire [PHV_LEN-1:0]           lookup2action_phv;
+wire                         action2lookup_ready;
 
 
 
@@ -91,12 +94,14 @@ key_extract_2 #(
     .rst_n(aresetn),
     .phv_in(phv_in),
     .phv_valid_in(phv_in_valid),
+    .ready_out(stage_ready_out),
 
     .phv_out(key2lookup_phv),
     .phv_valid_out(key2lookup_phv_valid),
     .key_out(key2lookup_key),
     .key_valid_out(key2lookup_key_valid),
     .key_mask_out(key2lookup_key_mask),
+    .ready_in(lookup2key_ready),
 
     //control path
     .c_s_axis_tdata(c_s_axis_tdata),
@@ -131,11 +136,13 @@ lookup_engine #(
     .key_valid(key2lookup_key_valid),
     .phv_valid(key2lookup_phv_valid),
     .phv_in(key2lookup_phv),
+    .ready_out(lookup2key_ready),
 
     //output to the action engine
     .action(lookup2action_action),
     .action_valid(lookup2action_action_valid),
     .phv_out(lookup2action_phv),
+    .ready_in(action2lookup_ready),
 
     //control path
     .c_s_axis_tdata(c_s_axis_tdata_1),
@@ -166,10 +173,12 @@ action_engine #(
     .phv_valid_in(lookup2action_action_valid),
     .action_in(lookup2action_action),
     .action_valid_in(lookup2action_action_valid),
+    .ready_out(action2lookup_ready),
 
     //signals output from ALUs
     .phv_out(phv_out),
     .phv_valid_out(phv_out_valid),
+    .ready_in(stage_ready_in),
     //control path
     .c_s_axis_tdata(c_s_axis_tdata_2),
 	.c_s_axis_tuser(c_s_axis_tuser_2),

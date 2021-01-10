@@ -23,12 +23,14 @@ module key_extract_2 #(
     input                               rst_n,
     input [PHV_LEN-1:0]                 phv_in,
     input                               phv_valid_in,
+	output reg							ready_out,
 
     output reg [PHV_LEN-1:0]            phv_out,
     output reg                          phv_valid_out,
     output reg [KEY_LEN-1:0]            key_out,
     output reg                          key_valid_out,
     output reg [KEY_LEN-1:0]            key_mask_out,
+	input								ready_in,
 
     //control path
     input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
@@ -93,16 +95,18 @@ reg  [KEY_LEN-1:0]      key_mask_out_next;
 
 assign vlan_id = phv_in[140:129];
 
-localparam IDLE = 0,
+localparam  IDLE = 0,
 			WAIT_1CLK = 1,
 			WAIT_2CLK = 2,
-			WAIT_3CLK = 3;
+			WAIT_3CLK = 3,
+			HALT = 4;
 
 reg [2:0] state, state_next;
 reg [PHV_LEN-1:0] phv_out_next;
 reg [KEY_LEN-1:0] key_out_next; 
 reg key_valid_out_next; 
 reg phv_valid_out_next;
+reg ready_out_next;
 
 
 always @(*) begin
@@ -113,6 +117,7 @@ always @(*) begin
 	key_valid_out_next = 0;
 	key_out_next = key_out;
 	key_mask_out_next = key_mask_out;
+	ready_out_next = ready_out;
 
 	cont_6B_next[7] = cont_6B[7];
     cont_6B_next[6] = cont_6B[6];
@@ -150,6 +155,7 @@ always @(*) begin
 	case (state)
 		IDLE: begin
 			if (phv_valid_in) begin
+				ready_out_next = 1'b0;
 				phv_out_next = phv_in;
 
 				cont_6B_next[7] = phv_in[PHV_LEN-1            -: width_6B];
@@ -182,6 +188,9 @@ always @(*) begin
     			com_op_next[3]  = phv_in[255+40  -: 20];
     			com_op_next[4]  = phv_in[255+20  -: 20];
 				state_next = WAIT_1CLK;
+			end
+			else begin
+				ready_out_next = 1'b1;
 			end
 		end
 		WAIT_1CLK: begin
@@ -224,9 +233,19 @@ always @(*) begin
 			state_next = WAIT_3CLK; // wait key_offset_r, key_mask_out_r
 		end
 		WAIT_3CLK: begin
-			key_valid_out_next = 1;
-			phv_valid_out_next = 1;
-			key_mask_out_next = key_mask_out_r;
+			if(ready_in) begin
+				key_valid_out_next = 1;
+				phv_valid_out_next = 1;
+				state_next = IDLE;
+			end
+			else begin
+				key_valid_out_next = 0;
+				phv_valid_out_next = 0;
+				state_next = HALT;
+			end
+			// key_valid_out_next = 1;
+			// phv_valid_out_next = 1;
+			// key_mask_out_next = key_mask_out_r;
 
             key_out_next[KEY_LEN-1                                     -: width_6B] = cont_6B[key_offset_r[KEY_OFF-1     -: 3]];
             key_out_next[KEY_LEN-1- 1*width_6B                         -: width_6B] = cont_6B[key_offset_r[KEY_OFF-1-1*3 -: 3]];
@@ -252,6 +271,18 @@ always @(*) begin
 
 			state_next = IDLE;
 		end
+		HALT: begin
+			if(ready_in) begin
+				key_valid_out_next = 1;
+				phv_valid_out_next = 1;
+				state_next = IDLE;
+			end
+			else begin
+				key_valid_out_next = 0;
+				phv_valid_out_next = 0;
+				state_next = HALT;
+			end
+		end
 	endcase
 end
 
@@ -264,6 +295,7 @@ always @(posedge clk) begin
 		key_valid_out <= 0;
 		key_out <= 0;
 		key_mask_out <= 0;
+		ready_out <= 1'b1;
 
 		key_offset_r <= 0;
 
@@ -307,6 +339,7 @@ always @(posedge clk) begin
 		key_valid_out <= key_valid_out_next;
 		key_out <= key_out_next;
 		key_mask_out <= key_mask_out_next;
+		ready_out <= ready_out_next;
 
 		key_offset_r <= key_offset;
 		key_mask_out_r <= key_mask_out_w;

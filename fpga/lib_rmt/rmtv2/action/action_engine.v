@@ -21,10 +21,12 @@ module action_engine #(
     input                         phv_valid_in,
     input [ACT_LEN*25-1:0]        action_in,
     input                         action_valid_in,
+    output                        ready_out,
 
     //signals output from ALUs
     output reg [PHV_LEN-1:0]      phv_out,
     output reg                    phv_valid_out,
+    input                         ready_in,
 
     //control path
     input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
@@ -63,6 +65,9 @@ wire		                phv_valid_bit;
 wire [ACT_LEN*25-1:0]       alu_in_action;
 wire                        alu_in_action_valid;
 
+wire                        alu_ready_out;
+
+assign                      ready_out = alu_ready_out;
 
 // assign phv_valid_out = phv_valid_bit[7];
 /********intermediate variables declared here********/
@@ -164,11 +169,13 @@ alu_2 #(
     .operand_1_in(alu_in_4B_1[(7+1) * width_4B -1 -: width_4B]),
     .operand_2_in(alu_in_4B_2[(7+1) * width_4B -1 -: width_4B]),
     .operand_3_in(alu_in_4B_3[(7+1) * width_4B -1 -: width_4B]),
+    .ready_out(alu_ready_out),
     //checkme: vlan_id is for multi-tenancy
     .vlan_id(vlan_id),
     //output to form PHV
     .container_out(output_4B[7]),
     .container_out_valid(),
+    .ready_in(ready_in),
     
     //checkme: 
     .c_s_axis_tdata(c_s_axis_tdata),

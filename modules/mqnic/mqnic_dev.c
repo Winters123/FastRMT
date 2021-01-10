@@ -121,6 +121,12 @@ static long mqnic_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
             return 0;
         }
+
+    // case MQNIC_IOCTL_COOKIE:
+    //     {
+    //         struct mqnic_ioctl_cookie_info ctl_cookie;
+    //         ctl_cookie
+    //     }   
     default:
         return -ENOTTY;
     }

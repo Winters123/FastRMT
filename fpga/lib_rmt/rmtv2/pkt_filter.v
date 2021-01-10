@@ -21,7 +21,7 @@ module pkt_filter #(
 	input [((C_S_AXIS_DATA_WIDTH/8))-1:0]	s_axis_tkeep,
 	input [C_S_AXIS_TUSER_WIDTH-1:0]		s_axis_tuser,
 	input									s_axis_tvalid,
-	output	reg								s_axis_tready,
+	output	reg 							s_axis_tready,
 	input									s_axis_tlast,
 
 	// output Master AXI Stream
@@ -66,6 +66,7 @@ module pkt_filter #(
 // assign c_m_axis_tvalid_dbg = c_m_axis_tvalid;
 // assign c_m_axis_tlast_dbg = c_m_axis_tlast;
 
+// assign s_axis_tready = m_axis_tready;
 
 localparam WAIT_FIRST_PKT=0, 
 		   DROP_PKT=1, 

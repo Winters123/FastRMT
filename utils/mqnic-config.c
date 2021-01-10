@@ -154,11 +154,11 @@ int main(int argc, char *argv[])
     printf("IF stride: 0x%08x\n", dev->if_stride);
     printf("IF CSR offset: 0x%08x\n", dev->if_csr_offset);
 
-    /*
-    *   checkme: hope its right for RMT
-    */
-    printf("token value of RMT: 0x%08x\n", dev->if_token);
-    printf("token value of RMT: 0x%08x\n", dev->if_cookie);
+    // /*
+    // *   checkme: hope its right for RMT
+    // */
+    // printf("token value of RMT: 0x%08x\n", dev->if_token);
+    // printf("token value of RMT: 0x%08x\n", dev->if_cookie);
 
     if (dev->phc_count == 0)
     {

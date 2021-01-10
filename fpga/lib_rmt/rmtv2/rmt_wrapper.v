@@ -16,7 +16,7 @@ module rmt_wrapper #(
 	// self-defined
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter KEY_LEN = 48*2+32*2+16*2+5,
-    parameter ACT_LEN = 625,
+    parameter ACT_LEN = 25,
     parameter KEY_OFF = 6*3
 
 )
@@ -98,28 +98,39 @@ wire								stg0_phv_in_valid;
 wire								stg0_phv_in_valid_w;
 reg									stg0_phv_in_valid_r;
 wire [PKT_VEC_WIDTH-1:0]			stg0_phv_in;
+wire 								stg0_ready;
 // stage-related
 wire [PKT_VEC_WIDTH-1:0]			stg0_phv_out;
 wire								stg0_phv_out_valid;
 wire								stg0_phv_out_valid_w;
 reg									stg0_phv_out_valid_r;
+wire 								stg1_ready;
+
+
 wire [PKT_VEC_WIDTH-1:0]			stg1_phv_out;
 wire								stg1_phv_out_valid;
 wire								stg1_phv_out_valid_w;
 reg									stg1_phv_out_valid_r;
+wire 								stg1_ready;
+
 wire [PKT_VEC_WIDTH-1:0]			stg2_phv_out;
 wire								stg2_phv_out_valid;
 wire								stg2_phv_out_valid_w;
 reg									stg2_phv_out_valid_r;
+wire 								stg2_ready;
+
+
 wire [PKT_VEC_WIDTH-1:0]			stg3_phv_out;
 wire								stg3_phv_out_valid;
 wire								stg3_phv_out_valid_w;
 reg									stg3_phv_out_valid_r;
+wire 								stg3_ready;
+
 wire [PKT_VEC_WIDTH-1:0]			stg4_phv_out;
 wire								stg4_phv_out_valid;
 wire								stg4_phv_out_valid_w;
 reg									stg4_phv_out_valid_r;
-
+wire 								stg4_ready;
 
 
 
@@ -137,6 +148,7 @@ wire [((C_S_AXIS_DATA_WIDTH/8))-1:0]		s_axis_tkeep_f;
 wire [C_S_AXIS_TUSER_WIDTH-1:0]				s_axis_tuser_f;
 wire										s_axis_tvalid_f;
 wire										s_axis_tready_f;
+wire 										s_axis_tready_p;
 wire										s_axis_tlast_f;
 
 //NOTE: filter control packets from data packets.
@@ -153,7 +165,7 @@ assign s_axis_tready_f = !pkt_fifo_nearly_full;
 reg [95:0] fake_timer;
 localparam FAKE_SEED = 96'hcecc666;
 
-always @(posedge clk) begin
+always @(posedge clk or negedge aresetn) begin
 	if(~aresetn) begin
 		fake_timer <= FAKE_SEED + 1'b1;
 	end
@@ -188,7 +200,7 @@ pkt_filter #(
 	.m_axis_tkeep(s_axis_tkeep_f),
 	.m_axis_tuser(s_axis_tuser_f),
 	.m_axis_tvalid(s_axis_tvalid_f),
-	.m_axis_tready(s_axis_tready_f),
+	.m_axis_tready(s_axis_tready_f && s_axis_tready_p),
 	.m_axis_tlast(s_axis_tlast_f),
 
 	//control path
@@ -221,7 +233,7 @@ fifo_generator_512b phv_fifo_1 (
   .wr_en(stg4_phv_out_valid_w),              // input wire wr_en
   .rd_en(phv_fifo_rd_en),              // input wire rd_en
   .dout(low_phv_out),                // output wire [511 : 0] dout
-  .full(),                // output wire full
+  .full(phv_fifo_nearly_full),                // output wire full
   .empty(phv_fifo_empty),              // output wire empty
   .wr_rst_busy(),  // output wire wr_rst_busy
   .rd_rst_busy()  // output wire rd_rst_busy
@@ -295,9 +307,11 @@ phv_parser
 	.s_axis_tkeep	(s_axis_tkeep_f),
 	.s_axis_tvalid	(s_axis_tvalid_f & s_axis_tready_f),
 	.s_axis_tlast	(s_axis_tlast_f),
+	.s_axis_tready  (s_axis_tready_p),
 
 	.phv_valid_out	(stg0_phv_in_valid),
 	.phv_out	    (stg0_phv_in),
+	.m_axis_tready  (stg0_ready),
 
 	//control path
     .c_s_axis_tdata(c_s_axis_tdata_1),
@@ -332,8 +346,10 @@ stage0
 	// data path
     .phv_in					(stg0_phv_in),
     .phv_in_valid			(stg0_phv_in_valid_w),
+	.stage_ready_out		(stg0_ready),
     .phv_out				(stg0_phv_out),
     .phv_out_valid			(stg0_phv_out_valid),
+	.stage_ready_in			(stg1_ready),
 
 	//control path
 	.c_s_axis_tdata(c_s_axis_tdata_2),
@@ -366,9 +382,11 @@ stage1
 	// input
     .phv_in					(stg0_phv_out),
     .phv_in_valid			(stg0_phv_out_valid_w),
+	.stage_ready_out		(stg1_ready),
 	// output
     .phv_out				(stg1_phv_out),
     .phv_out_valid			(stg1_phv_out_valid),
+	.stage_ready_in			(stg2_ready),
 	//control path
 	.c_s_axis_tdata(c_s_axis_tdata_3),
 	.c_s_axis_tuser(c_s_axis_tuser_3),
@@ -400,9 +418,11 @@ stage2
 	// input
     .phv_in					(stg1_phv_out),
     .phv_in_valid			(stg1_phv_out_valid_w),
+	.stage_ready_out		(stg2_ready),
 	// output
     .phv_out				(stg2_phv_out),
     .phv_out_valid			(stg2_phv_out_valid),
+	.stage_ready_in			(stg3_ready),
 	//control path
 	.c_s_axis_tdata(c_s_axis_tdata_4),
 	.c_s_axis_tuser(c_s_axis_tuser_4),
@@ -434,9 +454,11 @@ stage3
 	// input
     .phv_in					(stg2_phv_out),
     .phv_in_valid			(stg2_phv_out_valid_w),
+	.stage_ready_out		(stg3_ready),
 	// output
     .phv_out				(stg3_phv_out),
     .phv_out_valid			(stg3_phv_out_valid),
+	.stage_ready_in			(stg4_ready),
 	//control path
 	.c_s_axis_tdata(c_s_axis_tdata_5),
 	.c_s_axis_tuser(c_s_axis_tuser_5),
@@ -468,9 +490,11 @@ stage4
 	// input
     .phv_in					(stg3_phv_out),
     .phv_in_valid			(stg3_phv_out_valid_w),
+	.stage_ready_out		(stg4_ready),
 	// output
     .phv_out				(stg4_phv_out),
     .phv_out_valid			(stg4_phv_out_valid),
+	.stage_ready_in			(phv_fifo_nearly_full),
 	//control path
 	.c_s_axis_tdata(c_s_axis_tdata_6),
 	.c_s_axis_tuser(c_s_axis_tuser_6),

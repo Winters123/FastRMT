@@ -26,6 +26,7 @@ module alu_2 #(
     input [DATA_WIDTH-1:0]            operand_1_in,
     input [DATA_WIDTH-1:0]            operand_2_in,
     input [DATA_WIDTH-1:0]            operand_3_in,
+	output reg 						  ready_out,
 
     //input vlan id, we need this for isolation
     input [11:0]                       vlan_id,
@@ -33,6 +34,7 @@ module alu_2 #(
     //output to form PHV
     output reg [DATA_WIDTH-1:0]       container_out,
     output reg                        container_out_valid,
+	input 							  ready_in,
 
     //control path
     input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
@@ -79,6 +81,8 @@ reg                         overflow, overflow_r;
 //checkme: this is for load/loadd
 reg [4:0]                   op2_imm, op2_imm_r;
 
+reg 						ready_out_next;
+
 
 /********intermediate variables declared here********/
 
@@ -112,7 +116,8 @@ localparam  IDLE_S = 3'd0,
             EMPTY1_S = 3'd1,
             OB_ADDR_S = 3'd2,
             EMPTY2_S = 3'd3,
-            OUTPUT_S = 3'd4;
+            OUTPUT_S = 3'd4,
+			HALT_S = 3'd5;
 
 always @(*) begin
 	alu_state_next = alu_state;
@@ -126,6 +131,8 @@ always @(*) begin
 	store_din_r = store_din;
     op2_imm_r = op2_imm;
     overflow_r = overflow;
+
+	ready_out_next = ready_out;
 	
 	case (alu_state)
 		IDLE_S: begin
@@ -141,6 +148,7 @@ always @(*) begin
                 overflow_r = 0;
                 op2_imm_r = operand_2_in[4:0];
 				alu_state_next = EMPTY1_S;
+				ready_out_next = 1'b0;
                 
                 case(action_in[24:21])
                     //add/addi ops 
@@ -181,6 +189,9 @@ always @(*) begin
                     end
 				endcase
 			end
+			else begin
+				ready_out_next = 1'b1;
+			end
 		end
 		EMPTY1_S: begin
 			// an empty cycle waiting for page table result
@@ -215,7 +226,14 @@ always @(*) begin
         OUTPUT_S: begin
 			// load data is ready
             // output the value
-			container_out_valid_next = 1;
+			if(ready_in) begin
+				container_out_valid_next = 1;
+				alu_state_next = IDLE_S;
+			end
+			else begin
+				container_out_valid_next = 0;
+				alu_state_next = HALT_S;
+			end
             case(action_type)
                 //load
                 4'b1011: container_out_r = load_data;
@@ -229,8 +247,17 @@ always @(*) begin
                 default:  ;//nothing to do;
             endcase
 
-            alu_state_next = IDLE_S;
         end
+		HALT_S: begin
+			if(ready_in)begin
+				container_out_valid_next = 1;
+				alu_state_next = IDLE_S;
+			end
+			else begin
+				container_out_valid_next = 0;
+				alu_state_next = HALT_S;
+			end
+		end
 	endcase
 end
 
@@ -248,6 +275,8 @@ always @(posedge clk) begin
 
         overflow <= 0;
         op2_imm <= 5'b0;
+
+		ready_out <= 1'b1;
 	end
 	else begin
 		alu_state <= alu_state_next;
@@ -261,6 +290,8 @@ always @(posedge clk) begin
 
         overflow <= overflow_r;
         op2_imm <= op2_imm_r;
+
+		ready_out <= ready_out_next;
 	end
 end
 

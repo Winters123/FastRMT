@@ -27,11 +27,13 @@ module lookup_engine #(
     input                         key_valid,
 	input 					      phv_valid,
     input [PHV_LEN-1:0]           phv_in,
+	output reg 					  ready_out,
 
     //output to the action engine
     output reg [ACT_LEN-1:0]      action,
     output reg                    action_valid,
     output reg [PHV_LEN-1:0]      phv_out, 
+	input						  ready_in,
 
 
     //control path
@@ -68,7 +70,7 @@ wire [ACT_LEN-1:0] action_wire;
 
 
 reg [PHV_LEN-1:0] phv_reg;
-reg [1:0] lookup_state;
+reg [2:0] lookup_state;
 
 (*mark_debug = "true"*) wire [1:0] lookup_state_dbg;
 
@@ -81,10 +83,11 @@ assign vlan_id = phv_in[140:129];
 /********intermediate variables declared here********/
 
 //here, the output should be controlled.
-localparam IDLE_S = 2'd0,
-           WAIT1_S = 2'd1,
-           WAIT2_S = 2'd2,
-           TRANS_S = 2'd3;
+localparam IDLE_S = 3'd0,
+           WAIT1_S = 3'd1,
+           WAIT2_S = 3'd2,
+           TRANS_S = 3'd3,
+		   HALT_S = 3'd4;
 
 always @(posedge clk or negedge rst_n) begin
 
@@ -94,6 +97,7 @@ always @(posedge clk or negedge rst_n) begin
         lookup_state <= IDLE_S;
         action <= 0;
         phv_out <= 0;
+		ready_out <= 1'b1;
     end
 
     else begin
@@ -102,10 +106,12 @@ always @(posedge clk or negedge rst_n) begin
                 //wait 3 cycles
                 action_valid <= 1'b0;
                 if(key_valid == 1'b1) begin
+					ready_out <= 1'b0;
                     phv_reg <= phv_in;
                     lookup_state <= WAIT1_S;
                 end
                 else begin
+					ready_out <= 1'b1;
                     lookup_state <= IDLE_S;
                 end
             end
@@ -131,12 +137,24 @@ always @(posedge clk or negedge rst_n) begin
             end
 
             TRANS_S: begin
+				if(ready_in) begin
+					action_valid <= 1'b1;
+					lookup_state <= IDLE_S;
+				end
+				else begin
+					action_valid <= 1'b0;
+					lookup_state <= HALT_S;
+				end
                 action <= action_wire;
-                action_valid <= 1'b1;
                 phv_out <= phv_reg;
 
-                lookup_state <= IDLE_S;
             end
+			HALT_S: begin
+				if(ready_in) begin
+					action_valid <= 1'b1;
+					lookup_state <= IDLE_S;
+				end
+			end
             
         endcase
         // if(key_valid == 1'b1) begin

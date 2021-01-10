@@ -37,8 +37,10 @@ either expressed or implied, of The Regents of the University of California.
 #include <linux/types.h>
 
 #define MQNIC_IOCTL_TYPE 0x88
+// #define MQNIC_IOCTL_COOKIE_CMD 0x77
 
 #define MQNIC_IOCTL_INFO _IOR(MQNIC_IOCTL_TYPE, 0xf0, struct mqnic_ioctl_info)
+// #define MQNIC_IOCTL_COOKIE _IOR(MQNIC_IOCTL_COOKIE_CMD, 0xf1, struct mqnic_ioctl_cookie_info)
 
 struct mqnic_ioctl_info {
     __u32 fw_id;
@@ -47,5 +49,10 @@ struct mqnic_ioctl_info {
     __u32 board_ver;
     size_t regs_size;
 };
+
+// struct mqnic_ioctl_cookie_info {
+//    __u32 rmt_cookie;
+//    __u32 rmt_token;
+// };
 
 #endif /* MQNIC_IOCTL_H */

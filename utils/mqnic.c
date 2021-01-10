@@ -137,11 +137,6 @@ struct mqnic *mqnic_open(const char *dev_name)
     dev->if_stride = mqnic_reg_read32(dev->regs, MQNIC_REG_IF_STRIDE);
     dev->if_csr_offset = mqnic_reg_read32(dev->regs, MQNIC_REG_IF_CSR_OFFSET);
 
-    /*
-     * inserted testcase for axil channel in RMT
-    */
-    dev->if_token = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_TOKEN);
-    dev->if_cookie = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_COOKIE);
 
     if (dev->if_count > MQNIC_MAX_IF)
         dev->if_count = MQNIC_MAX_IF;
@@ -207,6 +202,16 @@ struct mqnic *mqnic_open(const char *dev_name)
             port->sched_type = mqnic_reg_read32(port->regs, MQNIC_PORT_REG_SCHED_TYPE);
 
             port->tdma_timeslot_count = mqnic_reg_read32(port->regs, MQNIC_PORT_REG_TDMA_TIMESLOT_COUNT);
+
+            /*
+            * checkme: inserted testcase for axil channel in RMT
+            */
+            if(k == 0) {
+                port->if_token = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_TOKEN);
+                port->if_cookie = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_COOKIE);
+                printf("token value is: %08x\n", port->if_token);
+                printf("cookie value is: %08x\n", port->if_cookie);
+            }
 
             for (int m = 0; m < port->sched_count; m++)
             {

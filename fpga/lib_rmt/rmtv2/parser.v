@@ -17,10 +17,12 @@ module parser #(
 	input [C_S_AXIS_DATA_WIDTH/8-1:0]		s_axis_tkeep,
 	input									s_axis_tvalid,
 	input									s_axis_tlast,
+    output  reg                             s_axis_tready,
 
 	// output
 	output   								phv_valid_out,
 	output      [PKT_HDR_LEN-1:0]			phv_out,
+    input                                   m_axis_tready,
 
     //control path
     input [C_S_AXIS_DATA_WIDTH-1:0]			c_s_axis_tdata,
@@ -229,7 +231,8 @@ reg [2:0] parse_state;
 localparam IDLE_S   = 3'd0,
            WAIT1_S  = 3'd1,
            WAIT2_S  = 3'd2,
-           PHVGEN_S = 3'd3;
+           PHVGEN_S = 3'd3,
+           HALT_S = 3'd4;
 
 //fire up the FSM
 always @(posedge axis_clk or negedge aresetn) begin
@@ -241,12 +244,17 @@ always @(posedge axis_clk or negedge aresetn) begin
             pkt_hdr_field_valid[idx] <= 1'b0;
         end
         parse_state <= IDLE_S;
+        s_axis_tready <= 1'b1;
     end
     else begin
         case(parse_state)
             IDLE_S: begin
                 if(s_axis_tvalid && ~s_axis_tvalid_before) begin
                     parse_state <= WAIT1_S;
+                    s_axis_tready <= 1'b0;
+                end
+                else begin
+                    s_axis_tready <= 1'b1;
                 end
                 phv_valid_out_reg <= 1'b0;
                 //phv_out<=1024'b0;
@@ -328,8 +336,24 @@ always @(posedge axis_clk or negedge aresetn) begin
                     2'b10: val_4B[val_seq_select[9]] <= val_out[9][31:0];
                     2'b11: val_6B[val_seq_select[9]] <= val_out[9][47:0];
                 endcase
-                phv_valid_out_reg <= 1'b1;
-                parse_state <= IDLE_S;
+                if(m_axis_tready) begin
+                    phv_valid_out_reg <= 1'b1;
+                    parse_state <= IDLE_S;
+                end
+                else begin
+                    phv_valid_out_reg <= 1'b0;
+                    parse_state <= HALT_S;
+                end
+            end
+            HALT_S: begin
+                if(m_axis_tready) begin
+                    phv_valid_out_reg <= 1'b1;
+                    parse_state <= IDLE_S;
+                end
+                else begin
+                    phv_valid_out_reg <= 1'b0;
+                    parse_state <= HALT_S;
+                end
             end
         endcase
     end
