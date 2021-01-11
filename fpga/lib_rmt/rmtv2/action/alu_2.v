@@ -478,7 +478,7 @@ generate
 		page_tbl_16w_16d
 		(
 		    //write
-		    .addra(c_index),
+		    .addra(c_index[3:0]),
 		    .clka(clk),
 		    .dina(entry_reg),
 		    .ena(1'b1),

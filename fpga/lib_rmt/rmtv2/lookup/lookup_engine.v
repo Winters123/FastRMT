@@ -63,7 +63,7 @@ module lookup_engine #(
 
 
 /********intermediate variables declared here********/
-wire [3:0]  match_addr;
+wire [7:0]  match_addr;
 wire        match;
 
 wire [ACT_LEN-1:0] action_wire;
@@ -436,7 +436,7 @@ generate
 		if (STAGE_ID == 4) begin
 			// tcam1 for lookup
         	cam_top # ( 
-        	    .C_DEPTH			(16),
+        	    .C_DEPTH			(256),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(201),
         	    .C_MEM_INIT			(1),
@@ -457,7 +457,7 @@ generate
         	    //.DIN				(lookup_din),
 
         	    .WE                 (c_wr_en_cam),
-        	    .WR_ADDR            (c_index_cam[3:0]),
+        	    .WR_ADDR            (c_index_cam[7:0]),
         	    .DATA_MASK          (),  //TODO do we need ternary matching?
         	    .DIN                (cam_entry_reg),
         	    .EN					(1'b1)
@@ -466,7 +466,7 @@ generate
 		else begin
 			// tcam1 for lookup
         	cam_top # ( 
-        	    .C_DEPTH			(16),
+        	    .C_DEPTH			(256),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(201),
         	    .C_MEM_INIT			(1),
@@ -487,7 +487,7 @@ generate
         	    //.DIN				(lookup_din),
 
         	    .WE                 (c_wr_en_cam),
-        	    .WR_ADDR            (c_index_cam[3:0]),
+        	    .WR_ADDR            (c_index_cam),
         	    .DATA_MASK          (),  //TODO do we need ternary matching?
         	    .DIN                (cam_entry_reg),
         	    .EN					(1'b1)
@@ -501,9 +501,9 @@ generate
         // 	.C_LOAD_INIT_FILE	(1)
         // )
         blk_mem_gen_1
-        act_ram_625w_16d
+        act_ram_625w_256d
         (
-            .addra(c_index_act[3:0]),
+            .addra(c_index_act),
             .clka(clk),
             .dina(act_entry_tmp),
             .ena(1'b1),

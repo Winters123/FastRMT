@@ -239,7 +239,7 @@ fifo_generator_512b phv_fifo_1 (
   .rd_rst_busy()  // output wire rd_rst_busy
 );
 
-fifo_generator_522b phv_fifo_2 (
+fifo_generator_612b phv_fifo_2 (
   .clk(clk),                  // input wire clk
   .srst(~aresetn),                // input wire srst
   .din(stg4_phv_out[1123:512]),                  // input wire [521 : 0] din
