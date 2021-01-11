@@ -67,7 +67,7 @@ wire                        alu_in_action_valid;
 
 wire                        alu_ready_out;
 
-assign                      ready_out = alu_ready_out;
+// assign                      ready_out = alu_ready_out;
 
 // assign phv_valid_out = phv_valid_bit[7];
 /********intermediate variables declared here********/
@@ -96,6 +96,7 @@ crossbar #(
     //input from action
     .action_in(action_in),
     .action_in_valid(action_valid_in),
+    .ready_out(ready_out),
     //checkme: vlan id
     .vlan_id(vlan_id),
     //output to the ALU
@@ -109,7 +110,8 @@ crossbar #(
     .alu_in_2B_2(alu_in_2B_2),
     .phv_remain_data(alu_in_phv_remain_data),
     .action_out(alu_in_action),
-    .action_valid_out(alu_in_action_valid)
+    .action_valid_out(alu_in_action_valid),
+    .ready_in(alu_ready_out)
 );
 
 

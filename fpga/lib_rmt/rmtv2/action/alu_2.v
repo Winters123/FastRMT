@@ -228,6 +228,7 @@ always @(*) begin
             // output the value
 			if(ready_in) begin
 				container_out_valid_next = 1;
+				ready_out_next = 1'b1;
 				alu_state_next = IDLE_S;
 			end
 			else begin
@@ -251,6 +252,7 @@ always @(*) begin
 		HALT_S: begin
 			if(ready_in)begin
 				container_out_valid_next = 1;
+				ready_out_next = 1'b1;
 				alu_state_next = IDLE_S;
 			end
 			else begin

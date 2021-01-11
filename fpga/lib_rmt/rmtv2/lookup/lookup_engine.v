@@ -73,7 +73,6 @@ reg [PHV_LEN-1:0] phv_reg;
 reg [2:0] lookup_state;
 
 (*mark_debug = "true"*) wire [1:0] lookup_state_dbg;
-
 assign lookup_state_dbg = lookup_state;
 
 wire [11:0] vlan_id;
@@ -139,6 +138,7 @@ always @(posedge clk or negedge rst_n) begin
             TRANS_S: begin
 				if(ready_in) begin
 					action_valid <= 1'b1;
+					ready_out <= 1'b1;
 					lookup_state <= IDLE_S;
 				end
 				else begin
@@ -151,15 +151,13 @@ always @(posedge clk or negedge rst_n) begin
             end
 			HALT_S: begin
 				if(ready_in) begin
+					ready_out <= 1'b1;
 					action_valid <= 1'b1;
 					lookup_state <= IDLE_S;
 				end
 			end
             
         endcase
-        // if(key_valid == 1'b1) begin
-        //     phv_reg <= phv_in;
-        // end
     end
 end
 

@@ -338,6 +338,7 @@ always @(posedge axis_clk or negedge aresetn) begin
                 endcase
                 if(m_axis_tready) begin
                     phv_valid_out_reg <= 1'b1;
+                    s_axis_tready <= 1'b1;
                     parse_state <= IDLE_S;
                 end
                 else begin
@@ -348,6 +349,7 @@ always @(posedge axis_clk or negedge aresetn) begin
             HALT_S: begin
                 if(m_axis_tready) begin
                     phv_valid_out_reg <= 1'b1;
+                    s_axis_tready <= 1'b1;
                     parse_state <= IDLE_S;
                 end
                 else begin

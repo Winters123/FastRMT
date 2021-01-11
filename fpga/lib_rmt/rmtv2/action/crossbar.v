@@ -25,6 +25,7 @@ module crossbar #(
     //input from action
     input [ACT_LEN*25-1:0]      action_in,
     input                       action_in_valid,
+    output reg                  ready_out,
 
     //output of vlan_id
     output reg [11:0]             vlan_id,
@@ -41,7 +42,8 @@ module crossbar #(
 
     //I have to delay action_in for ALUs for 1 cycle
     output reg [ACT_LEN*25-1:0]   action_out,
-    output reg                    action_valid_out
+    output reg                    action_valid_out,
+    input                         ready_in
 );
 
 /********intermediate variables declared here********/
@@ -120,6 +122,7 @@ assign sub_action[0] = action_in[ACT_LEN*25-1 -24*ACT_LEN-:ACT_LEN];
 always @(posedge clk) begin
     action_out <= action_in;
     action_valid_out <= action_in_valid;
+    ready_out <= ready_in;
     if(phv_in_valid) begin
         vlan_id <= phv_in[140:129];
     end

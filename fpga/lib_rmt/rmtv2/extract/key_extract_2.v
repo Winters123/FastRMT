@@ -236,6 +236,7 @@ always @(*) begin
 			if(ready_in) begin
 				key_valid_out_next = 1;
 				phv_valid_out_next = 1;
+				ready_out_next = 1'b1;
 				state_next = IDLE;
 			end
 			else begin
@@ -269,12 +270,13 @@ always @(*) begin
                 end
             endcase
 
-			state_next = IDLE;
+			//state_next = IDLE;
 		end
 		HALT: begin
 			if(ready_in) begin
 				key_valid_out_next = 1;
 				phv_valid_out_next = 1;
+				ready_out_next = 1'b1;
 				state_next = IDLE;
 			end
 			else begin
