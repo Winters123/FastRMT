@@ -250,3 +250,66 @@ void mqnic_close(struct mqnic *dev)
     free(dev);
 }
 
+uint32_t get_cookie()
+{
+    char *name;
+    char *device = NULL;
+    struct mqnic *dev;
+    int interface = 0;
+    int port = 0;
+    uint32_t cookie  = 0;
+    uint32_t token = 0;
+
+    char dev_name[6] = "ens0f1";
+    name = malloc(sizeof(dev_name));
+    
+    dev = mqnic_open(name);
+
+    if (!dev)
+    {
+        fprintf(stderr, "Failed to open device\n");
+        return -1;
+    }
+    struct mqnic_if *dev_interface = &dev->interfaces[interface];
+    struct mqnic_port *dev_port = &dev_interface->ports[port];
+
+    cookie = mqnic_reg_read32(dev_port->regs, MQNIC_PORT_REG_RMT_COOKIE);
+
+    return cookie;
+    
+    //printf("the cookie value is %03x\n", cookie);
+    //printf("the token value is %03x\n", token);
+
+}   
+
+uint32_t get_token()
+{
+    char *name;
+    char *device = NULL;
+    struct mqnic *dev;
+    int interface = 0;
+    int port = 0;
+    uint32_t cookie  = 0;
+    uint32_t token = 0;
+
+    char dev_name[6] = "ens0f1";
+    name = malloc(sizeof(dev_name));
+    
+    dev = mqnic_open(device);
+
+    if (!dev)
+    {
+        fprintf(stderr, "Failed to open device\n");
+        return -1;
+    }
+    struct mqnic_if *dev_interface = &dev->interfaces[interface];
+    struct mqnic_port *dev_port = &dev_interface->ports[port];
+
+    token = mqnic_reg_read32(dev_port->regs, MQNIC_PORT_REG_RMT_TOKEN);
+
+    return token;
+    
+    //printf("the cookie value is %03x\n", cookie);
+    //printf("the token value is %03x\n", token);
+
+}   

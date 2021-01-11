@@ -129,4 +129,8 @@ struct mqnic {
 struct mqnic *mqnic_open(const char *dev_name);
 void mqnic_close(struct mqnic *dev);
 
+//for RMT execlusively
+uint32_t get_cookie();
+uint32_t get_token();
+
 #endif /* MQNIC_H */

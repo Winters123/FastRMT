@@ -40,7 +40,9 @@ static void usage(char *name)
 int main(int argc, char *argv[])
 {
     char *name;
-    struct mqnic = NULL;
+    char *device;
+    char *device = NULL;
+    struct mqnic *dev;
     int interface = 0;
     int port = 0;
     int cookie  = 0;
@@ -102,7 +104,7 @@ int main(int argc, char *argv[])
     struct mqnic_port *dev_port = &dev_interface->ports[port];
 
     cookie = mqnic_reg_read32(dev_port->regs, MQNIC_PORT_REG_RMT_COOKIE);
-    token = mqnic_reg_read32(dev_port->regs, MQNIC_PORT_REG_RMT_TOKEN)
+    token = mqnic_reg_read32(dev_port->regs, MQNIC_PORT_REG_RMT_TOKEN);
     
     printf("the cookie value is %03x\n", cookie);
     printf("the token value is %03x\n", token);
