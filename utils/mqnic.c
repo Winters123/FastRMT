@@ -209,8 +209,8 @@ struct mqnic *mqnic_open(const char *dev_name)
             if(k == 0) {
                 port->if_token = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_TOKEN);
                 port->if_cookie = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_COOKIE);
-                printf("token value is: %08x\n", port->if_token);
-                printf("cookie value is: %08x\n", port->if_cookie);
+                //printf("token value is: %08x\n", port->if_token);
+                //printf("cookie value is: %08x\n", port->if_cookie);
             }
 
             for (int m = 0; m < port->sched_count; m++)
