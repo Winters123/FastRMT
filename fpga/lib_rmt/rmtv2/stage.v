@@ -98,7 +98,7 @@ key_extract_2 #(
 
     .phv_out(key2lookup_phv),
     .phv_valid_out(key2lookup_phv_valid),
-    .key_out(key2lookup_key),
+    .key_out_masked(key2lookup_key),
     .key_valid_out(key2lookup_key_valid),
     .key_mask_out(key2lookup_key_mask),
     .ready_in(lookup2key_ready),

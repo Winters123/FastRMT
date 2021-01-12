@@ -90,7 +90,7 @@ ENTITY cam_top IS
     C_MEM_INIT_FILE            :  STRING         :="";
     C_MEM_TYPE                 :  INTEGER        := 0; --use SRL16
     C_REG_OUTPUTS              :  INTEGER        := 0; --use registered output (for BRAM)
-    C_TERNARY_MODE             :  INTEGER        := 1;
+    C_TERNARY_MODE             :  INTEGER        := 0;
     C_WIDTH                    :  INTEGER        := 160
 
  
