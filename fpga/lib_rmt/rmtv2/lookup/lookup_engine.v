@@ -457,7 +457,7 @@ generate
         	    //.DIN				(lookup_din),
 
         	    .WE                 (c_wr_en_cam),
-        	    .WR_ADDR            (c_index_cam[4:0]),
+        	    .WR_ADDR            (c_index_cam[3:0]),
         	    .DATA_MASK          (),  //TODO do we need ternary matching?
         	    .DIN                (cam_entry_reg),
         	    .EN					(1'b1)
@@ -522,8 +522,8 @@ generate
         //(* mark_debug= "true"*) wire [15:0] cam_entry_reg_dbg;
         //(* mark_debug= "true"*) wire [24:0] dbg_action_in;
         
-        (* mark_debug= "true"*) wire [24:0]   dbg_action_out;
-        (* mark_debug= "true"*) wire          dbg_action_out_valid;
+        // (* mark_debug= "true"*) wire [24:0]   dbg_action_out;
+        // (* mark_debug= "true"*) wire          dbg_action_out_valid;
         
         // assign c_wr_en_act_dbg = c_wr_en_act;
         //assign c_wr_en_cam_dbg = c_wr_en_cam;
@@ -533,15 +533,15 @@ generate
         //assign dbg_action_in = act_entry_tmp[275 +: 25];
         
 
-        (*mark_debug = "true"*) wire            match_dbg;
-        (*mark_debug = "true"*) wire [3:0]      match_addr_dbg;
-        (*mark_debug = "true"*) wire [3:0]      vlan_id_dbg;
+        // (*mark_debug = "true"*) wire            match_dbg;
+        // (*mark_debug = "true"*) wire [3:0]      match_addr_dbg;
+        // (*mark_debug = "true"*) wire [3:0]      vlan_id_dbg;
 
-        assign match_dbg = match;
-        assign match_addr_dbg = match_addr;
-        assign vlan_id_dbg = vlan_id[7:4];
-        assign dbg_action_out_valid= action_valid;
-        assign dbg_action_out = action_wire[275 +: 25];
+        // assign match_dbg = match;
+        // assign match_addr_dbg = match_addr;
+        // assign vlan_id_dbg = vlan_id[7:4];
+        // assign dbg_action_out_valid= action_valid;
+        // assign dbg_action_out = action_wire[275 +: 25];
 
 
     end
