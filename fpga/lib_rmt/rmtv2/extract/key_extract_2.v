@@ -237,11 +237,13 @@ always @(*) begin
 				key_valid_out_next = 1;
 				phv_valid_out_next = 1;
 				ready_out_next = 1'b1;
+				key_mask_out_next = key_mask_out_r;
 				state_next = IDLE;
 			end
 			else begin
 				key_valid_out_next = 0;
 				phv_valid_out_next = 0;
+				key_mask_out_next = key_mask_out_r;
 				state_next = HALT;
 			end
 			// key_valid_out_next = 1;
