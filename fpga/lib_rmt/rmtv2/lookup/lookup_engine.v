@@ -436,7 +436,7 @@ generate
 		if (STAGE_ID == 4) begin
 			// tcam1 for lookup
         	cam_top # ( 
-        	    .C_DEPTH			(256),
+        	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(201),
         	    .C_MEM_INIT			(1),
@@ -449,7 +449,7 @@ generate
         	    .CMP_DATA_MASK		({4'b1111, extract_mask}),
         	    .BUSY				(),
         	    .MATCH				(match),
-        	    .MATCH_ADDR			(match_addr),
+        	    .MATCH_ADDR			(match_addr[3:0]),
 
         	    //.WE				(lookup_din_en),
         	    //.WR_ADDR			(lookup_din_addr),
@@ -457,7 +457,7 @@ generate
         	    //.DIN				(lookup_din),
 
         	    .WE                 (c_wr_en_cam),
-        	    .WR_ADDR            (c_index_cam[7:0]),
+        	    .WR_ADDR            (c_index_cam[4:0]),
         	    .DATA_MASK          (),  //TODO do we need ternary matching?
         	    .DIN                (cam_entry_reg),
         	    .EN					(1'b1)
@@ -466,7 +466,7 @@ generate
 		else begin
 			// tcam1 for lookup
         	cam_top # ( 
-        	    .C_DEPTH			(256),
+        	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(201),
         	    .C_MEM_INIT			(1),
@@ -479,7 +479,7 @@ generate
         	    .CMP_DATA_MASK		({4'b0000, extract_mask}),
         	    .BUSY				(),
         	    .MATCH				(match),
-        	    .MATCH_ADDR			(match_addr),
+        	    .MATCH_ADDR			(match_addr[3:0]),
 
         	    //.WE				(lookup_din_en),
         	    //.WR_ADDR			(lookup_din_addr),
@@ -487,7 +487,7 @@ generate
         	    //.DIN				(lookup_din),
 
         	    .WE                 (c_wr_en_cam),
-        	    .WR_ADDR            (c_index_cam),
+        	    .WR_ADDR            (c_index_cam[3:0]),
         	    .DATA_MASK          (),  //TODO do we need ternary matching?
         	    .DIN                (cam_entry_reg),
         	    .EN					(1'b1)
@@ -503,13 +503,13 @@ generate
         blk_mem_gen_1
         act_ram_625w_256d
         (
-            .addra(c_index_act),
+            .addra(c_index_act[3:0]),
             .clka(clk),
             .dina(act_entry_tmp),
             .ena(1'b1),
             .wea(c_wr_en_act),
 
-            .addrb(match_addr),
+            .addrb(match_addr[3:0]),
             .clkb(clk),
             .doutb(action_wire),
             .enb(1'b1)

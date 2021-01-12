@@ -23,8 +23,9 @@ module rmt_wrapper #(
 (
 	input										clk,		// axis clk
 	input										aresetn,	
-	output     [31:0]	cookie_val,
-	output     [31:0]	ctrl_token,
+	input  [15:0]								vlan_drop_flags,
+	output [31:0]								cookie_val,
+	output [31:0]								ctrl_token,
 
 	/*
      * input Slave AXI Stream
@@ -184,6 +185,7 @@ pkt_filter #(
 	.clk(clk),
 	.aresetn(aresetn),
 	.time_stamp(fake_timer),
+	.vlan_drop_flags(vlan_drop_flags),
 	.cookie_val(cookie_val),
 	.ctrl_token(ctrl_token),
 

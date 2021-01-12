@@ -619,6 +619,8 @@ wire tdma_error;
 wire [31:0] cookie_val;
 wire [31:0] ctrl_token;
 
+reg [15:0] vlan_drop_flags;
+
 reg [79:0] set_tdma_schedule_start_reg = 0;
 reg set_tdma_schedule_start_valid_reg = 0;
 reg [79:0] set_tdma_schedule_period_reg = 0;
@@ -705,6 +707,8 @@ always @(posedge clk) begin
                 set_tdma_active_period_reg[79:64] <= axil_ctrl_wdata;
                 set_tdma_active_period_valid_reg <= 1'b1;
             end
+            //checkme: for sync while RMT reconf
+            16'h2028: vlan_drop_flags <= axil_ctrl_wdata;
         endcase
     end
 
@@ -763,6 +767,9 @@ always @(posedge clk) begin
                 end
                 16'h2024: begin
                     axil_ctrl_rdata_reg <= ctrl_token;
+                end
+                16'h2028: begin
+                    axil_ctrl_rdata_reg <= vlan_drop_flags;
                 end
             endcase
         end
@@ -1945,6 +1952,7 @@ if (RMT_TX_ENABLE) begin
     (
     	.clk(clk),		// axis clk
     	.aresetn(~rst),	
+        .vlan_drop_flags(vlan_drop_flags),
         .cookie_val(cookie_val),
         .ctrl_token(ctrl_token),
 
