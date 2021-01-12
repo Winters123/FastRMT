@@ -189,7 +189,8 @@ always @(posedge clk or negedge aresetn) begin
 		c_m_axis_tvalid <= 0;
 		s_axis_tready <= 0;
 
-		ctrl_token_r <= time_stamp[31:0];
+		//ctrl_token_r <= time_stamp[31:0];
+		ctrl_token_r <= 32'b0;
 	end
 
 	else begin

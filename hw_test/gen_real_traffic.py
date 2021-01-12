@@ -2,8 +2,7 @@ from scapy.all import *
 import sys, os
 from socket import *
 import argparse
-import time
-from datetime import datetime
+import time as time
 from ctypes import *
 
 so_file = "/home/earl-07/corundum-forked/utils/mqnic.so"
@@ -36,14 +35,12 @@ def main():
         #    pkt = gen_data_pkt("abcdabcdabcdabcdabcdabcdabcd"+4*"00", 2)
         #    s.send(bytes(pkt))
         token_bf = get_token.get_token()
-        now = datetime.now()
-        time_bf = now.microsecond
+        time_bf = time.time_ns()
         s.send(bytes(conf_pkt))
         token_af = get_token.get_token()
         while(token_af==token_bf):
             continue
-        now = datetime.now()
-        time_af = now.microsecond
+        time_af = time.time_ns()
         print("spent time: ", time_af-time_bf)
         time.sleep(0.1)
 

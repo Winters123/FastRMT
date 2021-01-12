@@ -14,12 +14,11 @@ def gen_data_pkt(data, vid):
     return pkt
 
 def gen_ctrl_pkt(module_info, data):
-    get_seed = CDLL(so_file)
-    cookie = get_seed.get_cookie()
-    token = get_seed.get_token()
+    get_cookie = CDLL(so_file)
+    cookie = get_cookie.get_cookie()
 
     raw_load = bytes.fromhex(module_info)
-    raw_load = raw_load + convert_bstr_to_hstr(cookie) + b'\x00'*11
+    raw_load = raw_load + bytes.fromhex(cookie) + b'\x00'*11
     raw_load = raw_load + bytes.fromhex(data)
     pkt = Ether(src='00:01:02:03:04:05', dst='06:07:08:09:0a:0b')/Dot1Q(vlan=0xf) \
                 /IP(src='111.111.111.111', dst='222.222.222.222')/UDP(sport=1234, dport=0xf1f2) \
