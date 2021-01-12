@@ -501,7 +501,7 @@ generate
         // 	.C_LOAD_INIT_FILE	(1)
         // )
         blk_mem_gen_1
-        act_ram_625w_256d
+        act_ram_625w_16d
         (
             .addra(c_index_act[3:0]),
             .clka(clk),
