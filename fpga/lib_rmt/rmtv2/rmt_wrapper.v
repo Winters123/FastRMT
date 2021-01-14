@@ -496,7 +496,7 @@ stage4
 	// output
     .phv_out				(stg4_phv_out),
     .phv_out_valid			(stg4_phv_out_valid),
-	.stage_ready_in			(phv_fifo_nearly_full),
+	.stage_ready_in			(!phv_fifo_nearly_full),
 	//control path
 	.c_s_axis_tdata(c_s_axis_tdata_6),
 	.c_s_axis_tuser(c_s_axis_tuser_6),
