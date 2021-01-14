@@ -1,0 +1,52 @@
+# ----- REMOVE LINES ABOVE HERE --------------------------
+#
+# This license is valid from Wed Jan 13 05:22:21 UTC 2021.
+#
+# This is license NODELOCKED to HOSTID=ccf9e42e57e3;
+# there is no need to run lmgrd for this license.
+#
+#
+#  This license is valid for evaluation ( 30 days ) from Wed Jan 13 05:22:21 UTC 2021
+INCREMENT VIVADO_HLS xilinxd 2020.12 13-feb-2021 uncounted \
+567CA0E0BD94 \
+VENDOR_STRING=nudtyxr@hotmail.com,VIVADO_HLS,software,evaluation,_211838575_1777557283_0_101 \
+HOSTID=ccf9e42e57e3 ISSUER="Xilinx Inc" START=13-Jan-2021 \
+TS_OK
+#
+# This is a permanent license generated on Wed Jan 13 05:22:21 UTC 2021
+INCREMENT XCVU9P-ES1 xilinxd 2021.09 permanent uncounted 1913EFAB7CFE \
+VENDOR_STRING=nudtyxr@hotmail.com,XCVU9P-ES1,software,permanent,_211838575_1777557283_210732200_108 \
+HOSTID=ccf9e42e57e3 ISSUER="Xilinx Inc" START=13-Jan-2021 \
+TS_OK
+#
+# This is a permanent license generated on Wed Jan 13 05:22:21 UTC 2021
+INCREMENT XCVU9P-ES1_bitgen xilinxd 2021.09 permanent uncounted \
+F2686BBF1AC7 \
+VENDOR_STRING=nudtyxr@hotmail.com,XCVU9P-ES1_bitgen,software,permanent,_211838575_1777557283_210732200_523 \
+HOSTID=ccf9e42e57e3 ISSUER="Xilinx Inc" START=13-Jan-2021 \
+TS_OK
+#
+# This is a permanent license generated on Wed Jan 13 05:22:21 UTC 2021
+INCREMENT XCVU9P xilinxd 2021.09 permanent uncounted B04DFCEADF71 \
+VENDOR_STRING=nudtyxr@hotmail.com,XCVU9P,software,permanent,_211838575_1777557283_210732200_320 \
+HOSTID=ccf9e42e57e3 ISSUER="Xilinx Inc" START=13-Jan-2021 \
+TS_OK
+#
+# This is a permanent license generated on Wed Jan 13 05:22:21 UTC 2021
+INCREMENT board_vivado_design_edition xilinxd 2021.09 permanent \
+uncounted 5F93F24E92E1 \
+VENDOR_STRING=nudtyxr@hotmail.com,board_vivado_design_edition,software,permanent,_211838575_1777557283_210732200_849 \
+HOSTID=ccf9e42e57e3 ISSUER="Xilinx Inc" START=13-Jan-2021 \
+TS_OK
+#
+#
+# ----------------------------------------------------------------------
+#  The following PACKAGE definition is a REQUIRED part of this license:
+#
+PACKAGE board_vivado_design_edition xilinxd 2021.09 8433F88ABB21 \
+COMPONENTS="SDK PartialReconfiguration Simulation Analyzer \
+HLS" OPTIONS=SUITE
+#
+# ------------------------------------------------------------------------------
+#
+# ----- REMOVE LINES BELOW HERE --------------------------
