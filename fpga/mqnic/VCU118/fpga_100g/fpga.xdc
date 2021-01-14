@@ -248,8 +248,8 @@ create_clock -period 10.000 -name pcie_mgt_refclk_2 [get_ports pcie_refclk_2_p]
 create_pblock pblock_slr1
 add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list core_inst/dma_if_mux_inst core_inst/dma_if_pcie_us_inst {core_inst/iface[0].interface_inst/event_queue_manager_inst} {core_inst/iface[1].interface_inst/event_queue_manager_inst} pcie4_uscale_plus_inst]]
 #add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list core_inst/dma_if_mux_inst core_inst/dma_if_pcie_us_inst {core_inst/iface[0].interface_inst} {core_inst/iface[1].interface_inst} pcie4_uscale_plus_inst]]
-add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list core_inst/iface[0] core_inst/iface[1] core_inst/pcie_us_cfg_inst]]
-
+#add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list core_inst/iface[0] core_inst/iface[1] core_inst/pcie_us_cfg_inst]]
+add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list core_inst/iface[0] core_inst/iface[1] ]]
 resize_pblock [get_pblocks pblock_slr1] -add {SLR1}
 
 
