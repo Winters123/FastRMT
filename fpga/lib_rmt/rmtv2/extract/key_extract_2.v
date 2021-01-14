@@ -403,7 +403,7 @@ reg                                 c_m_axis_tlast_r;
 
 
 //checkme: mask the key with keymask
-assign key_out_masked = (key_out|key_mask_out);
+assign key_out_masked = (key_out&~key_mask_out);
 
 localparam IDLE_C = 0,
            PARSE_C = 1,

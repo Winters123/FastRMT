@@ -791,7 +791,8 @@ generate
         	(
         	    .CLK				(clk),
         	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b1111, extract_mask}),
+        	    // .CMP_DATA_MASK		({4'b1111, extract_mask}),
+        	    .CMP_DATA_MASK		(),
         	    .BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr),
@@ -822,7 +823,8 @@ generate
         	(
         	    .CLK				(clk),
         	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b0000, extract_mask}),
+        	    // .CMP_DATA_MASK		({4'b0000, extract_mask}),
+        	    .CMP_DATA_MASK		(),
         	    .BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr),
