@@ -3,6 +3,10 @@
 *.pyc
 *.vvp
 *.kate-swp
+*.ko
+*.so
+*.o
+*.o.cmd
 rev/
 vivado*
 project_synth/
