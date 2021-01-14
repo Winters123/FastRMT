@@ -16,7 +16,7 @@ module rmt_wrapper #(
 	// self-defined
     parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
     parameter KEY_LEN = 48*2+32*2+16*2+5,
-    parameter ACT_LEN = 625,
+    parameter ACT_LEN = 25,
     parameter KEY_OFF = 6*3
 
 )
