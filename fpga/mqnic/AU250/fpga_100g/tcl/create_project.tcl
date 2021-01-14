@@ -61,6 +61,7 @@ lappend SYN_FILES lib/pcie/rtl/pulse_merge.v
 # RMT-related 
 lappend SYN_FILES lib_rmt/rmtv2/rmt_wrapper.v
 lappend SYN_FILES lib_rmt/rmtv2/pkt_filter.v
+lappend SYN_FILES lib_rmt/rmtv2/cookie.v
 lappend SYN_FILES lib_rmt/rmtv2/parser.v
 lappend SYN_FILES lib_rmt/rmtv2/sub_parser.v
 lappend SYN_FILES lib_rmt/rmtv2/deparser_2.v
@@ -94,7 +95,7 @@ lappend IP_TCL_FILES ip/rmt/blk_mem_gen_1.tcl
 lappend IP_TCL_FILES ip/rmt/blk_mem_gen_2.tcl
 lappend IP_TCL_FILES ip/rmt/blk_mem_gen_3.tcl
 lappend IP_TCL_FILES ip/rmt/fifo_generator_512b.tcl
-lappend IP_TCL_FILES ip/rmt/fifo_generator_522b.tcl
+lappend IP_TCL_FILES ip/rmt/fifo_generator_612b.tcl
 lappend IP_TCL_FILES ip/rmt/fifo_generator_705b.tcl
 lappend IP_TCL_FILES ip/rmt/parse_act_ram_ip.tcl
 lappend IP_TCL_FILES ip/rmt/page_tbl_16w_16d.tcl
