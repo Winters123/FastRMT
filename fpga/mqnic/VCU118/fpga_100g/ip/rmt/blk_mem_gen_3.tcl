@@ -5,11 +5,11 @@ set_property -dict [list \
 	CONFIG.Load_Init_File {true} \
 	CONFIG.Coe_File {/../../../../../../lib_rmt/rmtv2/key_mask.coe} \
 	CONFIG.Write_Depth_A {16} \
-	CONFIG.Write_Width_A {197} \
-	CONFIG.Read_Width_A {197} \
+	CONFIG.Write_Width_A {201} \
+	CONFIG.Read_Width_A {201} \
 	CONFIG.Operating_Mode_A {NO_CHANGE} \
-	CONFIG.Write_Width_B {197} \
-	CONFIG.Read_Width_B {197} \
+	CONFIG.Write_Width_B {201} \
+	CONFIG.Read_Width_B {201} \
 	CONFIG.Enable_B {Use_ENB_Pin} \
 	CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
 	CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \

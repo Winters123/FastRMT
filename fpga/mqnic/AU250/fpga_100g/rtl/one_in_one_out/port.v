@@ -151,7 +151,7 @@ module port #
     // DMA RX RAM size
     parameter RX_RAM_SIZE = RX_PKT_TABLE_SIZE*MAX_RX_SIZE,
     // Enable RMT pipeline on TX
-    parameter TX_RMT_ENABLE = 1
+    parameter RMT_TX_ENABLE = 1
 )
 (
     input  wire                                 clk,
@@ -377,6 +377,27 @@ wire [SCHED_COUNT*2-1:0]               axil_sched_rresp;
 wire [SCHED_COUNT-1:0]                 axil_sched_rvalid;
 wire [SCHED_COUNT-1:0]                 axil_sched_rready;
 
+// //rmt related
+// wire [AXIL_ADDR_WIDTH-1:0]      axil_rmt_awaddr;
+// wire [2:0]                      axil_rmt_awprot;
+// wire                            axil_rmt_awvalid;
+// wire                            axil_rmt_awready;
+// wire [AXIL_DATA_WIDTH-1:0]      axil_rmt_wdata;
+// wire [AXIL_STRB_WIDTH-1:0]      axil_rmt_wstrb;
+// wire                            axil_rmt_wvalid;
+// wire                            axil_rmt_wready;
+// wire [1:0]                      axil_rmt_bresp;
+// wire                            axil_rmt_bvalid;
+// wire                            axil_rmt_bready;
+// wire [AXIL_ADDR_WIDTH-1:0]      axil_rmt_araddr;
+// wire [2:0]                      axil_rmt_arprot;
+// wire                            axil_rmt_arvalid;
+// wire                            axil_rmt_arready;
+// wire [AXIL_DATA_WIDTH-1:0]      axil_rmt_rdata;
+// wire [1:0]                      axil_rmt_rresp;
+// wire                            axil_rmt_rvalid;
+// wire                            axil_rmt_rready;
+
 // Checksumming and RSS
 wire [AXIS_DATA_WIDTH-1:0] rx_axis_tdata_int;
 wire [AXIS_KEEP_WIDTH-1:0] rx_axis_tkeep_int;
@@ -391,6 +412,13 @@ wire                       tx_axis_tvalid_int;
 wire                       tx_axis_tready_int;
 wire                       tx_axis_tlast_int;
 wire                       tx_axis_tuser_int;
+
+wire [AXIS_DATA_WIDTH-1:0] tx_axis_tdata_int_2;
+wire [AXIS_KEEP_WIDTH-1:0] tx_axis_tkeep_int_2;
+wire                       tx_axis_tvalid_int_2;
+wire                       tx_axis_tready_int_2;
+wire                       tx_axis_tlast_int_2;
+wire                       tx_axis_tuser_int_2;
 
 // Descriptor and completion
 wire [0:0]                           rx_desc_req_sel = 1'b1;
@@ -588,6 +616,11 @@ reg tdma_enable_reg = 1'b0;
 wire tdma_locked;
 wire tdma_error;
 
+wire [31:0] cookie_val;
+wire [31:0] ctrl_token;
+
+reg [15:0] vlan_drop_flags;
+
 reg [79:0] set_tdma_schedule_start_reg = 0;
 reg set_tdma_schedule_start_valid_reg = 0;
 reg [79:0] set_tdma_schedule_period_reg = 0;
@@ -674,6 +707,8 @@ always @(posedge clk) begin
                 set_tdma_active_period_reg[79:64] <= axil_ctrl_wdata;
                 set_tdma_active_period_valid_reg <= 1'b1;
             end
+            //checkme: for sync while RMT reconf
+            16'h2028: vlan_drop_flags <= axil_ctrl_wdata;
         endcase
     end
 
@@ -682,52 +717,109 @@ always @(posedge clk) begin
         axil_ctrl_arready_reg <= 1'b1;
         axil_ctrl_rvalid_reg <= 1'b1;
         axil_ctrl_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
-
-        case ({axil_ctrl_araddr[15:2], 2'b00})
-            16'h0000: axil_ctrl_rdata_reg <= 32'd0;       // port_id
-            16'h0004: begin
-                // port_features
-                axil_ctrl_rdata_reg[0] <= RX_RSS_ENABLE && RX_HASH_ENABLE;
-                axil_ctrl_rdata_reg[4] <= PTP_TS_ENABLE;
-                axil_ctrl_rdata_reg[8] <= TX_CHECKSUM_ENABLE;
-                axil_ctrl_rdata_reg[9] <= RX_CHECKSUM_ENABLE;
-                axil_ctrl_rdata_reg[10] <= RX_HASH_ENABLE;
-            end
-            16'h0008: axil_ctrl_rdata_reg <= MAX_TX_SIZE; // port_mtu
-            16'h0010: axil_ctrl_rdata_reg <= SCHED_COUNT; // scheduler_count
-            16'h0014: axil_ctrl_rdata_reg <= 2**AXIL_SCHED_ADDR_WIDTH; // scheduler_offset
-            16'h0018: axil_ctrl_rdata_reg <= 2**AXIL_SCHED_ADDR_WIDTH; // scheduler_stride
-            16'h001C: axil_ctrl_rdata_reg <= 32'd0;       // scheduler_type
-            16'h0040: begin
-                // Scheduler enable
-                axil_ctrl_rdata_reg[0] <= sched_enable_reg;
-            end
-            16'h0080: axil_ctrl_rdata_reg <= rss_mask_reg; // RSS mask
-            16'h0100: axil_ctrl_rdata_reg <= tx_mtu_reg; // TX MTU
-            16'h0200: axil_ctrl_rdata_reg <= rx_mtu_reg; // RX MTU
-            16'h1000: begin
-                // TDMA control
-                axil_ctrl_rdata_reg[0] <= tdma_enable_reg;
-            end
-            16'h1004: begin
-                // TDMA status
-                axil_ctrl_rdata_reg[0] <= tdma_locked;
-                axil_ctrl_rdata_reg[1] <= tdma_error;
-            end
-            16'h1008: axil_ctrl_rdata_reg <= 2**TDMA_INDEX_WIDTH; // TDMA timeslot count
-            16'h1014: axil_ctrl_rdata_reg <= set_tdma_schedule_start_reg[29:0]; // TDMA schedule start ns
-            16'h1018: axil_ctrl_rdata_reg <= set_tdma_schedule_start_reg[63:32]; // TDMA schedule start sec l
-            16'h101C: axil_ctrl_rdata_reg <= set_tdma_schedule_start_reg[79:64]; // TDMA schedule start sec h
-            16'h1024: axil_ctrl_rdata_reg <= set_tdma_schedule_period_reg[29:0]; // TDMA schedule period ns
-            16'h1028: axil_ctrl_rdata_reg <= set_tdma_schedule_period_reg[63:32]; // TDMA schedule period sec l
-            16'h102C: axil_ctrl_rdata_reg <= set_tdma_schedule_period_reg[79:64]; // TDMA schedule period sec h
-            16'h1034: axil_ctrl_rdata_reg <= set_tdma_timeslot_period_reg[29:0]; // TDMA timeslot period ns
-            16'h1038: axil_ctrl_rdata_reg <= set_tdma_timeslot_period_reg[63:32]; // TDMA timeslot period sec l
-            16'h103C: axil_ctrl_rdata_reg <= set_tdma_timeslot_period_reg[79:64]; // TDMA timeslot period sec h
-            16'h1044: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[29:0]; // TDMA active period ns
-            16'h1048: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[63:32]; // TDMA active period sec l
-            16'h104C: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[79:64]; // TDMA active period sec h
-        endcase
+        if(RMT_TX_ENABLE) begin
+            case ({axil_ctrl_araddr[15:2], 2'b00})
+                16'h0000: axil_ctrl_rdata_reg <= 32'd0;       // port_id
+                16'h0004: begin
+                    // port_features
+                    axil_ctrl_rdata_reg[0] <= RX_RSS_ENABLE && RX_HASH_ENABLE;
+                    axil_ctrl_rdata_reg[4] <= PTP_TS_ENABLE;
+                    axil_ctrl_rdata_reg[8] <= TX_CHECKSUM_ENABLE;
+                    axil_ctrl_rdata_reg[9] <= RX_CHECKSUM_ENABLE;
+                    axil_ctrl_rdata_reg[10] <= RX_HASH_ENABLE;
+                end
+                16'h0008: axil_ctrl_rdata_reg <= MAX_TX_SIZE; // port_mtu
+                16'h0010: axil_ctrl_rdata_reg <= SCHED_COUNT; // scheduler_count
+                16'h0014: axil_ctrl_rdata_reg <= 2**AXIL_SCHED_ADDR_WIDTH; // scheduler_offset
+                16'h0018: axil_ctrl_rdata_reg <= 2**AXIL_SCHED_ADDR_WIDTH; // scheduler_stride
+                16'h001C: axil_ctrl_rdata_reg <= 32'd0;       // scheduler_type
+                16'h0040: begin
+                    // Scheduler enable
+                    axil_ctrl_rdata_reg[0] <= sched_enable_reg;
+                end
+                16'h0080: axil_ctrl_rdata_reg <= rss_mask_reg; // RSS mask
+                16'h0100: axil_ctrl_rdata_reg <= tx_mtu_reg; // TX MTU
+                16'h0200: axil_ctrl_rdata_reg <= rx_mtu_reg; // RX MTU
+                16'h1000: begin
+                    // TDMA control
+                    axil_ctrl_rdata_reg[0] <= tdma_enable_reg;
+                end
+                16'h1004: begin
+                    // TDMA status
+                    axil_ctrl_rdata_reg[0] <= tdma_locked;
+                    axil_ctrl_rdata_reg[1] <= tdma_error;
+                end
+                16'h1008: axil_ctrl_rdata_reg <= 2**TDMA_INDEX_WIDTH; // TDMA timeslot count
+                16'h1014: axil_ctrl_rdata_reg <= set_tdma_schedule_start_reg[29:0]; // TDMA schedule start ns
+                16'h1018: axil_ctrl_rdata_reg <= set_tdma_schedule_start_reg[63:32]; // TDMA schedule start sec l
+                16'h101C: axil_ctrl_rdata_reg <= set_tdma_schedule_start_reg[79:64]; // TDMA schedule start sec h
+                16'h1024: axil_ctrl_rdata_reg <= set_tdma_schedule_period_reg[29:0]; // TDMA schedule period ns
+                16'h1028: axil_ctrl_rdata_reg <= set_tdma_schedule_period_reg[63:32]; // TDMA schedule period sec l
+                16'h102C: axil_ctrl_rdata_reg <= set_tdma_schedule_period_reg[79:64]; // TDMA schedule period sec h
+                16'h1034: axil_ctrl_rdata_reg <= set_tdma_timeslot_period_reg[29:0]; // TDMA timeslot period ns
+                16'h1038: axil_ctrl_rdata_reg <= set_tdma_timeslot_period_reg[63:32]; // TDMA timeslot period sec l
+                16'h103C: axil_ctrl_rdata_reg <= set_tdma_timeslot_period_reg[79:64]; // TDMA timeslot period sec h
+                16'h1044: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[29:0]; // TDMA active period ns
+                16'h1048: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[63:32]; // TDMA active period sec l
+                16'h104C: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[79:64]; // TDMA active period sec h
+                16'h2020: begin
+                    axil_ctrl_rdata_reg <= cookie_val;
+                end
+                16'h2024: begin
+                    axil_ctrl_rdata_reg <= ctrl_token;
+                end
+                16'h2028: begin
+                    axil_ctrl_rdata_reg <= vlan_drop_flags;
+                end
+            endcase
+        end
+        else begin
+            case ({axil_ctrl_araddr[15:2], 2'b00})
+                16'h0000: axil_ctrl_rdata_reg <= 32'd0;       // port_id
+                16'h0004: begin
+                    // port_features
+                    axil_ctrl_rdata_reg[0] <= RX_RSS_ENABLE && RX_HASH_ENABLE;
+                    axil_ctrl_rdata_reg[4] <= PTP_TS_ENABLE;
+                    axil_ctrl_rdata_reg[8] <= TX_CHECKSUM_ENABLE;
+                    axil_ctrl_rdata_reg[9] <= RX_CHECKSUM_ENABLE;
+                    axil_ctrl_rdata_reg[10] <= RX_HASH_ENABLE;
+                end
+                16'h0008: axil_ctrl_rdata_reg <= MAX_TX_SIZE; // port_mtu
+                16'h0010: axil_ctrl_rdata_reg <= SCHED_COUNT; // scheduler_count
+                16'h0014: axil_ctrl_rdata_reg <= 2**AXIL_SCHED_ADDR_WIDTH; // scheduler_offset
+                16'h0018: axil_ctrl_rdata_reg <= 2**AXIL_SCHED_ADDR_WIDTH; // scheduler_stride
+                16'h001C: axil_ctrl_rdata_reg <= 32'd0;       // scheduler_type
+                16'h0040: begin
+                    // Scheduler enable
+                    axil_ctrl_rdata_reg[0] <= sched_enable_reg;
+                end
+                16'h0080: axil_ctrl_rdata_reg <= rss_mask_reg; // RSS mask
+                16'h0100: axil_ctrl_rdata_reg <= tx_mtu_reg; // TX MTU
+                16'h0200: axil_ctrl_rdata_reg <= rx_mtu_reg; // RX MTU
+                16'h1000: begin
+                    // TDMA control
+                    axil_ctrl_rdata_reg[0] <= tdma_enable_reg;
+                end
+                16'h1004: begin
+                    // TDMA status
+                    axil_ctrl_rdata_reg[0] <= tdma_locked;
+                    axil_ctrl_rdata_reg[1] <= tdma_error;
+                end
+                16'h1008: axil_ctrl_rdata_reg <= 2**TDMA_INDEX_WIDTH; // TDMA timeslot count
+                16'h1014: axil_ctrl_rdata_reg <= set_tdma_schedule_start_reg[29:0]; // TDMA schedule start ns
+                16'h1018: axil_ctrl_rdata_reg <= set_tdma_schedule_start_reg[63:32]; // TDMA schedule start sec l
+                16'h101C: axil_ctrl_rdata_reg <= set_tdma_schedule_start_reg[79:64]; // TDMA schedule start sec h
+                16'h1024: axil_ctrl_rdata_reg <= set_tdma_schedule_period_reg[29:0]; // TDMA schedule period ns
+                16'h1028: axil_ctrl_rdata_reg <= set_tdma_schedule_period_reg[63:32]; // TDMA schedule period sec l
+                16'h102C: axil_ctrl_rdata_reg <= set_tdma_schedule_period_reg[79:64]; // TDMA schedule period sec h
+                16'h1034: axil_ctrl_rdata_reg <= set_tdma_timeslot_period_reg[29:0]; // TDMA timeslot period ns
+                16'h1038: axil_ctrl_rdata_reg <= set_tdma_timeslot_period_reg[63:32]; // TDMA timeslot period sec l
+                16'h103C: axil_ctrl_rdata_reg <= set_tdma_timeslot_period_reg[79:64]; // TDMA timeslot period sec h
+                16'h1044: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[29:0]; // TDMA active period ns
+                16'h1048: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[63:32]; // TDMA active period sec l
+                16'h104C: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[79:64]; // TDMA active period sec h
+            endcase
+        end
     end
 
     if (rst) begin
@@ -781,25 +873,25 @@ axil_interconnect_inst (
     .s_axil_rresp(s_axil_rresp),
     .s_axil_rvalid(s_axil_rvalid),
     .s_axil_rready(s_axil_rready),
-    .m_axil_awaddr( {axil_sched_awaddr,  axil_ctrl_awaddr}),
-    .m_axil_awprot( {axil_sched_awprot,  axil_ctrl_awprot}),
-    .m_axil_awvalid({axil_sched_awvalid, axil_ctrl_awvalid}),
-    .m_axil_awready({axil_sched_awready, axil_ctrl_awready}),
-    .m_axil_wdata(  {axil_sched_wdata,   axil_ctrl_wdata}),
-    .m_axil_wstrb(  {axil_sched_wstrb,   axil_ctrl_wstrb}),
-    .m_axil_wvalid( {axil_sched_wvalid,  axil_ctrl_wvalid}),
-    .m_axil_wready( {axil_sched_wready,  axil_ctrl_wready}),
-    .m_axil_bresp(  {axil_sched_bresp,   axil_ctrl_bresp}),
-    .m_axil_bvalid( {axil_sched_bvalid,  axil_ctrl_bvalid}),
-    .m_axil_bready( {axil_sched_bready,  axil_ctrl_bready}),
-    .m_axil_araddr( {axil_sched_araddr,  axil_ctrl_araddr}),
-    .m_axil_arprot( {axil_sched_arprot,  axil_ctrl_arprot}),
-    .m_axil_arvalid({axil_sched_arvalid, axil_ctrl_arvalid}),
-    .m_axil_arready({axil_sched_arready, axil_ctrl_arready}),
-    .m_axil_rdata(  {axil_sched_rdata,   axil_ctrl_rdata}),
-    .m_axil_rresp(  {axil_sched_rresp,   axil_ctrl_rresp}),
-    .m_axil_rvalid( {axil_sched_rvalid,  axil_ctrl_rvalid}),
-    .m_axil_rready( {axil_sched_rready,  axil_ctrl_rready})
+    .m_axil_awaddr( {axil_sched_awaddr,  axil_ctrl_awaddr} ),
+    .m_axil_awprot( {axil_sched_awprot,  axil_ctrl_awprot} ),
+    .m_axil_awvalid({axil_sched_awvalid, axil_ctrl_awvalid} ),
+    .m_axil_awready({axil_sched_awready, axil_ctrl_awready} ),
+    .m_axil_wdata(  {axil_sched_wdata,   axil_ctrl_wdata} ),
+    .m_axil_wstrb(  {axil_sched_wstrb,   axil_ctrl_wstrb} ),
+    .m_axil_wvalid( {axil_sched_wvalid,  axil_ctrl_wvalid} ),
+    .m_axil_wready( {axil_sched_wready,  axil_ctrl_wready} ),
+    .m_axil_bresp(  {axil_sched_bresp,   axil_ctrl_bresp} ),
+    .m_axil_bvalid( {axil_sched_bvalid,  axil_ctrl_bvalid} ),
+    .m_axil_bready( {axil_sched_bready,  axil_ctrl_bready} ),
+    .m_axil_araddr( {axil_sched_araddr,  axil_ctrl_araddr} ),
+    .m_axil_arprot( {axil_sched_arprot,  axil_ctrl_arprot} ),
+    .m_axil_arvalid({axil_sched_arvalid, axil_ctrl_arvalid} ),
+    .m_axil_arready({axil_sched_arready, axil_ctrl_arready} ),
+    .m_axil_rdata(  {axil_sched_rdata,   axil_ctrl_rdata} ),
+    .m_axil_rresp(  {axil_sched_rresp,   axil_ctrl_rresp} ),
+    .m_axil_rvalid( {axil_sched_rvalid,  axil_ctrl_rvalid} ),
+    .m_axil_rready( {axil_sched_rready,  axil_ctrl_rready} )
 );
 
 desc_op_mux #(
@@ -1747,136 +1839,162 @@ end else begin
 
 end
 
-// if (TX_CHECKSUM_ENABLE) begin
+if (TX_CHECKSUM_ENABLE) begin
 
-//     axis_fifo #(
-//         .DEPTH(32),
-//         .DATA_WIDTH(1+8+8),
-//         .KEEP_ENABLE(0),
-//         .LAST_ENABLE(0),
-//         .ID_ENABLE(0),
-//         .DEST_ENABLE(0),
-//         .USER_ENABLE(0),
-//         .FRAME_FIFO(0)
-//     )
-//     tx_csum_fifo (
-//         .clk(clk),
-//         .rst(rst),
+    axis_fifo #(
+        .DEPTH(32),
+        .DATA_WIDTH(1+8+8),
+        .KEEP_ENABLE(0),
+        .LAST_ENABLE(0),
+        .ID_ENABLE(0),
+        .DEST_ENABLE(0),
+        .USER_ENABLE(0),
+        .FRAME_FIFO(0)
+    )
+    tx_csum_fifo (
+        .clk(clk),
+        .rst(rst),
 
-//         // AXI input
-//         .s_axis_tdata({tx_csum_cmd_csum_enable, tx_csum_cmd_csum_start, tx_csum_cmd_csum_offset}),
-//         .s_axis_tkeep(0),
-//         .s_axis_tvalid(tx_csum_cmd_valid),
-//         .s_axis_tready(tx_csum_cmd_ready),
-//         .s_axis_tlast(0),
-//         .s_axis_tid(0),
-//         .s_axis_tdest(0),
-//         .s_axis_tuser(0),
+        // AXI input
+        .s_axis_tdata({tx_csum_cmd_csum_enable, tx_csum_cmd_csum_start, tx_csum_cmd_csum_offset}),
+        .s_axis_tkeep(0),
+        .s_axis_tvalid(tx_csum_cmd_valid),
+        .s_axis_tready(tx_csum_cmd_ready),
+        .s_axis_tlast(0),
+        .s_axis_tid(0),
+        .s_axis_tdest(0),
+        .s_axis_tuser(0),
 
-//         // AXI output
-//         .m_axis_tdata({tx_fifo_csum_cmd_csum_enable, tx_fifo_csum_cmd_csum_start, tx_fifo_csum_cmd_csum_offset}),
-//         .m_axis_tkeep(),
-//         .m_axis_tvalid(tx_fifo_csum_cmd_valid),
-//         .m_axis_tready(tx_fifo_csum_cmd_ready),
-//         .m_axis_tlast(),
-//         .m_axis_tid(),
-//         .m_axis_tdest(),
-//         .m_axis_tuser(),
+        // AXI output
+        .m_axis_tdata({tx_fifo_csum_cmd_csum_enable, tx_fifo_csum_cmd_csum_start, tx_fifo_csum_cmd_csum_offset}),
+        .m_axis_tkeep(),
+        .m_axis_tvalid(tx_fifo_csum_cmd_valid),
+        .m_axis_tready(tx_fifo_csum_cmd_ready),
+        .m_axis_tlast(),
+        .m_axis_tid(),
+        .m_axis_tdest(),
+        .m_axis_tuser(),
 
-//         // Status
-//         .status_overflow(),
-//         .status_bad_frame(),
-//         .status_good_frame()
-//     );
+        // Status
+        .status_overflow(),
+        .status_bad_frame(),
+        .status_good_frame()
+    );
 
-//     tx_checksum #(
-//         .DATA_WIDTH(AXIS_DATA_WIDTH),
-//         .ID_ENABLE(0),
-//         .DEST_ENABLE(0),
-//         .USER_ENABLE(1),
-//         .USER_WIDTH(1),
-//         .USE_INIT_VALUE(0),
-//         .DATA_FIFO_DEPTH(MAX_TX_SIZE),
-//         .CHECKSUM_FIFO_DEPTH(64)
-//     )
-//     tx_checksum_inst (
-//         .clk(clk),
-//         .rst(rst),
+    tx_checksum #(
+        .DATA_WIDTH(AXIS_DATA_WIDTH),
+        .ID_ENABLE(0),
+        .DEST_ENABLE(0),
+        .USER_ENABLE(1),
+        .USER_WIDTH(1),
+        .USE_INIT_VALUE(0),
+        .DATA_FIFO_DEPTH(MAX_TX_SIZE),
+        .CHECKSUM_FIFO_DEPTH(64)
+    )
+    tx_checksum_inst (
+        .clk(clk),
+        .rst(rst),
 
-//         /*
-//          * AXI input
-//          */
-//         .s_axis_tdata(tx_axis_tdata_int),
-//         .s_axis_tkeep(tx_axis_tkeep_int),
-//         .s_axis_tvalid(tx_axis_tvalid_int),
-//         .s_axis_tready(tx_axis_tready_int),
-//         .s_axis_tlast(tx_axis_tlast_int),
-//         .s_axis_tid(0),
-//         .s_axis_tdest(0),
-//         .s_axis_tuser(tx_axis_tuser_int),
+        /*
+         * AXI input
+         */
+        .s_axis_tdata(tx_axis_tdata_int),
+        .s_axis_tkeep(tx_axis_tkeep_int),
+        .s_axis_tvalid(tx_axis_tvalid_int),
+        .s_axis_tready(tx_axis_tready_int),
+        .s_axis_tlast(tx_axis_tlast_int),
+        .s_axis_tid(0),
+        .s_axis_tdest(0),
+        .s_axis_tuser(tx_axis_tuser_int),
 
-//         /*
-//          * AXI output
-//          */
-//         .m_axis_tdata(tx_axis_tdata),
-//         .m_axis_tkeep(tx_axis_tkeep),
-//         .m_axis_tvalid(tx_axis_tvalid),
-//         .m_axis_tready(tx_axis_tready),
-//         .m_axis_tlast(tx_axis_tlast),
-//         .m_axis_tid(),
-//         .m_axis_tdest(),
-//         .m_axis_tuser(tx_axis_tuser),
+        /*
+         * AXI output
+         */
+        .m_axis_tdata(tx_axis_tdata_int_2),
+        .m_axis_tkeep(tx_axis_tkeep_int_2),
+        .m_axis_tvalid(tx_axis_tvalid_int_2),
+        .m_axis_tready(tx_axis_tready_int_2),
+        .m_axis_tlast(tx_axis_tlast_int_2),
+        .m_axis_tid(),
+        .m_axis_tdest(),
+        .m_axis_tuser(0),
 
-//         /*
-//          * Control
-//          */
-//         .s_axis_cmd_csum_enable(tx_fifo_csum_cmd_csum_enable),
-//         .s_axis_cmd_csum_start(tx_fifo_csum_cmd_csum_start),
-//         .s_axis_cmd_csum_offset(tx_fifo_csum_cmd_csum_offset),
-//         .s_axis_cmd_csum_init(16'd0),
-//         .s_axis_cmd_valid(tx_fifo_csum_cmd_valid),
-//         .s_axis_cmd_ready(tx_fifo_csum_cmd_ready)
-//     );
+        /*
+         * Control
+         */
+        .s_axis_cmd_csum_enable(tx_fifo_csum_cmd_csum_enable),
+        .s_axis_cmd_csum_start(tx_fifo_csum_cmd_csum_start),
+        .s_axis_cmd_csum_offset(tx_fifo_csum_cmd_csum_offset),
+        .s_axis_cmd_csum_init(16'd0),
+        .s_axis_cmd_valid(tx_fifo_csum_cmd_valid),
+        .s_axis_cmd_ready(tx_fifo_csum_cmd_ready)
+    );
 
-// end else begin
+end else begin
 
-//     assign tx_axis_tdata = tx_axis_tdata_int;
-//     assign tx_axis_tkeep = tx_axis_tkeep_int;
-//     assign tx_axis_tvalid = tx_axis_tvalid_int;
-//     assign tx_axis_tready_int = tx_axis_tready;
-//     assign tx_axis_tlast = tx_axis_tlast_int;
-//     assign tx_axis_tuser = tx_axis_tuser_int;
+    assign tx_axis_tdata_int_2 = tx_axis_tdata_int;
+    assign tx_axis_tkeep_int_2 = tx_axis_tkeep_int;
+    assign tx_axis_tvalid_int_2 = tx_axis_tvalid_int;
+    assign tx_axis_tready_int = tx_axis_tready_int_2;
+    assign tx_axis_tlast_int_2 = tx_axis_tlast_int;
+    assign tx_axis_tuser_int_2 = tx_axis_tuser_int;
 
-//     assign tx_csum_cmd_ready = 1'b1;
+    assign tx_csum_cmd_ready = 1'b1;
 
-// end
+end
 
 //TODO add RMT plugins for tx path.
 
-if (TX_RMT_ENABLE) begin
+if (RMT_TX_ENABLE) begin
 
     rmt_wrapper
     rmt_wrapper_tx
     (
     	.clk(clk),		// axis clk
-    	.aresetn(rst),	
+    	.aresetn(~rst),	
+        .vlan_drop_flags(vlan_drop_flags),
+        .cookie_val(cookie_val),
+        .ctrl_token(ctrl_token),
 
     	// input Slave AXI Stream
-    	.s_axis_tdata(tx_axis_tdata_int),
-    	.s_axis_tkeep(tx_axis_tkeep_int),
-    	.s_axis_tuser(tx_axis_tuser_int),
-    	.s_axis_tvalid(tx_axis_tvalid_int),
-    	.s_axis_tready(tx_axis_tready_int),
-    	.s_axis_tlast(tx_axis_tlast_int),
+    	.s_axis_tdata(tx_axis_tdata_int_2),
+    	.s_axis_tkeep(tx_axis_tkeep_int_2),
+    	.s_axis_tuser(tx_axis_tuser_int_2),
+    	.s_axis_tvalid(tx_axis_tvalid_int_2),
+    	.s_axis_tready(tx_axis_tready_int_2),
+    	.s_axis_tlast(tx_axis_tlast_int_2),
 
     	// output Master AXI Stream
     	.m_axis_tdata(tx_axis_tdata),
     	.m_axis_tkeep(tx_axis_tkeep),
-    	.m_axis_tuser(tx_axis_tuser),
+    	.m_axis_tuser(0),
     	.m_axis_tvalid(tx_axis_tvalid),
     	.m_axis_tready(tx_axis_tready),
     	.m_axis_tlast(tx_axis_tlast)
-    
+
+        // /*
+        // * AXI-Lite slave interface
+        // */
+        // .s_axil_awaddr(axil_rmt_awaddr),
+        // .s_axil_awprot(axil_rmt_awprot),
+        // .s_axil_awvalid(axil_rmt_awvalid),
+        // .s_axil_awready(axil_rmt_awready),
+        // .s_axil_wdata(axil_rmt_wdata),
+        // .s_axil_wstrb(axil_rmt_wstrb),
+        // .s_axil_wvalid(axil_rmt_wvalid),
+        // .s_axil_wready(axil_rmt_wready),
+        // .s_axil_bresp(axil_rmt_bresp),
+        // .s_axil_bvalid(axil_rmt_bvalid),
+        // .s_axil_bready(axil_rmt_bready),
+
+        // .s_axil_araddr(axil_rmt_araddr),
+        // .s_axil_arprot(axil_rmt_arprot),
+        // .s_axil_arvalid(axil_rmt_arvalid),
+        // .s_axil_arready(axil_rmt_arready),
+        // .s_axil_rdata(axil_rmt_rdata),
+        // .s_axil_rresp(axil_rmt_rresp),
+        // .s_axil_rvalid(axil_rmt_rvalid),
+        // .s_axil_rready(axil_rmt_rready)
     );
 
 
@@ -1884,14 +2002,14 @@ end
 
 else begin
 
-    assign tx_axis_tdata = tx_axis_tdata_int;
-    assign tx_axis_tkeep = tx_axis_tkeep_int;
-    assign tx_axis_tvalid = tx_axis_tvalid_int;
-    assign tx_axis_tready_int = tx_axis_tready;
-    assign tx_axis_tlast = tx_axis_tlast_int;
-    assign tx_axis_tuser = tx_axis_tuser_int;
+    assign tx_axis_tdata = tx_axis_tdata_int_2;
+    assign tx_axis_tkeep = tx_axis_tkeep_int_2;
+    assign tx_axis_tvalid = tx_axis_tvalid_int_2;
+    assign tx_axis_tready_int_2 = tx_axis_tready;
+    assign tx_axis_tlast = tx_axis_tlast_int_2;
+    assign tx_axis_tuser = tx_axis_tuser_int_2;
 
-    assign tx_csum_cmd_ready = 1'b1;
+    //assign tx_csum_cmd_ready = 1'b1;
 
 end
 
