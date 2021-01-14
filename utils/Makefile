@@ -1,30 +1,16 @@
-
 PREFIX=/usr/local
 BINDIR=$(DESTDIR)$(PREFIX)/bin
 
 CC=gcc
-CFLAGS=-O3 -Wall -I../modules/mqnic
+CFLAGS=-fPIC -O3 -Wall -I../modules/mqnic
+LDFLAGS=-shared
 
-BIN=mqnic-config mqnic-dump mqnic-fw perout
+TARGET = mqnic.so
 
-all: $(BIN)
+all: $(TARGET)
 
-mqnic-config: mqnic-config.c mqnic.c timespec.c
-	$(CC) $(CFLAGS) $^ -o $@
+mqnic.so: mqnic.c
+	$(CC) $(CFLAGS) $(LDFLAGS) mqnic.c -o $(TARGET)
 
-mqnic-dump: mqnic-dump.c mqnic.c
-	$(CC) $(CFLAGS) $^ -o $@
 
-mqnic-fw: mqnic-fw.c mqnic.c flash.c flash_spi.c flash_bpi.c fpga_id.c bitfile.c
-	$(CC) $(CFLAGS) $^ -o $@
-
-perout: perout.c timespec.c
-	$(CC) $(CFLAGS) $^ -o $@
-
-install:
-	install -d $(BINDIR)
-	install -m 0755 $(BIN) $(BINDIR)
-
-clean:
-	rm -f $(BIN)
 

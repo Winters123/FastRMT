@@ -20,16 +20,32 @@ clean:
 	rm -f $(BIN)
 
 
+
 PREFIX=/usr/local
 BINDIR=$(DESTDIR)$(PREFIX)/bin
 
 CC=gcc
-CFLAGS=-fPIC -O3 -Wall -I../modules/mqnic
-LDFLAGS=-shared
+CFLAGS=-O3 -Wall -I../modules/mqnic
 
-TARGET = mqnic.so
+BIN=mqnic-config mqnic-dump mqnic-fw perout
 
-all: $(TARGET)
+all: $(BIN)
 
-mqnic.so: mqnic.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET)
+mqnic-config: mqnic-config.c mqnic.c timespec.c
+	$(CC) $(CFLAGS) $^ -o $@
+
+mqnic-dump: mqnic-dump.c mqnic.c
+	$(CC) $(CFLAGS) $^ -o $@
+
+mqnic-fw: mqnic-fw.c mqnic.c flash.c flash_spi.c flash_bpi.c fpga_id.c bitfile.c
+	$(CC) $(CFLAGS) $^ -o $@
+
+perout: perout.c timespec.c
+	$(CC) $(CFLAGS) $^ -o $@
+
+install:
+	install -d $(BINDIR)
+	install -m 0755 $(BIN) $(BINDIR)
+
+clean:
+	rm -f $(BIN)

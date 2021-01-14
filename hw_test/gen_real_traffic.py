@@ -20,45 +20,60 @@ def main():
     s = socket(AF_PACKET, SOCK_RAW, ETH_P_ALL)
     s.bind(("enp1s0", 0))
     get_token = CDLL(so_file)
-    stateful_pkts = func.parse_configuration("stateconf.txt")
-    conf1_pkts = func.parse_configuration("conf1.txt")
-    conf2_pkts = func.parse_configuration("conf2.txt")
+    #stateful_pkts = func.parse_configuration("stateconf.txt")
+    #conf1_pkts = func.parse_configuration("conf1.txt")
+    #conf2_pkts = func.parse_configuration("conf2.txt")
+    conf4_pkts = func.parse_configuration("conf4.txt")
 
     conf_pkts = []
-    conf_pkts.extend(stateful_pkts)
-    conf_pkts.extend(conf1_pkts)
-    conf_pkts.extend(conf2_pkts)
+    #conf_pkts.extend(stateful_pkts)
+    #conf_pkts.extend(conf1_pkts)
+    #conf_pkts.extend(conf2_pkts)
+    conf_pkts.extend(conf4_pkts)
 
-    # cnt = 0
+    time_bf = time.time_ns()
+    #token_bf = get_token.get_token()
+    #token_af = get_token.get_token()
+    #token_af = get_token.get_token()
+    #time_af = time.time_ns()
+    #token_af = get_token.get_token()
+    #print("token is:", token_af)
+    #print("spent time: ", time_af-time_bf)
+
+    cnt = 0
+    
     for conf_pkt in conf_pkts:
         #if cnt%2==0:
         #    pkt = gen_data_pkt("abcdabcdabcdabcdabcdabcdabcd"+4*"00", 2)
         #    s.send(bytes(pkt))
-        token_bf = get_token.get_token()
-        time_bf = time.time_ns()
+        #token_bf = get_token.get_token()
+        #time_bf = time.time_ns()
         s.send(bytes(conf_pkt))
         token_af = get_token.get_token()
-        while(token_af==token_bf):
-            continue
+        
+        #while(token_af==token_bf):
+        #    continue
+        
         time_af = time.time_ns()
         print("spent time: ", time_af-time_bf)
-        time.sleep(0.1)
+        cnt = cnt + 1
+        #time.sleep(0.1)
 
-    pkt = func.gen_data_pkt("0009000000020000000400000000"+4*"00", 1)
-    s.send(bytes(pkt))
-    pkt = func.gen_data_pkt("002d000000040000000200000000"+4*"00", 1)
-    s.send(bytes(pkt))
-    pkt = func.gen_data_pkt("00130000000200000000"+8*"00", 2)
-    s.send(bytes(pkt))
-    pkt = func.gen_data_pkt("002600000002ffffffff"+8*"00", 2)
-    s.send(bytes(pkt))
-    pkt = func.gen_data_pkt("002d000000040000000200000000"+4*"00", 1)
-    s.send(bytes(pkt))
-    pkt = func.gen_data_pkt("002d000000040000000200000000"+4*"00", 1)
-    s.send(bytes(pkt))
-    pkt = func.gen_data_pkt("00130000000200000000"+8*"00", 2)
-    s.send(bytes(pkt))
-
+    #pkt = func.gen_data_pkt("0009000000020000000400000000"+4*"00", 1)
+    #s.send(bytes(pkt))
+    #pkt = func.gen_data_pkt("002d000000040000000200000000"+4*"00", 1)
+    #s.send(bytes(pkt))
+    #pkt = func.gen_data_pkt("00130000000200000000"+8*"00", 2)
+    #s.send(bytes(pkt))
+    #pkt = func.gen_data_pkt("002600000002ffffffff"+8*"00", 2)
+    #s.send(bytes(pkt))
+    #pkt = func.gen_data_pkt("002d000000040000000200000000"+4*"00", 1)
+    #s.send(bytes(pkt))
+    #pkt = func.gen_data_pkt("002d000000040000000200000000"+4*"00", 1)
+    #s.send(bytes(pkt))
+    #pkt = func.gen_data_pkt("00130000000200000000"+8*"00", 2)
+    #s.send(bytes(pkt))
+    
     s.close()
 
 if __name__ == "__main__":

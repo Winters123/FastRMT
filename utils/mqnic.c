@@ -252,18 +252,14 @@ void mqnic_close(struct mqnic *dev)
 
 uint32_t get_cookie()
 {
-    char *name;
-    char *device = NULL;
     struct mqnic *dev;
     int interface = 0;
     int port = 0;
     uint32_t cookie  = 0;
     uint32_t token = 0;
 
-    char dev_name[6] = "ens0f1";
-    name = malloc(sizeof(dev_name));
-    
-    dev = mqnic_open(name);
+    char dev_name[11] = "/dev/mqnic0";
+    dev = mqnic_open(dev_name);
 
     if (!dev)
     {
@@ -284,18 +280,16 @@ uint32_t get_cookie()
 
 uint32_t get_token()
 {
-    char *name;
-    char *device = NULL;
+
     struct mqnic *dev;
     int interface = 0;
     int port = 0;
     uint32_t cookie  = 0;
     uint32_t token = 0;
 
-    char dev_name[6] = "ens0f1";
-    name = malloc(sizeof(dev_name));
+    char dev_name[11] = "/dev/mqnic0";
     
-    dev = mqnic_open(device);
+    dev = mqnic_open(dev_name);
 
     if (!dev)
     {
