@@ -53,6 +53,10 @@ module parser #(
 	output reg								parser_valid,
 	output reg [PKT_HDR_LEN-1:0]			pkt_hdr_vec,
 
+	// back-pressure signals
+	output reg								s_axis_tready,
+	input									stg_ready_in,
+
 	// ctrl path
 	input [C_S_AXIS_DATA_WIDTH-1:0]			ctrl_s_axis_tdata,
 	input [C_S_AXIS_TUSER_WIDTH-1:0]		ctrl_s_axis_tuser,
@@ -84,7 +88,8 @@ localparam	IDLE=0,
 			WAIT_4TH_SEG=3,
 			START_PARSING=4, 
 			FINISH_SUB_PARSE=5,
-			OUTPUT=6;
+			GET_PHV_OUTPUT=6,
+			OUTPUT=7;
 
 wire [259:0] bram_out;
 reg [3:0] state, state_next;
@@ -132,6 +137,9 @@ wire [47:0] val_6B_swapped [0:7];
 wire [31:0] val_4B_swapped [0:7];
 wire [15:0] val_2B_swapped [0:7];
 
+// back pressure signal
+reg s_axis_tready_next;
+
 
 `SWAP_BYTE_ORDER(0)
 `SWAP_BYTE_ORDER(1)
@@ -178,6 +186,8 @@ always@(*) begin
 	pkt_hdr_field_next = pkt_hdr_field;
 	tuser_1st_next = tuser_1st;
 
+	s_axis_tready_next = s_axis_tready;
+
 	case (state) 
 		IDLE: begin
 			if (s_axis_tvalid) begin
@@ -185,6 +195,8 @@ always@(*) begin
 				tuser_1st_next = s_axis_tuser;
 
 				state_next = WAIT_2ND_SEG;
+
+				s_axis_tready_next = 0;
 			end
 		end
 		WAIT_2ND_SEG: begin
@@ -235,7 +247,7 @@ always@(*) begin
 			state_next = FINISH_SUB_PARSE;
 		end
 		FINISH_SUB_PARSE: begin
-			state_next = OUTPUT;
+			state_next = GET_PHV_OUTPUT;
 
 			`SUB_PARSE(0)
 			`SUB_PARSE(1)
@@ -249,9 +261,8 @@ always@(*) begin
 			`SUB_PARSE(9)
 
 		end
-		OUTPUT: begin
-			parser_valid_next = 1;
-			state_next = IDLE;
+		GET_PHV_OUTPUT: begin
+			state_next = OUTPUT;
 			pkt_hdr_vec_next ={val_6B_swapped[7], val_6B_swapped[6], val_6B_swapped[5], val_6B_swapped[4], val_6B_swapped[3], val_6B_swapped[2], val_6B_swapped[1], val_6B_swapped[0],
 							val_4B_swapped[7], val_4B_swapped[6], val_4B_swapped[5], val_4B_swapped[4], val_4B_swapped[3], val_4B_swapped[2], val_4B_swapped[1], val_4B_swapped[0],
 							val_2B_swapped[7], val_2B_swapped[6], val_2B_swapped[5], val_2B_swapped[4], val_2B_swapped[3], val_2B_swapped[2], val_2B_swapped[1], val_2B_swapped[0],
@@ -260,31 +271,38 @@ always@(*) begin
 							// {115{1'b0}}, vlan_id, 1'b0, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
 							{115{1'b0}}, vlan_id, 1'b0, tuser_1st};
 							// {128{1'b0}}, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
-			// zero out
-			val_2B_nxt[0]=0;
-			val_2B_nxt[1]=0;
-			val_2B_nxt[2]=0;
-			val_2B_nxt[3]=0;
-			val_2B_nxt[4]=0;
-			val_2B_nxt[5]=0;
-			val_2B_nxt[6]=0;
-			val_2B_nxt[7]=0;
-			val_4B_nxt[0]=0;
-			val_4B_nxt[1]=0;
-			val_4B_nxt[2]=0;
-			val_4B_nxt[3]=0;
-			val_4B_nxt[4]=0;
-			val_4B_nxt[5]=0;
-			val_4B_nxt[6]=0;
-			val_4B_nxt[7]=0;
-			val_6B_nxt[0]=0;
-			val_6B_nxt[1]=0;
-			val_6B_nxt[2]=0;
-			val_6B_nxt[3]=0;
-			val_6B_nxt[4]=0;
-			val_6B_nxt[5]=0;
-			val_6B_nxt[6]=0;
-			val_6B_nxt[7]=0;
+		end
+		OUTPUT: begin
+			if (stg_ready_in) begin
+				parser_valid_next = 1;
+				s_axis_tready_next = 1;
+				state_next = IDLE;
+				// zero out
+				val_2B_nxt[0]=0;
+				val_2B_nxt[1]=0;
+				val_2B_nxt[2]=0;
+				val_2B_nxt[3]=0;
+				val_2B_nxt[4]=0;
+				val_2B_nxt[5]=0;
+				val_2B_nxt[6]=0;
+				val_2B_nxt[7]=0;
+				val_4B_nxt[0]=0;
+				val_4B_nxt[1]=0;
+				val_4B_nxt[2]=0;
+				val_4B_nxt[3]=0;
+				val_4B_nxt[4]=0;
+				val_4B_nxt[5]=0;
+				val_4B_nxt[6]=0;
+				val_4B_nxt[7]=0;
+				val_6B_nxt[0]=0;
+				val_6B_nxt[1]=0;
+				val_6B_nxt[2]=0;
+				val_6B_nxt[3]=0;
+				val_6B_nxt[4]=0;
+				val_6B_nxt[5]=0;
+				val_6B_nxt[6]=0;
+				val_6B_nxt[7]=0;
+			end
 		end
 	endcase
 end
@@ -324,6 +342,9 @@ always@(posedge axis_clk) begin
 		val_6B[5] <= 0;
 		val_6B[6] <= 0;
 		val_6B[7] <= 0;
+
+		//
+		s_axis_tready <= 1;
 	end
 	else begin
 		state <= state_next;
@@ -359,6 +380,9 @@ always@(posedge axis_clk) begin
 		val_6B[5] <= val_6B_nxt[5];
 		val_6B[6] <= val_6B_nxt[6];
 		val_6B[7] <= val_6B_nxt[7];
+
+		//
+		s_axis_tready <= s_axis_tready_next;
 	end
 end
 // debug

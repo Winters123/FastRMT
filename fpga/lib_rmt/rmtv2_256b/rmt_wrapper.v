@@ -74,6 +74,14 @@ wire								stg4_phv_out_valid;
 wire								stg4_phv_out_valid_w;
 reg									stg4_phv_out_valid_r;
 
+// back pressure signals
+wire s_axis_tready_p;
+wire stg0_ready;
+wire stg1_ready;
+wire stg2_ready;
+wire stg3_ready;
+wire stg4_ready;
+
 
 //NOTE: to filter out packets other than UDP/IP.
 wire [C_S_AXIS_DATA_WIDTH-1:0]				s_axis_tdata_f;
@@ -149,7 +157,7 @@ pkt_filter #(
 	.m_axis_tkeep(s_axis_tkeep_f),
 	.m_axis_tuser(s_axis_tuser_f),
 	.m_axis_tvalid(s_axis_tvalid_f),
-	.m_axis_tready(s_axis_tready_f),
+	.m_axis_tready(s_axis_tready_f && s_axis_tready_p),
 	.m_axis_tlast(s_axis_tlast_f),
 
 	.ctrl_m_axis_tdata (ctrl_s_axis_tdata_1),
@@ -215,10 +223,13 @@ phv_parser
 	.s_axis_tkeep	(s_axis_tkeep_f),
 	.s_axis_tvalid	(s_axis_tvalid_f & s_axis_tready_f),
 	.s_axis_tlast	(s_axis_tlast_f),
+	.s_axis_tready	(s_axis_tready_p),
 
 	// output
 	.parser_valid	(stg0_phv_in_valid),
 	.pkt_hdr_vec	(stg0_phv_in),
+	// 
+	.stg_ready_in	(stg0_ready),
 
 	// control path
     .ctrl_s_axis_tdata(ctrl_s_axis_tdata_1),
@@ -250,6 +261,9 @@ stage0
 	// output
     .phv_out				(stg0_phv_out),
     .phv_out_valid			(stg0_phv_out_valid),
+	// back-pressure signals
+	.stage_ready_out		(stg0_ready),
+	.stage_ready_in			(stg1_ready),
 
 	// control path
     .c_s_axis_tdata(ctrl_s_axis_tdata_2),
@@ -281,6 +295,9 @@ stage1
 	// output
     .phv_out				(stg1_phv_out),
     .phv_out_valid			(stg1_phv_out_valid),
+	// back-pressure signals
+	.stage_ready_out		(stg1_ready),
+	.stage_ready_in			(stg2_ready),
 
 	// control path
     .c_s_axis_tdata(ctrl_s_axis_tdata_3),
@@ -312,6 +329,9 @@ stage2
 	// output
     .phv_out				(stg2_phv_out),
     .phv_out_valid			(stg2_phv_out_valid),
+	// back-pressure signals
+	.stage_ready_out		(stg2_ready),
+	.stage_ready_in			(stg3_ready),
 
 	// control path
     .c_s_axis_tdata(ctrl_s_axis_tdata_4),
@@ -342,6 +362,9 @@ stage3
 	// output
     .phv_out				(stg3_phv_out),
     .phv_out_valid			(stg3_phv_out_valid),
+	// back-pressure signals
+	.stage_ready_out		(stg3_ready),
+	.stage_ready_in			(stg4_ready),
 
 	// control path
     .c_s_axis_tdata(ctrl_s_axis_tdata_5),
@@ -373,6 +396,9 @@ stage4
 	// output
     .phv_out				(stg4_phv_out),
     .phv_out_valid			(stg4_phv_out_valid),
+	// back-pressure signals
+	.stage_ready_out		(stg4_ready),
+	.stage_ready_in			(!phv_fifo_nearly_full),
 
 	// control path
     .c_s_axis_tdata(ctrl_s_axis_tdata_6),
