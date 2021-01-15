@@ -151,7 +151,7 @@ module port #
     // DMA RX RAM size
     parameter RX_RAM_SIZE = RX_PKT_TABLE_SIZE*MAX_RX_SIZE,
     // Enable RMT pipeline on TX
-    parameter RMT_TX_ENABLE = 1
+    parameter TX_RMT_ENABLE = 1
 )
 (
     input  wire                                 clk,
@@ -656,6 +656,7 @@ always @(posedge clk) begin
     set_tdma_schedule_period_valid_reg <= 1'b0;
     set_tdma_timeslot_period_valid_reg <= 1'b0;
     set_tdma_active_period_valid_reg <= 1'b0;
+    vlan_drop_flags <= 16'b0;
 
     if (axil_ctrl_awvalid && axil_ctrl_wvalid && !axil_ctrl_bvalid) begin
         // write operation
@@ -717,7 +718,7 @@ always @(posedge clk) begin
         axil_ctrl_arready_reg <= 1'b1;
         axil_ctrl_rvalid_reg <= 1'b1;
         axil_ctrl_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
-        if(RMT_TX_ENABLE) begin
+        if(TX_RMT_ENABLE) begin
             case ({axil_ctrl_araddr[15:2], 2'b00})
                 16'h0000: axil_ctrl_rdata_reg <= 32'd0;       // port_id
                 16'h0004: begin
@@ -1945,7 +1946,7 @@ end
 
 //TODO add RMT plugins for tx path.
 
-if (RMT_TX_ENABLE) begin
+if (TX_RMT_ENABLE) begin
 
     rmt_wrapper
     rmt_wrapper_tx
