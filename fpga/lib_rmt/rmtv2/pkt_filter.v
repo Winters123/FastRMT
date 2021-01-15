@@ -12,10 +12,10 @@ module pkt_filter #(
 	input				clk,
 	input				aresetn,
 
-	input      [95:0]	time_stamp,
-	input      [15:0]	vlan_drop_flags,
-	output     [31:0]	cookie_val,
-	output     [31:0]	ctrl_token,
+	//input       [95:0]	time_stamp,
+	// input      [15:0]	vlan_drop_flags,
+	// output     [31:0]	cookie_val,
+	// output     [31:0]	ctrl_token,
 
 	// input Slave AXI Stream
 	input [C_S_AXIS_DATA_WIDTH-1:0]			s_axis_tdata,
@@ -89,22 +89,22 @@ reg 								c_switch;
 wire								w_c_switch;
 
 //for security and reliability 
-(*mark_debug="true"*) wire [31:0]	cookie_w;
-wire [31:0]							token_w;
+// (*mark_debug="true"*) wire [31:0]	cookie_w;
+// wire [31:0]							token_w;
 
-reg  [31:0]							ctrl_token_r, ctrl_token_next;
+// reg  [31:0]							ctrl_token_r, ctrl_token_next;
 
 //checkme: for dropping packets during reconf
-wire [11:0]							vlan_id_w;
-wire [15:0]							vlan_id_one_hot_w;
+// wire [11:0]							vlan_id_w;
+// wire [15:0]							vlan_id_one_hot_w;
 
 assign w_c_switch = c_switch;
-assign ctrl_token = ctrl_token_r;
-assign cookie_w = {s_axis_tdata[399:392],s_axis_tdata[407:400],s_axis_tdata[415:408],s_axis_tdata[423:416]};
-assign token_w = {s_axis_tdata[431:424], s_axis_tdata[439:432], s_axis_tdata[447:440], s_axis_tdata[455:448]};
+// assign ctrl_token = ctrl_token_r;
+// assign cookie_w = {s_axis_tdata[399:392],s_axis_tdata[407:400],s_axis_tdata[415:408],s_axis_tdata[423:416]};
+// assign token_w = {s_axis_tdata[431:424], s_axis_tdata[439:432], s_axis_tdata[447:440], s_axis_tdata[455:448]};
 
-assign vlan_id_w = s_axis_tdata[116 +: 12];
-assign vlan_id_one_hot_w = (1'b1 << vlan_id_w[7:4]); 
+// assign vlan_id_w = s_axis_tdata[116 +: 12];
+// assign vlan_id_one_hot_w = (1'b1 << vlan_id_w[7:4]); 
 
 always @(*) begin
 
@@ -131,27 +131,22 @@ always @(*) begin
 						state_next = FLUSH_CTL;
 						c_switch = 1'b1;
 						//modify token once its true
-						ctrl_token_next = ctrl_token + 1'b1;
+						//ctrl_token_next = ctrl_token + 1'b1;
 					end
 					else if (!s_axis_tlast) begin
 						//checkme: if this vlan is not configed, send it
-						if((vlan_id_one_hot_w & vlan_drop_flags)==0) begin
-							state_next = FLUSH_DATA;
-							c_switch = 1'b0;
-						end
-						else begin
-							state_next = DROP_PKT;
-							r_tvalid = 0;
-						end
+						// if((vlan_id_one_hot_w & vlan_drop_flags)==0) begin
+						state_next = FLUSH_DATA;
+						c_switch = 1'b0;
 					end
 
 					else if (s_axis_tlast) begin
 						state_next = WAIT_FIRST_PKT;
 						c_switch = 1'b0;
 						//checkme: if this vlan is configed, drop it
-						if((vlan_id_one_hot_w & vlan_drop_flags)!=0) begin
-							r_tvalid = 0;
-						end
+						// if((vlan_id_one_hot_w & vlan_drop_flags)!=0) begin
+						// 	r_tvalid = 0;
+						// end
 					end
 				end
 				else begin
@@ -209,12 +204,12 @@ always @(posedge clk or negedge aresetn) begin
 		s_axis_tready <= 0;
 
 		//ctrl_token_r <= time_stamp[31:0];
-		ctrl_token_r <= 32'b0;
+		// ctrl_token_r <= 32'b0;
 	end
 
 	else begin
 		state <= state_next;
-		ctrl_token_r <= ctrl_token_next;
+		//ctrl_token_r <= ctrl_token_next;
 
 		if(!w_c_switch) begin
 			m_axis_tdata <= r_tdata;
@@ -249,13 +244,13 @@ always @(posedge clk or negedge aresetn) begin
 	end
 end
 
-cookie #(
-	.COOKIE_LEN()
-)cookie(
-	.clk(clk),
-	.rst_n(aresetn),
-	.time_stamp(time_stamp),
-	.cookie_val(cookie_val)
-);
+// cookie #(
+// 	.COOKIE_LEN()
+// )cookie(
+// 	.clk(clk),
+// 	.rst_n(aresetn),
+// 	.time_stamp(time_stamp),
+// 	.cookie_val(cookie_val)
+// );
 
 endmodule

@@ -151,7 +151,7 @@ module port #
     // DMA RX RAM size
     parameter RX_RAM_SIZE = RX_PKT_TABLE_SIZE*MAX_RX_SIZE,
     // Enable RMT pipeline on TX
-    parameter RMT_TX_ENABLE = 1
+    parameter TX_RMT_ENABLE = 1
 )
 (
     input  wire                                 clk,
@@ -616,10 +616,10 @@ reg tdma_enable_reg = 1'b0;
 wire tdma_locked;
 wire tdma_error;
 
-wire [31:0] cookie_val;
-wire [31:0] ctrl_token;
+// wire [31:0] cookie_val;
+// wire [31:0] ctrl_token;
 
-reg [15:0] vlan_drop_flags;
+// reg [15:0] vlan_drop_flags;
 
 reg [79:0] set_tdma_schedule_start_reg = 0;
 reg set_tdma_schedule_start_valid_reg = 0;
@@ -708,7 +708,7 @@ always @(posedge clk) begin
                 set_tdma_active_period_valid_reg <= 1'b1;
             end
             //checkme: for sync while RMT reconf
-            16'h2028: vlan_drop_flags <= axil_ctrl_wdata;
+            // 16'h2028: vlan_drop_flags <= axil_ctrl_wdata;
         endcase
     end
 
@@ -717,7 +717,7 @@ always @(posedge clk) begin
         axil_ctrl_arready_reg <= 1'b1;
         axil_ctrl_rvalid_reg <= 1'b1;
         axil_ctrl_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
-        if(RMT_TX_ENABLE) begin
+        if(TX_RMT_ENABLE) begin
             case ({axil_ctrl_araddr[15:2], 2'b00})
                 16'h0000: axil_ctrl_rdata_reg <= 32'd0;       // port_id
                 16'h0004: begin
@@ -762,15 +762,15 @@ always @(posedge clk) begin
                 16'h1044: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[29:0]; // TDMA active period ns
                 16'h1048: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[63:32]; // TDMA active period sec l
                 16'h104C: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[79:64]; // TDMA active period sec h
-                16'h2020: begin
-                    axil_ctrl_rdata_reg <= cookie_val;
-                end
-                16'h2024: begin
-                    axil_ctrl_rdata_reg <= ctrl_token;
-                end
-                16'h2028: begin
-                    axil_ctrl_rdata_reg <= vlan_drop_flags;
-                end
+                // 16'h2020: begin
+                //     axil_ctrl_rdata_reg <= cookie_val;
+                // end
+                // 16'h2024: begin
+                //     axil_ctrl_rdata_reg <= ctrl_token;
+                // end
+                // 16'h2028: begin
+                //     axil_ctrl_rdata_reg <= vlan_drop_flags;
+                // end
             endcase
         end
         else begin
@@ -1945,16 +1945,16 @@ end
 
 //TODO add RMT plugins for tx path.
 
-if (RMT_TX_ENABLE) begin
+if (TX_RMT_ENABLE) begin
 
     rmt_wrapper
     rmt_wrapper_tx
     (
     	.clk(clk),		// axis clk
     	.aresetn(~rst),	
-        .vlan_drop_flags(vlan_drop_flags),
-        .cookie_val(cookie_val),
-        .ctrl_token(ctrl_token),
+        // .vlan_drop_flags(vlan_drop_flags),
+        // .cookie_val(cookie_val),
+        // .ctrl_token(ctrl_token),
 
     	// input Slave AXI Stream
     	.s_axis_tdata(tx_axis_tdata_int_2),

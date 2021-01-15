@@ -2074,7 +2074,7 @@ generate
             .AXIS_DESC_KEEP_WIDTH(AXIS_DESC_KEEP_WIDTH),
             .TX_RAM_SIZE(TX_RAM_SIZE),
             .RX_RAM_SIZE(RX_RAM_SIZE),
-            .TX_RMT_ENABLE(RMT_TX_ENABLE)
+            .TX_RMT_ENABLE(TX_RMT_ENABLE)
         )
         port_inst (
             .clk(clk),
