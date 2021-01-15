@@ -89,7 +89,7 @@ reg 								c_switch;
 wire								w_c_switch;
 
 //for security and reliability 
-(*mark_debug="true"*) wire [31:0]	cookie_w;
+wire [31:0]							cookie_w;
 wire [31:0]							token_w;
 
 reg  [31:0]							ctrl_token_r, ctrl_token_next;

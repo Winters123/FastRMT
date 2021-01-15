@@ -94,6 +94,7 @@ wire								phv_fifo_nearly_full;
 wire								phv_fifo_empty;
 wire [PKT_VEC_WIDTH-1:0]			phv_fifo_out_w;
 wire								phv_valid;
+
 // 
 wire								stg0_phv_in_valid;
 wire								stg0_phv_in_valid_w;
@@ -105,7 +106,7 @@ wire [PKT_VEC_WIDTH-1:0]			stg0_phv_out;
 wire								stg0_phv_out_valid;
 wire								stg0_phv_out_valid_w;
 reg									stg0_phv_out_valid_r;
-wire 								stg1_ready;
+//wire 								stg1_ready;
 
 
 wire [PKT_VEC_WIDTH-1:0]			stg1_phv_out;

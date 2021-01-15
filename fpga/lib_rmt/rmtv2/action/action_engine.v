@@ -264,17 +264,4 @@ always @(posedge clk) begin
 end
 
 
-
-(*mark_debug= "true"*) wire        alu_in_action_valid_dbg;
-(*mark_debug= "true"*) wire [15:0] alu_in_4B_1_dbg;
-(*mark_debug= "true"*) wire [15:0] alu_in_4B_2_dbg;
-(*mark_debug= "true"*) wire [15:0] container_out_dbg;
-(*mark_debug= "true"*) wire        container_out_valid_dbg;
-
-assign alu_in_action_valid_dbg = alu_in_action_valid;
-assign container_out_dbg = output_4B[2][15:0];
-assign container_out_valid_dbg = phv_valid_bit;
-assign alu_in_4B_1_dbg = alu_in_4B_1[3 * width_4B -1 -: width_4B];
-assign alu_in_4B_2_dbg = alu_in_4B_2[3 * width_4B -1 -: width_4B];
-
 endmodule

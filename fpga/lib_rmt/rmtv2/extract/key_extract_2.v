@@ -27,7 +27,7 @@ module key_extract_2 #(
 
     output reg [PHV_LEN-1:0]            phv_out,
     output reg                          phv_valid_out,
-    output reg [KEY_LEN-1:0]            key_out,
+    output     [KEY_LEN-1:0]            key_out_masked,
     output reg                          key_valid_out,
     output reg [KEY_LEN-1:0]            key_mask_out,
 	input								ready_in,
@@ -70,7 +70,7 @@ localparam width_2B = 16;
 localparam width_4B = 32;
 localparam width_6B = 48;
 
-//reg [KEY_LEN-1:0] key_out;
+reg [KEY_LEN-1:0] key_out;
 
 //24 fields to be retrived from the pkt header
 reg [width_2B-1:0]    cont_2B [0:7];
@@ -403,7 +403,7 @@ reg                                 c_m_axis_tlast_r;
 
 
 //checkme: mask the key with keymask
-//assign key_out_masked = (key_out|key_mask_out);
+assign key_out_masked = key_out &(~key_mask_out);
 
 localparam IDLE_C = 0,
            PARSE_C = 1,

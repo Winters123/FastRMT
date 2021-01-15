@@ -21,7 +21,6 @@ module lookup_engine #(
     input rst_n,
 
     //output from key extractor
-    //output from key extractor
     input [KEY_LEN-1:0]           extract_key,
     input [KEY_LEN-1:0]           extract_mask,
     input                         key_valid,
@@ -51,17 +50,6 @@ module lookup_engine #(
 
 );
 
-// (*mark_debug = "true"*) wire            key_valid_dbg;
-// (*mark_debug = "true"*) wire            phv_valid_dbg;
-// (*mark_debug = "true"*) wire [15:0]     key_dbg;
-// (*mark_debug = "true"*) wire [15:0]     key_mask_dbg;
-
-// assign key_valid_dbg = key_valid;
-// assign phv_valid_dbg = phv_valid;
-// assign key_dbg = extract_key[36 -: 16];
-// assign key_mask_dbg = extract_mask[36 -: 16];
-
-
 /********intermediate variables declared here********/
 wire [7:0]  match_addr;
 wire        match;
@@ -71,9 +59,6 @@ wire [ACT_LEN-1:0] action_wire;
 
 reg [PHV_LEN-1:0] phv_reg;
 reg [2:0] lookup_state;
-
-(*mark_debug = "true"*) wire [1:0] lookup_state_dbg;
-assign lookup_state_dbg = lookup_state;
 
 wire [11:0] vlan_id;
 
@@ -193,7 +178,6 @@ reg [C_S_AXIS_DATA_WIDTH/8-1:0]     c_m_axis_tkeep_r;
 reg                                 c_m_axis_tvalid_r;
 reg                                 c_m_axis_tlast_r;
 
-reg [C_S_AXIS_DATA_WIDTH-1:0]       tcam_data_val;
 
 localparam IDLE_C = 0,
            PARSE_C = 1,
@@ -446,8 +430,8 @@ generate
         	(
         	    .CLK				(clk),
         	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b1111, extract_mask}),
-        	    //.CMP_DATA_MASK      (),
+        	    //.CMP_DATA_MASK		({4'b1111, extract_mask}),
+        	    .CMP_DATA_MASK      (),
 				.BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr[3:0]),
@@ -477,8 +461,8 @@ generate
         	(
         	    .CLK				(clk),
         	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b0000, extract_mask}),
-        	    //.CMP_DATA_MASK      (),
+        	    //.CMP_DATA_MASK		({4'b0000, extract_mask}),
+        	    .CMP_DATA_MASK      (),
         	    .BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr[3:0]),
