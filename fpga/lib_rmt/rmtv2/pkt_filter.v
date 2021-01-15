@@ -42,32 +42,6 @@ module pkt_filter #(
 
 );
 
-// (*mark_debug = "true"*) wire [31:0] s_axis_tdata_dbg;
-// (*mark_debug = "true"*) wire 	    s_axis_tvalid_dbg;
-// (*mark_debug = "true"*) wire 	    s_axis_tlast_dbg;
-
-
-// (*mark_debug = "true"*) wire [31:0] m_axis_tdata_dbg;
-// (*mark_debug = "true"*) wire 	    m_axis_tvalid_dbg;
-// (*mark_debug = "true"*) wire 	    m_axis_tlast_dbg;
-
-// (*mark_debug = "true"*) wire [31:0] c_m_axis_tdata_dbg;
-// (*mark_debug = "true"*) wire 	    c_m_axis_tvalid_dbg;
-// (*mark_debug = "true"*) wire 	    c_m_axis_tlast_dbg;
-
-// assign s_axis_tdata_dbg = s_axis_tdata[48 +: 32];
-// assign s_axis_tvalid_dbg = s_axis_tvalid;
-// assign s_axis_tlast_dbg = s_axis_tlast;
-
-// assign m_axis_tdata_dbg = m_axis_tdata[48 +: 32];
-// assign m_axis_tvalid_dbg = m_axis_tvalid;
-// assign m_axis_tlast_dbg = m_axis_tlast;
-
-// assign c_m_axis_tdata_dbg = c_m_axis_tdata[48 +: 32];
-// assign c_m_axis_tvalid_dbg = c_m_axis_tvalid;
-// assign c_m_axis_tlast_dbg = c_m_axis_tlast;
-
-// assign s_axis_tready = m_axis_tready;
 
 localparam WAIT_FIRST_PKT=0, 
 		   DROP_PKT=1, 
@@ -116,7 +90,7 @@ always @(*) begin
 	r_tvalid = s_axis_tvalid;
 	r_s_tready = m_axis_tready;
 
-	//c_switch = 1'b0;
+	c_switch = 1'b0;
 
 	state_next = state;
 
@@ -131,7 +105,7 @@ always @(*) begin
 						state_next = FLUSH_CTL;
 						c_switch = 1'b1;
 						//modify token once its true
-						ctrl_token_next = ctrl_token + 1'b1;
+						ctrl_token_next = ctrl_token_r + 1'b1;
 					end
 					else if (!s_axis_tlast) begin
 						//checkme: if this vlan is not configed, send it
@@ -155,6 +129,7 @@ always @(*) begin
 					end
 				end
 				else begin
+					
 					r_tvalid = 0;
 					state_next = DROP_PKT;
 				end
@@ -165,6 +140,7 @@ always @(*) begin
 			end
 
 			else begin
+				ctrl_token_next = ctrl_token_r;
 				c_switch = 1'b0;
 			end
 
