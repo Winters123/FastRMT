@@ -39,9 +39,10 @@ module pkt_filter #(
 
 localparam WAIT_FIRST_PKT	= 0,
 		   WAIT_SECOND_PKT	= 1,
-		   FLUSH_DATA		= 2,
-		   FLUSH_CTL		= 3,
-		   DROP_PKT			= 4;
+		   SEND_FIRST_PKT	= 2,
+		   FLUSH_DATA		= 3,
+		   FLUSH_CTL		= 4,
+		   DROP_PKT			= 5;
 
 reg [C_S_AXIS_DATA_WIDTH-1:0]			r_tdata;
 reg [((C_S_AXIS_DATA_WIDTH/8))-1:0]		r_tkeep;
@@ -64,7 +65,7 @@ reg										r_1st_tvalid_next;
 reg [3:0] state, state_next;
 
 // 1 for control, 0 for data;
-reg								c_switch;
+reg								c_switch, c_switch_next;
 wire 							w_c_switch;
 
 assign w_c_switch = c_switch;
@@ -107,7 +108,7 @@ assign s_axis_tready = ~pkt_fifo_nearly_full;
 
 always @(*) begin
 
-	c_switch = 0;
+	c_switch_next = c_switch;
 
 	r_tdata = 0;
 	r_tkeep = 0;
@@ -149,36 +150,54 @@ always @(*) begin
 		WAIT_SECOND_PKT: begin
 			// 2nd packet
 			if (!pkt_fifo_empty) begin
+
+				if (tdata_fifo[64+:16]==`CONTROL_PORT) begin
+					c_switch_next = 1;
+				end
+				else begin
+					c_switch_next = 0;
+				end
+
+				state_next = SEND_FIRST_PKT;
+			end
+		end
+		SEND_FIRST_PKT: begin
+			if (c_switch == 0) begin
+				if (m_axis_tready) begin
+					r_tdata = r_1st_tdata;
+					r_tkeep = r_1st_tkeep;
+					r_tuser = r_1st_tuser;
+					r_tlast = r_1st_tlast;
+					r_tvalid = r_1st_tvalid;
+
+					state_next = FLUSH_DATA;
+				end
+			end
+			else begin
 				r_tdata = r_1st_tdata;
 				r_tkeep = r_1st_tkeep;
 				r_tuser = r_1st_tuser;
 				r_tlast = r_1st_tlast;
 				r_tvalid = r_1st_tvalid;
-
-				if (tdata_fifo[64+:16]==`CONTROL_PORT) begin
-					c_switch = 1;
-					state_next = FLUSH_CTL;
-				end
-				else begin
-					state_next = FLUSH_DATA;
-				end
+				state_next = FLUSH_CTL;
 			end
 		end
 		FLUSH_DATA: begin
-			r_tdata = tdata_fifo;
-			r_tkeep = tkeep_fifo;
-			r_tuser = tuser_fifo;
-			r_tlast = tlast_fifo;
-			r_tvalid = 1;
+			if (m_axis_tready) begin
+				r_tdata = tdata_fifo;
+				r_tkeep = tkeep_fifo;
+				r_tuser = tuser_fifo;
+				r_tlast = tlast_fifo;
+				r_tvalid = 1;
 
-			pkt_fifo_rd_en = 1;
-			if (tlast_fifo) begin
-				state_next = WAIT_FIRST_PKT;
+				pkt_fifo_rd_en = 1;
+				if (tlast_fifo) begin
+					c_switch_next = 0;
+					state_next = WAIT_FIRST_PKT;
+				end
 			end
 		end
 		FLUSH_CTL: begin
-			c_switch = 1;
-
 			r_tdata = tdata_fifo;
 			r_tkeep = tkeep_fifo;
 			r_tuser = tuser_fifo;
@@ -187,6 +206,7 @@ always @(*) begin
 
 			pkt_fifo_rd_en = 1;
 			if (tlast_fifo) begin
+				c_switch_next = 0;
 				state_next = WAIT_FIRST_PKT;
 			end
 		end
@@ -195,6 +215,7 @@ always @(*) begin
 			r_tvalid = 0;
 			pkt_fifo_rd_en = 1;
 			if (tlast_fifo) begin
+				c_switch_next = 0;
 				state_next = WAIT_FIRST_PKT;
 			end
 		end
@@ -218,9 +239,12 @@ always @(posedge clk or negedge aresetn) begin
 		ctrl_m_axis_tlast <= 0;
 		ctrl_m_axis_tvalid <= 0;
 
+		//
+		c_switch <= 0;
 	end
 	else begin
 		state <= state_next;
+		c_switch <= c_switch_next;
 
 		if (!w_c_switch) begin
 			m_axis_tdata <= r_tdata;
@@ -269,5 +293,13 @@ always @(posedge clk) begin
 		r_1st_tvalid <= r_1st_tvalid_next;
 	end
 end
+
+// debug
+(* mark_debug="true" *) wire[3:0] dbg_state;
+(* mark_debug="true" *) wire dbg_ready;
+
+
+assign dbg_state = state;
+assign dbg_ready = m_axis_tready;
 
 endmodule

@@ -196,7 +196,6 @@ always@(*) begin
 
 				state_next = WAIT_2ND_SEG;
 
-				s_axis_tready_next = 0;
 			end
 		end
 		WAIT_2ND_SEG: begin
@@ -204,6 +203,7 @@ always@(*) begin
 				pkt_hdr_field_next[256+:256] = s_axis_tdata;
 
 				if (s_axis_tlast) begin
+					s_axis_tready_next = 0;
 					state_next = START_PARSING;
 				end
 				else begin
@@ -216,6 +216,7 @@ always@(*) begin
 				pkt_hdr_field_next[512+:256] = s_axis_tdata;
 
 				if (s_axis_tlast) begin
+					s_axis_tready_next = 0;
 					state_next = START_PARSING;
 				end
 				else begin
@@ -227,6 +228,7 @@ always@(*) begin
 			if (s_axis_tvalid) begin
 				pkt_hdr_field_next[768+:256] = s_axis_tdata;
 
+				s_axis_tready_next = 0;
 				state_next = START_PARSING;
 			end
 		end
@@ -385,22 +387,6 @@ always@(posedge axis_clk) begin
 		s_axis_tready <= s_axis_tready_next;
 	end
 end
-// debug
-(* mark_debug="true" *) wire dbg_parser_valid;
-(* mark_debug="true" *) wire[31:0] dbg_phv_out_4B_1;
-(* mark_debug="true" *) wire[31:0] dbg_phv_out_4B_1_o;
-(* mark_debug="true" *) wire[11:0] dbg_vid;
-(* mark_debug="true" *) wire[15:0] dbg_pat_0;
-(* mark_debug="true" *) wire[15:0] dbg_pat_1;
-(* mark_debug="true" *) wire[2:0] dbg_state;
-
-assign dbg_parser_valid = parser_valid;
-assign dbg_phv_out_4B_1 = sub_parse_val_out[0][0+:32];
-assign dbg_phv_out_4B_1_o = sub_parse_val_out[2][0+:32];
-assign dbg_vid = pkt_hdr_vec[140:129];
-assign dbg_pat_0 = parse_action[0];
-assign dbg_pat_1 = parse_action[1];
-assign dbg_state = state;
 
 // =============================================================== //
 generate
@@ -599,5 +585,22 @@ parse_act_ram
 	.doutb		(bram_out),
 	.enb		(1'b1) // always set to 1
 );
+
+// debug
+(* mark_debug="true" *) wire dbg_parser_valid;
+(* mark_debug="true" *) wire dbg_ctrl_wr_ram_en;
+(* mark_debug="true" *) wire[3:0] dbg_ctrl_wr_ram_addr;
+(* mark_debug="true" *) wire[11:0] dbg_vid;
+(* mark_debug="true" *) wire[15:0] dbg_pat_0;
+(* mark_debug="true" *) wire[15:0] dbg_pat_1;
+(* mark_debug="true" *) wire[2:0] dbg_state;
+
+assign dbg_parser_valid = parser_valid;
+assign dbg_ctrl_wr_ram_en = ctrl_wr_ram_en;
+assign dbg_ctrl_wr_ram_addr = ctrl_wr_ram_addr[3:0];
+assign dbg_vid = pkt_hdr_vec[140:129];
+assign dbg_pat_0 = ctrl_wr_ram_data[244+:16];
+assign dbg_pat_1 = ctrl_wr_ram_data[228+:16];
+assign dbg_state = state;
 
 endmodule
