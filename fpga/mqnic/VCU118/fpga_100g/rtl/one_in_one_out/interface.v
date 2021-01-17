@@ -458,14 +458,12 @@ end
 
 else begin
 
-    assign tx_axis_tdata = tx_axis_tdata_int_2;
-    assign tx_axis_tkeep = tx_axis_tkeep_int_2;
-    assign tx_axis_tvalid = tx_axis_tvalid_int_2;
-    assign tx_axis_tready_int_2 = tx_axis_tready;
-    assign tx_axis_tlast = tx_axis_tlast_int_2;
-    assign tx_axis_tuser = tx_axis_tuser_int_2;
-
-    //assign tx_csum_cmd_ready = 1'b1;
+    assign tx_axis_tdata = rx_axis_tdata;
+    assign tx_axis_tkeep = rx_axis_tkeep;
+    assign tx_axis_tlast = rx_axis_tlast;
+    assign tx_axis_tuser = rx_axis_tuser;
+    assign tx_axis_tvalid = rx_axis_tvalid;
+    assign rx_axis_tready = tx_axis_tready;
 
 end
 
@@ -2320,6 +2318,5 @@ end
 
 //     end
 
-endgenerate
 
 endmodule
