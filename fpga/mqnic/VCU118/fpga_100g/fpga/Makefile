@@ -63,6 +63,7 @@ SYN_FILES += lib_rmt/rmtv2/deparser_2.v
 SYN_FILES += lib_rmt/rmtv2/sub_deparser.v
 SYN_FILES += lib_rmt/rmtv2/parser.v
 SYN_FILES += lib_rmt/rmtv2/sub_parser.v
+SYN_FILES += lib_rmt/rmtv2/cookie.v
 SYN_FILES += lib_rmt/rmtv2/rmt_wrapper.v
 SYN_FILES += lib_rmt/rmtv2/stage.v
 SYN_FILES += lib_rmt/rmtv2/extract/key_extract_2.v
@@ -73,7 +74,6 @@ SYN_FILES += lib_rmt/rmtv2/action/alu_2.v
 SYN_FILES += lib_rmt/rmtv2/action/alu_3.v
 SYN_FILES += lib_rmt/rmtv2/action/crossbar.v
 SYN_FILES += lib_rmt/rmtv2/pkt_filter.v
-SYN_FILES += lib_rmt/rmtv2/cookie.v
 
 # XDC files
 XDC_FILES = fpga.xdc
