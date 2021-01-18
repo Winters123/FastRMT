@@ -27,7 +27,7 @@ module key_extract_2 #(
 
     output reg [PHV_LEN-1:0]            phv_out,
     output reg                          phv_valid_out,
-    output reg [KEY_LEN-1:0]            key_out_masked,
+    output     [KEY_LEN-1:0]            key_out_masked,
     output reg                          key_valid_out,
     output reg [KEY_LEN-1:0]            key_mask_out,
 	input								ready_in,
