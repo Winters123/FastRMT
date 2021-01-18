@@ -2128,7 +2128,8 @@ generate
             .MAX_TX_SIZE(MAX_TX_SIZE),
             .MAX_RX_SIZE(MAX_RX_SIZE),
             .TX_RAM_SIZE(TX_RAM_SIZE),
-            .RX_RAM_SIZE(RX_RAM_SIZE)
+            .RX_RAM_SIZE(RX_RAM_SIZE),
+            .RMT_TX_ENABLE(n)
         )
         interface_inst (
             .clk(clk_250mhz),

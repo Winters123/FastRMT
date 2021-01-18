@@ -151,7 +151,7 @@ module port #
     // DMA RX RAM size
     parameter RX_RAM_SIZE = RX_PKT_TABLE_SIZE*MAX_RX_SIZE,
     // Enable RMT pipeline on TX
-    parameter TX_RMT_ENABLE = 1
+    parameter RMT_TX_ENABLE = 1
 )
 (
     input  wire                                 clk,
