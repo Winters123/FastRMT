@@ -249,8 +249,9 @@ create_pblock pblock_slr1
 add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list core_inst/dma_if_mux_inst core_inst/dma_if_pcie_us_inst {core_inst/iface[0].interface_inst/event_queue_manager_inst} {core_inst/iface[1].interface_inst/event_queue_manager_inst} pcie4_uscale_plus_inst]]
 #add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list core_inst/dma_if_mux_inst core_inst/dma_if_pcie_us_inst {core_inst/iface[0].interface_inst} {core_inst/iface[1].interface_inst} pcie4_uscale_plus_inst]]
 #add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list core_inst/iface[0] core_inst/iface[1] core_inst/pcie_us_cfg_inst]]
-#add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list core_inst/iface[0] core_inst/iface[1] ]]
+add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list {core_inst/iface[0].interface_inst/port[0].port_inst/rmt_wrapper_tx} ]]
 add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list {core_inst/iface[1].interface_inst/tx_queue_manager_inst} {core_inst/iface[0].interface_inst/tx_queue_manager_inst} {core_inst/iface[1].interface_inst/tx_cpl_queue_manager_inst} {core_inst/iface[0].interface_inst/tx_cpl_queue_manager_inst} ]]
+add_cells_to_pblock [get_pblocks pblock_slr1] [get_cells -quiet [list {core_inst/iface[1].interface_inst/rx_queue_manager_inst} {core_inst/iface[0].interface_inst/rx_queue_manager_inst} ]]
 resize_pblock [get_pblocks pblock_slr1] -add {SLR1}
 
 
