@@ -1617,7 +1617,8 @@ if (RX_RSS_ENABLE && RX_HASH_ENABLE) begin
         .s_axis_tdata(rx_axis_tdata),
         .s_axis_tkeep(rx_axis_tkeep),
         .s_axis_tvalid(rx_axis_tvalid),
-        .s_axis_tready(rx_axis_tready),
+        //.s_axis_tready(rx_axis_tready),
+        .s_axis_tready(1),
         .s_axis_tlast(rx_axis_tlast),
         .s_axis_tid(0),
         .s_axis_tdest(0),
@@ -1687,7 +1688,7 @@ end else begin
     assign rx_axis_tdata_int = rx_axis_tdata;
     assign rx_axis_tkeep_int = rx_axis_tkeep;
     assign rx_axis_tvalid_int = rx_axis_tvalid;
-    assign rx_axis_tready = rx_axis_tready_int;
+    //assign rx_axis_tready = rx_axis_tready_int;
     assign rx_axis_tlast_int = rx_axis_tlast;
     assign rx_axis_tuser_int = rx_axis_tuser;
 
