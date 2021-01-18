@@ -401,43 +401,43 @@ endfunction
 
 // //TODO add RMT plugins for tx path.
 
-// if (RMT_TX_ENABLE) begin
+if (RMT_TX_ENABLE) begin
 
-//     rmt_wrapper
-//     rmt_wrapper_tx
-//     (
-//     	.clk(clk),		// axis clk
-//     	.aresetn(~rst),	
+    rmt_wrapper
+    rmt_wrapper_tx
+    (
+    	.clk(clk),		// axis clk
+    	.aresetn(~rst),	
 
-//     	// input Slave AXI Stream
-//     	.s_axis_tdata(rx_axis_tdata),
-//     	.s_axis_tkeep(rx_axis_tkeep),
-//     	.s_axis_tuser(rx_axis_tuser),
-//     	.s_axis_tvalid(rx_axis_tvalid),
-//     	.s_axis_tready(rx_axis_tready),
-//     	.s_axis_tlast(rx_axis_tlast),
+    	// input Slave AXI Stream
+    	.s_axis_tdata(rx_axis_tdata),
+    	.s_axis_tkeep(rx_axis_tkeep),
+    	.s_axis_tuser(rx_axis_tuser),
+    	.s_axis_tvalid(rx_axis_tvalid),
+    	.s_axis_tready(rx_axis_tready),
+    	.s_axis_tlast(rx_axis_tlast),
 
-//     	// output Master AXI Stream
-//     	.m_axis_tdata(tx_axis_tdata),
-//     	.m_axis_tkeep(tx_axis_tkeep),
-//     	.m_axis_tuser(0),
-//     	.m_axis_tvalid(rx_axis_tvalid),
-//     	.m_axis_tready(rx_axis_tready),
-//     	.m_axis_tlast(tx_axis_tlast)
+    	// output Master AXI Stream
+    	.m_axis_tdata(tx_axis_tdata),
+    	.m_axis_tkeep(tx_axis_tkeep),
+    	.m_axis_tuser(0),
+    	.m_axis_tvalid(tx_axis_tvalid),
+    	.m_axis_tready(tx_axis_tready),
+    	.m_axis_tlast(tx_axis_tlast)
+    );
 
+end 
 
-// end 
+else begin
 
-// else begin
+    assign tx_axis_tdata = rx_axis_tdata;
+    assign tx_axis_tkeep = rx_axis_tkeep;
+    assign tx_axis_tlast = rx_axis_tlast;
+    assign tx_axis_tuser = rx_axis_tuser;
+    assign tx_axis_tvalid = rx_axis_tvalid;
+    assign rx_axis_tready = tx_axis_tready;
 
-//     assign tx_axis_tdata = rx_axis_tdata;
-//     assign tx_axis_tkeep = rx_axis_tkeep;
-//     assign tx_axis_tlast = rx_axis_tlast;
-//     assign tx_axis_tuser = rx_axis_tuser;
-//     assign tx_axis_tvalid = rx_axis_tvalid;
-//     assign rx_axis_tready = tx_axis_tready;
-
-// end
+end
 
 // AXI lite connections
 wire [AXIL_ADDR_WIDTH-1:0] axil_ctrl_awaddr;
@@ -2248,13 +2248,20 @@ generate
             /*
              * Transmit data output
              */
-            .tx_axis_tdata(tx_axis_tdata[n*AXIS_DATA_WIDTH +: AXIS_DATA_WIDTH]),
-            .tx_axis_tkeep(tx_axis_tkeep[n*AXIS_KEEP_WIDTH +: AXIS_KEEP_WIDTH]),
-            .tx_axis_tvalid(tx_axis_tvalid[n +: 1]),
-            .tx_axis_tready(tx_axis_tready[n +: 1]),
-            .tx_axis_tlast(tx_axis_tlast[n +: 1]),
+            // .tx_axis_tdata(tx_axis_tdata[n*AXIS_DATA_WIDTH +: AXIS_DATA_WIDTH]),
+            // .tx_axis_tkeep(tx_axis_tkeep[n*AXIS_KEEP_WIDTH +: AXIS_KEEP_WIDTH]),
+            // .tx_axis_tvalid(tx_axis_tvalid[n +: 1]),
+            // .tx_axis_tready(tx_axis_tready[n +: 1]),
+            // .tx_axis_tlast(tx_axis_tlast[n +: 1]),
+            // //this is slightly different from NetFPGA since there is 1 bit in tuser
+            // .tx_axis_tuser(tx_axis_tuser[n +: 1]),
+            .tx_axis_tdata(),
+            .tx_axis_tkeep(),
+            .tx_axis_tvalid(),
+            .tx_axis_tready(1),
+            .tx_axis_tlast(),
             //this is slightly different from NetFPGA since there is 1 bit in tuser
-            .tx_axis_tuser(tx_axis_tuser[n +: 1]),
+            .tx_axis_tuser(),
 
             /*
              * Transmit timestamp input
@@ -2266,13 +2273,20 @@ generate
             /*
              * Receive data input
              */
-            .rx_axis_tdata(rx_axis_tdata[n*AXIS_DATA_WIDTH +: AXIS_DATA_WIDTH]),
-            .rx_axis_tkeep(rx_axis_tkeep[n*AXIS_KEEP_WIDTH +: AXIS_KEEP_WIDTH]),
-            .rx_axis_tvalid(rx_axis_tvalid[n +: 1]),
-            .rx_axis_tready(rx_axis_tready[n +: 1]),
-            .rx_axis_tlast(rx_axis_tlast[n +: 1]),
+            // .rx_axis_tdata(rx_axis_tdata[n*AXIS_DATA_WIDTH +: AXIS_DATA_WIDTH]),
+            // .rx_axis_tkeep(rx_axis_tkeep[n*AXIS_KEEP_WIDTH +: AXIS_KEEP_WIDTH]),
+            // .rx_axis_tvalid(rx_axis_tvalid[n +: 1]),
+            // .rx_axis_tready(rx_axis_tready[n +: 1]),
+            // .rx_axis_tlast(rx_axis_tlast[n +: 1]),
+            // //this is slightly different from NetFPGA since there is 1 bit in tuser
+            // .rx_axis_tuser(rx_axis_tuser[n +: 1]),
+            .rx_axis_tdata(0),
+            .rx_axis_tkeep(0),
+            .rx_axis_tvalid(0),
+            .rx_axis_tready(),
+            .rx_axis_tlast(0),
             //this is slightly different from NetFPGA since there is 1 bit in tuser
-            .rx_axis_tuser(rx_axis_tuser[n +: 1]),
+            .rx_axis_tuser(0),
 
             /*
              * Receive timestamp input
