@@ -1,0 +1,37 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Time::HiRes;
+
+my $reporting_interval = 0.1; # seconds
+my $bytes_vlan_1_this_interval = 0;
+my $bytes_vlan_2_this_interval = 0;
+my $bytes_other_this_interval = 0;
+my $start_time = [Time::HiRes::gettimeofday()];
+
+STDOUT->autoflush(1);
+
+while (<>) {
+	if (/ length (\d+): vlan (\d+),/) {
+		# $1, number in bytes
+		# $2, vlan id
+		if ($2 == 1) {
+			$bytes_vlan_1_this_interval += $1;
+		}elsif($2 == 2) {
+			$bytes_vlan_2_this_interval += $1;
+		}else{
+			$bytes_other_this_interval += $1;
+		}
+		my $elapsed_seconds = Time::HiRes::tv_interval($start_time);
+		if ($elapsed_seconds > $reporting_interval) {
+			my $vlan_1_bps = $bytes_vlan_1_this_interval / $elapsed_seconds;
+			my $vlan_2_bps = $bytes_vlan_2_this_interval / $elapsed_seconds;
+			my $vlan_other_bps = $bytes_other_this_interval / $elapsed_seconds;
+			printf "%02d:%02d:%02d [vlan 1] %10.2f [vlan 2] %10.2f [other] %10.2f Bps\n", (localtime())[2,1,0],$vlan_1_bps,$vlan_2_bps,$vlan_other_bps;
+			$start_time = [Time::HiRes::gettimeofday()];
+			$bytes_vlan_1_this_interval = 0;
+			$bytes_vlan_2_this_interval = 0;
+			$bytes_other_this_interval = 0;
+		}
+	}
+}
