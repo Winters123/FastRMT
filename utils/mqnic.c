@@ -209,6 +209,7 @@ struct mqnic *mqnic_open(const char *dev_name)
             if(k == 0) {
                 port->if_token = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_TOKEN);
                 port->if_cookie = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_COOKIE);
+                port->if_vlan_flag = mqnic_reg_read32(dev->regs, MQNIC_PORT_REG_RMT_VLAN_FLAG);
                 //printf("token value is: %08x\n", port->if_token);
                 //printf("cookie value is: %08x\n", port->if_cookie);
             }
@@ -306,4 +307,48 @@ uint32_t get_token()
     //printf("the cookie value is %03x\n", cookie);
     //printf("the token value is %03x\n", token);
 
-}   
+}
+
+uint32_t get_vlan_flag()
+{
+    struct mqnic *dev;
+    int interface = 0;
+    int port = 0;
+    uint32_t vlan_flag;
+
+    char dev_name[11] = "/dev/mqnic0";
+    
+    dev = mqnic_open(dev_name);
+
+    if (!dev)
+    {
+        fprintf(stderr, "Failed to open device\n");
+        return -1;
+    }
+    struct mqnic_if *dev_interface = &dev->interfaces[interface];
+    struct mqnic_port *dev_port = &dev_interface->ports[port];
+
+    vlan_flag = mqnic_reg_read32(dev_port->regs, MQNIC_PORT_REG_RMT_VLAN_FLAG);
+    return vlan_flag;
+}
+
+void set_vlan_flag(uint32_t vlan_flag)
+{
+    struct mqnic *dev;
+    int interface = 0;
+    int port = 0;
+
+    char dev_name[11] = "/dev/mqnic0";
+    dev = mqnic_open(dev_name);
+
+    if(!dev)
+    {
+        fprintf(stderr, "Failed to open device\n");
+        return -1;
+    }
+    struct mqnic_if *dev_interface = &dev->interfaces[interface];
+    struct mqnic_port *dev_port = &dev_interface->ports[port];
+
+    mqnic_reg_write32(dev_port->regs, MQNIC_PORT_REG_RMT_VLAN_FLAG, vlan_flag);
+    printf("write %04x into vlan_flag.\n", vlan_flag)
+}

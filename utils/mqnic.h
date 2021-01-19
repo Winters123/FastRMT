@@ -70,6 +70,7 @@ struct mqnic_port {
 
     uint32_t if_token;
     uint32_t if_cookie;
+    uint32_t if_vlan_flag;
 
     uint32_t tdma_timeslot_count;
 
