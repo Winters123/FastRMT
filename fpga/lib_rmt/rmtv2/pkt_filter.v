@@ -244,13 +244,4 @@ always @(posedge clk or negedge aresetn) begin
 	end
 end
 
-// cookie #(
-// 	.COOKIE_LEN()
-// )cookie(
-// 	.clk(clk),
-// 	.rst_n(aresetn),
-// 	.time_stamp(time_stamp),
-// 	.cookie_val(cookie_val)
-// );
-
 endmodule
