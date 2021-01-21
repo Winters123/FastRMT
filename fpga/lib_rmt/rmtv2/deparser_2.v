@@ -244,7 +244,7 @@ end
 
 
 
-reg  [10:0]  deparse_state;
+(*mark_debug = "true"*)) reg  [10:0]  deparse_state;
 
 localparam  IDLE_S = 11'd0,
             BUF_HDR_0 = 11'd1,

@@ -103,7 +103,7 @@ localparam  IDLE = 0,
 			WAIT_3CLK = 3,
 			HALT = 4;
 
-reg [2:0] state, state_next;
+(*mark_debug="true"*) reg [2:0] state, state_next;
 reg [PHV_LEN-1:0] phv_out_next;
 reg [KEY_LEN-1:0] key_out_next; 
 reg key_valid_out_next; 

@@ -401,6 +401,8 @@ endfunction
 
 // //TODO add RMT plugins for tx path.
 
+assign tx_axis_tuser = 0;
+
 if (RMT_TX_ENABLE) begin
 
     rmt_wrapper
@@ -433,7 +435,7 @@ else begin
     assign tx_axis_tdata = rx_axis_tdata;
     assign tx_axis_tkeep = rx_axis_tkeep;
     assign tx_axis_tlast = rx_axis_tlast;
-    assign tx_axis_tuser = rx_axis_tuser;
+    //assign tx_axis_tuser = rx_axis_tuser;
     assign tx_axis_tvalid = rx_axis_tvalid;
     assign rx_axis_tready = tx_axis_tready;
 

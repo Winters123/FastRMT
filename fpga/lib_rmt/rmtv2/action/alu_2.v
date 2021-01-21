@@ -67,7 +67,7 @@ reg  [31:0]                 store_din,	 store_din_r;
 wire [31:0]                 load_data;
 wire [4:0]                  load_addr;
 
-reg  [2:0]                  alu_state, alu_state_next;
+(*mark_debug = "true"*) reg  [2:0]                  alu_state, alu_state_next;
 reg [DATA_WIDTH-1:0]		container_out_r;
 reg							container_out_valid_next;
 

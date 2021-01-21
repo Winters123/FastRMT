@@ -83,7 +83,7 @@ reg									r_tlast;
 
 reg									r_s_tready;
 
-reg [1:0] state, state_next;
+(*mark_debug="true"*) reg [1:0] state, state_next;
 //1 for control, 0 for data;
 reg 								c_switch;
 wire								w_c_switch;

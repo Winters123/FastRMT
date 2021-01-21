@@ -226,7 +226,7 @@ end
 
 
 //here we extract the 1024b from packet (depend on data_width)
-reg [2:0] parse_state;
+(*mark_debug="true"*) reg [2:0] parse_state;
 
 localparam IDLE_S   = 3'd0,
            WAIT1_S  = 3'd1,
