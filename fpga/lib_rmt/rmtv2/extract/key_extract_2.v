@@ -552,7 +552,7 @@ generate
 
                     WRITE_MASK_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 192];
+                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 193];
                             c_wr_en_mask <= 1'b1;
                             if(c_s_axis_tlast) begin
                                 c_state <= IDLE_C;
@@ -568,7 +568,7 @@ generate
 
                     SU_WRITE_MASK_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 192];
+                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 193];
                             c_wr_en_mask <= 1'b1;
                             c_index <= c_index + 1'b1;
                             if(c_s_axis_tlast) begin

@@ -58,7 +58,7 @@ wire [width_4B*8-1:0]       alu_in_4B_3;
 wire [11:0]                 vlan_id;
 wire [width_2B*8-1:0]       alu_in_2B_1;
 wire [width_2B*8-1:0]       alu_in_2B_2;
-wire [355:0]                alu_in_phv_remain_data;
+wire [255:0]                alu_in_phv_remain_data;
 
 wire		                phv_valid_bit;
 
@@ -219,8 +219,7 @@ endgenerate
 alu_3 #(
     .STAGE_ID(STAGE_ID),
     .ACTION_LEN(),
-    .META_LEN(),
-    .COMP_LEN()
+    .META_LEN()
 )alu_3_0(
     .clk(clk),
     .rst_n(rst_n),

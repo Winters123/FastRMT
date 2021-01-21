@@ -23,9 +23,9 @@ module rmt_wrapper #(
 (
 	input										clk,		// axis clk
 	input										aresetn,	
-	//input  [15:0]								vlan_drop_flags,
-	//output [31:0]								cookie_val,
-	//output [31:0]								ctrl_token,
+	input  [15:0]								vlan_drop_flags,
+	output [31:0]								cookie_val,
+	output [31:0]								ctrl_token,
 
 	/*
      * input Slave AXI Stream

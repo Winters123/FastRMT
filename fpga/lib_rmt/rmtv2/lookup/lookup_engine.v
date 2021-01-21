@@ -425,11 +425,11 @@ generate
 		if (STAGE_ID == 4) begin
 			// tcam1 for lookup
         	cam_top # ( 
-        	    .C_DEPTH			(256),
+        	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(205),
-        	    .C_MEM_INIT			(1),
-        	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
+        	    .C_MEM_INIT			(0)
+        	    // .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
         	cam_0
         	(
@@ -456,11 +456,11 @@ generate
 		else begin
 			// tcam1 for lookup
         	cam_top # ( 
-        	    .C_DEPTH			(256),
+        	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(205),
-        	    .C_MEM_INIT			(1),
-        	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
+        	    .C_MEM_INIT			(0)
+        	    // .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
         	cam_0
         	(

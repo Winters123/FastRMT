@@ -138,7 +138,7 @@ initial begin
     s_axis_tvalid <= 1'b1;
     s_axis_tlast <= 1'b0;
 	#CYCLE
-    s_axis_tdata <= 512'h000000000000000000000000000000010f0117ea3300f2f1d204dededede6f6f6f6f09de1140000001004700004500080f0000810504030201000b0a09080706; 
+    s_axis_tdata <= 512'h00000000000000000000000000000000000000000000000000000000000000000000000000000080ffff0000ffffffffffffffffffffffffffffffffffffffff; 
     s_axis_tkeep <= 64'h0000000000000003;
     s_axis_tuser <= 128'h00000000000000000000000000000040;
     s_axis_tvalid <= 1'b1;
@@ -295,17 +295,15 @@ stage0
 );*/
 
 rmt_wrapper #(
-	.C_S_AXI_DATA_WIDTH(),
-	.C_S_AXI_ADDR_WIDTH(),
-	.C_BASEADDR(),
-	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
-	.C_S_AXIS_TUSER_WIDTH(),
-	.C_M_AXIS_DATA_WIDTH(C_M_AXIS_DATA_WIDTH),
-	.PHV_ADDR_WIDTH()
+	.C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH)
 )rmt_wrapper_ins
 (
 	.clk(clk),		// axis clk
 	.aresetn(aresetn),	
+
+	.vlan_drop_flags(0),
+	.cookie_val(),
+	.ctrl_token(),
 
 	// input Slave AXI Stream
 	.s_axis_tdata(s_axis_tdata),

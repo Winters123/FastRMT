@@ -2,7 +2,7 @@ create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_
 set_property -dict [list \
 	CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
 	CONFIG.Load_Init_File {true} \
-	#CONFIG.Coe_File {/../../../../../../lib_rmt/rmtv2/lkup.coe} \
+	CONFIG.Coe_File {/../../../../../../lib_rmt/rmtv2/lkup.coe} \
 	CONFIG.Write_Depth_A {16} \
 	CONFIG.Write_Width_A {625} \
 	CONFIG.Read_Width_A {625} \
