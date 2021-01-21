@@ -8,7 +8,7 @@
 `timescale 1ns / 1ps
 module crossbar #(
     parameter STAGE_ID = 0,
-    parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
+    parameter PHV_LEN = 48*8+32*8+16*8+256,
     parameter ACT_LEN = 25,
     parameter width_2B = 16,
     parameter width_4B = 32,
@@ -38,7 +38,7 @@ module crossbar #(
     output reg [width_4B*8-1:0]   alu_in_4B_3,
     output reg [width_2B*8-1:0]   alu_in_2B_1,
     output reg [width_2B*8-1:0]   alu_in_2B_2,
-    output reg [355:0]            phv_remain_data,
+    output reg [255:0]            phv_remain_data,
 
     //I have to delay action_in for ALUs for 1 cycle
     output reg [ACT_LEN*25-1:0]   action_out,
@@ -145,7 +145,7 @@ always @(posedge clk or negedge rst_n) begin
         // action_valid_reg <= 1'b0;
         //reset outputs
         alu_in_valid <= 1'b0;
-        phv_remain_data <= 356'b0;
+        phv_remain_data <= 256'b0;
         //reset all the outputs
         alu_in_6B_1 <= 384'b0;
         alu_in_6B_2 <= 384'b0;
@@ -255,7 +255,7 @@ always @(posedge clk or negedge rst_n) begin
         		    end
         		    
         		    //the left is metadata & conditional ins, no need to modify
-        		    phv_remain_data <= phv_in[355:0];
+        		    phv_remain_data <= phv_in[255:0];
         		end 
 
         		else begin

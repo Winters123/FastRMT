@@ -11,7 +11,7 @@ module lookup_engine #(
     parameter C_S_AXIS_DATA_WIDTH = 512,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter STAGE_ID = 0,
-    parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
+    parameter PHV_LEN = 48*8+32*8+16*8+256,
     parameter KEY_LEN = 48*2+32*2+16*2+5,
     parameter ACT_LEN = 625,
     parameter LOOKUP_ID = 2
@@ -50,17 +50,6 @@ module lookup_engine #(
 	output reg 							    	c_m_axis_tlast
 
 );
-
-// (*mark_debug = "true"*) wire            key_valid_dbg;
-// (*mark_debug = "true"*) wire            phv_valid_dbg;
-// (*mark_debug = "true"*) wire [15:0]     key_dbg;
-// (*mark_debug = "true"*) wire [15:0]     key_mask_dbg;
-
-// assign key_valid_dbg = key_valid;
-// assign phv_valid_dbg = phv_valid;
-// assign key_dbg = extract_key[36 -: 16];
-// assign key_mask_dbg = extract_mask[36 -: 16];
-
 
 /********intermediate variables declared here********/
 wire [7:0]  match_addr;
@@ -436,7 +425,7 @@ generate
 		if (STAGE_ID == 4) begin
 			// tcam1 for lookup
         	cam_top # ( 
-        	    .C_DEPTH			(16),
+        	    .C_DEPTH			(256),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(201),
         	    .C_MEM_INIT			(1),
@@ -467,7 +456,7 @@ generate
 		else begin
 			// tcam1 for lookup
         	cam_top # ( 
-        	    .C_DEPTH			(16),
+        	    .C_DEPTH			(256),
         	    // .C_WIDTH			(256),
         	    .C_WIDTH			(201),
         	    .C_MEM_INIT			(1),
@@ -602,7 +591,7 @@ generate
 
 		reg [7:0]							c_index_cam_next, c_index_act_next;
 		reg									c_wr_en_cam_next, c_wr_en_act_next;
-		reg [200:0]							c_wr_cam_data, c_wr_cam_data_next;
+		reg [204:0]							c_wr_cam_data, c_wr_cam_data_next;
 		reg [ACT_LEN-1:0]					c_wr_act_data, c_wr_act_data_next;
 
 		always @(*) begin
@@ -669,7 +658,7 @@ generate
 				CAM_TMP_ENTRY: begin
 					if (c_s_axis_tvalid) begin
 						c_wr_en_cam_next = 1; // next clk to write
-						c_wr_cam_data_next = c_s_axis_tdata_swapped[55+:201];
+						c_wr_cam_data_next = c_s_axis_tdata_swapped[51+:205];
 						
 						c_state_next = FLUSH_REST_C;
 					end
@@ -782,16 +771,17 @@ generate
         	cam_top # ( 
         	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
-        	    .C_WIDTH			(201),
-        	    .C_MEM_INIT			(1),
-        	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
+        	    .C_WIDTH			(205), // 192+1+12
+        	    .C_MEM_INIT			(0)
+        	    // .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
         	//TODO remember to change it back.
         	cam_0
         	(
         	    .CLK				(clk),
-        	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b1111, extract_mask}),
+        	    .CMP_DIN			({vlan_id[3:0], vlan_id[11:4], extract_key}),
+        	    // .CMP_DATA_MASK		({4'b1111, extract_mask}),
+        	    .CMP_DATA_MASK		(),
         	    .BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr),
@@ -803,6 +793,7 @@ generate
 
         	    .WE                 (c_wr_en_cam),
         	    .WR_ADDR            (c_index_cam[3:0]),
+        	    // .WR_ADDR            (c_index_cam),
         	    .DATA_MASK          (),  //TODO do we need ternary matching?
         	    .DIN                (c_wr_cam_data),
         	    .EN					(1'b1)
@@ -813,16 +804,17 @@ generate
         	cam_top # ( 
         	    .C_DEPTH			(16),
         	    // .C_WIDTH			(256),
-        	    .C_WIDTH			(201),
-        	    .C_MEM_INIT			(1),
-        	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
+        	    .C_WIDTH			(205), // 192+1+12
+        	    .C_MEM_INIT			(0)
+        	    // .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
         	//TODO remember to change it back.
         	cam_0
         	(
         	    .CLK				(clk),
-        	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b0000, extract_mask}),
+        	    .CMP_DIN			({vlan_id[3:0], vlan_id[11:4], extract_key}),
+        	    // .CMP_DATA_MASK		({4'b0000, extract_mask}),
+        	    .CMP_DATA_MASK		(),
         	    .BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr),
@@ -834,6 +826,7 @@ generate
 
         	    .WE                 (c_wr_en_cam),
         	    .WR_ADDR            (c_index_cam[3:0]),
+        	    // .WR_ADDR            (c_index_cam),
         	    .DATA_MASK          (),  //TODO do we need ternary matching?
         	    .DIN                (c_wr_cam_data),
         	    .EN					(1'b1)
@@ -860,8 +853,6 @@ generate
             .doutb(action_wire),
             .enb(1'b1) // always set to 1
         );
-		// debug
-		localparam PHV_4B_START_POS = 16*8+5*20+256;
     end
 
 endgenerate

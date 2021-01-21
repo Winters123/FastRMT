@@ -8,19 +8,18 @@
 module alu_3 #(
     parameter STAGE_ID = 0,
     parameter ACTION_LEN = 25,
-    parameter META_LEN = 256,
-    parameter COMP_LEN = 100
+    parameter META_LEN = 256
 )(
     input                               clk,
     input                               rst_n,
     //the input data shall be metadata & com_ins
-    input [META_LEN+COMP_LEN-1:0]       comp_meta_data_in,
+    input [META_LEN-1:0]       comp_meta_data_in,
     input                               comp_meta_data_valid_in,
     input [ACTION_LEN-1:0]              action_in,
     input                               action_valid_in,
 
     //output is the modified metadata plus comp_ins
-    output reg [META_LEN+COMP_LEN-1:0]  comp_meta_data_out,
+    output reg [META_LEN-1:0]  comp_meta_data_out,
     output reg                          comp_meta_data_valid_out     
 );
 
@@ -50,7 +49,7 @@ localparam IDLE_S=3'd0,
 		   OUTPUT_S=3'd4;
 
 reg [2:0]						state, state_next;
-reg [META_LEN+COMP_LEN-1:0]		comp_meta_data_out_r;
+reg [META_LEN-1:0]		comp_meta_data_out_r;
 reg								comp_meta_data_valid_next;
 
 always @(*) begin
@@ -63,13 +62,13 @@ always @(*) begin
 			if (action_valid_in) begin
 				state_next = WAIT1_S;
 				case(action_in[24:21])
-            	    4'b1100: begin
-            	        comp_meta_data_out_r[355:32] = {action_in[10:5],comp_meta_data_in[349:32]};
+            	    4'b1100: begin // dst_port
+            	        comp_meta_data_out_r[255:32] = {action_in[10:5],comp_meta_data_in[249:32]};
             	        comp_meta_data_out_r[31:24]  = action_in[20:13];
             	        comp_meta_data_out_r[23:0]   = comp_meta_data_in[23:0];
             	    end
-            	    4'b1101: begin
-            	        comp_meta_data_out_r[355:129] = {action_in[10:5],comp_meta_data_in[349:129]};
+            	    4'b1101: begin // discard
+            	        comp_meta_data_out_r[255:129] = {action_in[10:5],comp_meta_data_in[249:129]};
             	        comp_meta_data_out_r[128] = action_in[12];
             	        comp_meta_data_out_r[127:0] = comp_meta_data_in[127:0];
             	    end

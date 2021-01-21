@@ -32,7 +32,7 @@ module rmt_wrapper #(
 );
 
 /*=================================================*/
-localparam PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256;
+localparam PKT_VEC_WIDTH = (6+4+2)*8*8+256;
 // pkt fifo
 wire								pkt_fifo_rd_en;
 wire								pkt_fifo_nearly_full;
@@ -210,8 +210,7 @@ phv_fifo
 parser #(
     .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH), //for 100g mac exclusively
 	.C_S_AXIS_TUSER_WIDTH(),
-	.PKT_HDR_LEN(),
-	.PARSE_ACT_RAM_WIDTH()
+	.PKT_HDR_LEN()
 )
 phv_parser
 (

@@ -7,7 +7,7 @@
 
 module action_engine #(
     parameter STAGE_ID = 0,
-    parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
+    parameter PHV_LEN = 48*8+32*8+16*8+256,
     parameter ACT_LEN = 25,
     parameter ACT_ID = 3,
     parameter C_S_AXIS_DATA_WIDTH = 512,
@@ -77,7 +77,7 @@ wire                        alu_ready_out;
 wire [width_6B-1:0]			output_6B[0:7];
 wire [width_4B-1:0]			output_4B[0:7];
 wire [width_2B-1:0]			output_2B[0:7];
-wire [355:0]				output_md;
+wire [255:0]				output_md;
 
 //crossbar
 crossbar #(
@@ -263,18 +263,5 @@ always @(posedge clk) begin
 	end
 end
 
-
-
-(*mark_debug= "true"*) wire        alu_in_action_valid_dbg;
-(*mark_debug= "true"*) wire [15:0] alu_in_4B_1_dbg;
-(*mark_debug= "true"*) wire [15:0] alu_in_4B_2_dbg;
-(*mark_debug= "true"*) wire [15:0] container_out_dbg;
-(*mark_debug= "true"*) wire        container_out_valid_dbg;
-
-assign alu_in_action_valid_dbg = alu_in_action_valid;
-assign container_out_dbg = output_4B[2][15:0];
-assign container_out_valid_dbg = phv_valid_bit;
-assign alu_in_4B_1_dbg = alu_in_4B_1[3 * width_4B -1 -: width_4B];
-assign alu_in_4B_2_dbg = alu_in_4B_2[3 * width_4B -1 -: width_4B];
 
 endmodule

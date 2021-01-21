@@ -11,10 +11,10 @@ module key_extract_2 #(
     parameter C_S_AXIS_DATA_WIDTH = 512,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter STAGE_ID = 0,
-    parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
-    parameter KEY_LEN = 48*2+32*2+16*2+5,
+    parameter PHV_LEN = 48*8+32*8+16*8+256,
+    parameter KEY_LEN = 48*2+32*2+16*2+1,
     // format of KEY_OFF entry: |--3(6B)--|--3(6B)--|--3(4B)--|--3(4B)--|--3(2B)--|--3(2B)--|
-    parameter KEY_OFF = (3+3)*3,
+    parameter KEY_OFF = (3+3)*3+20,
     parameter AXIL_WIDTH = 32,
     parameter KEY_OFF_ADDR_WIDTH = 4,
     parameter KEY_EX_ID = 1
@@ -27,7 +27,7 @@ module key_extract_2 #(
 
     output reg [PHV_LEN-1:0]            phv_out,
     output reg                          phv_valid_out,
-    output reg [KEY_LEN-1:0]            key_out,
+    output [KEY_LEN-1:0]	            key_out_masked,
     output reg                          key_valid_out,
     output reg [KEY_LEN-1:0]            key_mask_out,
 	input								ready_in,
@@ -47,23 +47,6 @@ module key_extract_2 #(
 );
 
 
-/********intermediate variables declared here********/
-// (*mark_debug = "true"*) wire         phv_in_valid_dbg;
-// (*mark_debug = "true"*) wire [15:0]  phv_in_2B_dbg;
-// (*mark_debug = "true"*) wire [3:0]   vlan_id_in_dbg;
-// (*mark_debug = "true"*) wire         phv_out_valid_dbg;
-// (*mark_debug = "true"*) wire [15:0]  phv_out_2B_dbg;
-// (*mark_debug = "true"*) wire [3:0]   vlan_id_out_dbg;
-
-// assign phv_in_valid_dbg = phv_valid_in;
-// assign phv_in_2B_dbg = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
-// assign vlan_id_in_dbg = phv_in[136:133];
-
-// assign phv_out_valid_dbg = phv_valid_out;
-// assign phv_out_2B_dbg = phv_out[PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
-// assign vlan_id_out_dbg = phv_out[136:133];
-
-
 integer i;
 
 localparam width_2B = 16;
@@ -79,11 +62,11 @@ reg [width_6B-1:0]    cont_6B [0:7];
 reg [width_2B-1:0]    cont_2B_next [0:7];
 reg [width_4B-1:0]    cont_4B_next [0:7];
 reg [width_6B-1:0]    cont_6B_next [0:7];
-reg [19:0]            com_op[0:4];
-reg [19:0]            com_op_next[0:4];
+reg [19:0]            com_op;
+reg [19:0]            com_op_next;
 
-reg  [7:0]             com_op_1, com_op_1_next;
-reg  [7:0]             com_op_2, com_op_2_next;
+reg  [47:0]             com_op_1, com_op_1_next;
+reg  [47:0]             com_op_2, com_op_2_next;
 
 //vlan_id extracted from metadata
 wire  [11:0]            vlan_id; 
@@ -94,6 +77,7 @@ reg  [KEY_OFF-1:0]      key_offset_r;
 wire [KEY_LEN-1:0]      key_mask_out_w; // output from RAM
 reg  [KEY_LEN-1:0]      key_mask_out_r;
 reg  [KEY_LEN-1:0]      key_mask_out_next;
+//
 
 assign vlan_id = phv_in[140:129];
 
@@ -101,11 +85,12 @@ localparam  IDLE = 0,
 			WAIT_1CLK = 1,
 			WAIT_2CLK = 2,
 			WAIT_3CLK = 3,
-			HALT = 4;
+			WAIT_4CLK = 4,
+			HALT = 5;
 
 reg [2:0] state, state_next;
 reg [PHV_LEN-1:0] phv_out_next;
-reg [KEY_LEN-1:0] key_out_next; 
+reg [KEY_LEN-1:0] key_out, key_out_next; 
 reg key_valid_out_next; 
 reg phv_valid_out_next;
 reg ready_out_next;
@@ -145,11 +130,7 @@ always @(*) begin
     cont_2B_next[2] = cont_2B[2];
     cont_2B_next[1] = cont_2B[1];
     cont_2B_next[0] = cont_2B[0];
-    com_op_next[0]  = com_op[0];
-    com_op_next[1]  = com_op[1];
-    com_op_next[2]  = com_op[2];
-    com_op_next[3]  = com_op[3];
-    com_op_next[4]  = com_op[4];
+    com_op_next  = com_op;
 
 	com_op_1_next = com_op_1;
 	com_op_2_next = com_op_2;
@@ -184,57 +165,56 @@ always @(*) begin
     			cont_2B_next[2] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-5*width_2B -: width_2B];
     			cont_2B_next[1] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-6*width_2B -: width_2B];
     			cont_2B_next[0] = phv_in[PHV_LEN-1-8*width_6B-8*width_4B-7*width_2B -: width_2B];
-    			com_op_next[0]  = phv_in[255+100 -: 20];
-    			com_op_next[1]  = phv_in[255+80  -: 20];
-    			com_op_next[2]  = phv_in[255+60  -: 20];
-    			com_op_next[3]  = phv_in[255+40  -: 20];
-    			com_op_next[4]  = phv_in[255+20  -: 20];
 				state_next = WAIT_1CLK;
 			end
 			else begin
 				ready_out_next = 1'b1;
 			end
 		end
-		WAIT_1CLK: begin
-			if(com_op[STAGE_ID][17] == 1'b1) begin
-    		    com_op_1_next = com_op[STAGE_ID][16:9];
+		WAIT_1CLK: begin // wait com_op
+			state_next = WAIT_2CLK;
+		end
+		WAIT_2CLK: begin
+			com_op_next = key_offset[0+:20];
+			state_next = WAIT_3CLK;
+		end
+		WAIT_3CLK: begin
+			if(com_op[17] == 1'b1) begin
+    		    com_op_1_next = {40'b0, com_op[16:9]};
     		end
     		else begin
-    		    case(com_op[STAGE_ID][13:12])
+    		    case(com_op[13:12])
     		        2'b10: begin
-    		            com_op_1_next = cont_6B[com_op[STAGE_ID][11:9]][7:0];
+    		            com_op_1_next = cont_6B[com_op[11:9]][7:0];
     		        end
     		        2'b01: begin
-    		            com_op_1_next = cont_4B[com_op[STAGE_ID][11:9]][7:0];
+    		            com_op_1_next = {16'b0, cont_4B[com_op[11:9]][7:0]};
     		        end
     		        2'b00: begin
-    		            com_op_1_next = cont_2B[com_op[STAGE_ID][11:9]][7:0];
+    		            com_op_1_next = {32'b0, cont_2B[com_op[11:9]][7:0]};
     		        end
     		    endcase
     		end
-    		if(com_op[STAGE_ID][8] == 1'b1) begin
-    		    com_op_2_next = com_op[STAGE_ID][7:0];
+    		if(com_op[8] == 1'b1) begin
+    		    com_op_2_next = {40'b0, com_op[7:0]};
     		end
     		else begin
-    		    case(com_op[STAGE_ID][4:3])
+    		    case(com_op[4:3])
     		        2'b10: begin
-    		            com_op_2_next = cont_6B[com_op[STAGE_ID][2:0]][7:0];
+    		            com_op_2_next = cont_6B[com_op[2:0]][7:0];
     		        end
     		        2'b01: begin
-    		            com_op_2_next = cont_4B[com_op[STAGE_ID][2:0]][7:0];
+    		            com_op_2_next = {16'b0, cont_4B[com_op[2:0]][7:0]};
     		        end
     		        2'b00: begin
-    		            com_op_2_next = cont_2B[com_op[STAGE_ID][2:0]][7:0];
+    		            com_op_2_next = {32'b0, cont_2B[com_op[2:0]][7:0]};
     		        end
     		    endcase
     		end
 
-			state_next = WAIT_2CLK;
+			state_next = WAIT_4CLK;
 		end
-		WAIT_2CLK: begin
-			state_next = WAIT_3CLK; // wait key_offset_r, key_mask_out_r
-		end
-		WAIT_3CLK: begin
+		WAIT_4CLK: begin
 			if(ready_in) begin
 				key_valid_out_next = 1;
 				phv_valid_out_next = 1;
@@ -259,18 +239,18 @@ always @(*) begin
             key_out_next[KEY_LEN-1- 2*width_6B - 2*width_4B            -: width_2B] = cont_2B[key_offset_r[KEY_OFF-1-4*3 -: 3]];
             key_out_next[KEY_LEN-1- 2*width_6B - 2*width_4B - width_2B -: width_2B] = cont_2B[key_offset_r[KEY_OFF-1-5*3 -: 3]];
 			// comparator
-            case(com_op[STAGE_ID][19:18])
+            case(com_op[19:18])
                 2'b00: begin
-                    key_out_next[4-STAGE_ID] = (com_op_1>com_op_2)?1'b1:1'b0;
+                    key_out_next[0] = (com_op_1>com_op_2)?1'b1:1'b0;
                 end
                 2'b01: begin
-                    key_out_next[4-STAGE_ID] = (com_op_1>=com_op_2)?1'b1:1'b0;
+                    key_out_next[0] = (com_op_1>=com_op_2)?1'b1:1'b0;
                 end
                 2'b10: begin
-                    key_out_next[4-STAGE_ID] = (com_op_1==com_op_2)?1'b1:1'b0;
+                    key_out_next[0] = (com_op_1==com_op_2)?1'b1:1'b0;
                 end
                 default: begin
-                    key_out_next[4-STAGE_ID] = 1'b1;
+                    key_out_next[0] = 1'b1;
                 end
             endcase
 
@@ -375,11 +355,7 @@ always @(posedge clk) begin
     	cont_2B[2] <= cont_2B_next[2];
     	cont_2B[1] <= cont_2B_next[1];
     	cont_2B[0] <= cont_2B_next[0];
-    	com_op[0]  <= com_op_next[0];
-    	com_op[1]  <= com_op_next[1];
-    	com_op[2]  <= com_op_next[2];
-    	com_op[3]  <= com_op_next[3];
-    	com_op[4]  <= com_op_next[4];
+    	com_op  <= com_op_next;
 	end
 end
 
@@ -394,16 +370,9 @@ reg                 c_wr_en_mask;
 
 reg [2:0]           c_state;
 
-/****for 256b exclusively*****/
-reg [C_S_AXIS_DATA_WIDTH-1:0]       c_m_axis_tdata_r;
-reg [C_S_AXIS_TUSER_WIDTH-1:0]      c_m_axis_tuser_r;
-reg [C_S_AXIS_DATA_WIDTH/8-1:0]     c_m_axis_tkeep_r;
-reg                                 c_m_axis_tvalid_r;
-reg                                 c_m_axis_tlast_r;
-
 
 //checkme: mask the key with keymask
-//assign key_out_masked = (key_out|key_mask_out);
+assign key_out_masked = key_out&(~key_mask_out);
 
 localparam IDLE_C = 0,
            PARSE_C = 1,
@@ -712,8 +681,8 @@ generate
 		reg [7:0] c_index_next;
 		reg [2:0] c_state_next;
 		reg c_wr_en_off_next, c_wr_en_mask_next;
-		reg [17:0] key_off_entry_reg, key_off_entry_reg_next;
-		reg [196:0] key_mask_entry_reg, key_mask_entry_reg_next;
+		reg [37:0] key_off_entry_reg, key_off_entry_reg_next;
+		reg [192:0] key_mask_entry_reg, key_mask_entry_reg_next;
 
 		reg [C_S_AXIS_DATA_WIDTH-1:0]		r_tdata, c_s_axis_tdata_d1;
 		reg [C_S_AXIS_TUSER_WIDTH-1:0]		r_tuser, c_s_axis_tuser_d1;
@@ -789,7 +758,7 @@ generate
 				WRITE_OFF_C: begin
 					if (c_s_axis_tvalid) begin
 						c_wr_en_off_next = 1;
-						key_off_entry_reg_next = c_s_axis_tdata_swapped[255-:18];
+						key_off_entry_reg_next = c_s_axis_tdata_swapped[255-:38];
 
 						c_state_next = FLUSH_PKT_C;
 					end
@@ -797,7 +766,7 @@ generate
 				WRITE_MASK_C: begin
 					if (c_s_axis_tvalid) begin
 						c_wr_en_mask_next = 1;
-						key_mask_entry_reg_next = c_s_axis_tdata_swapped[255-:197];
+						key_mask_entry_reg_next = c_s_axis_tdata_swapped[255-:193];
 
 						c_state_next = FLUSH_PKT_C;
 					end
@@ -888,32 +857,32 @@ generate
         // 	.C_LOAD_INIT_FILE	(1)
         // )
         blk_mem_gen_2
-        key_ram_18w_16d
+        key_ram_38w_32d
         (
-            .addra(c_index[3:0]),
+            .addra(c_index[4:0]),
             .clka(clk),
             .dina(key_off_entry_reg),
             .ena(1'b1),
             .wea(c_wr_en_off),
 
             //only [3:0] is needed for addressing
-            .addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
+            .addrb(vlan_id[8:4]), // TODO: we may need to change this logic due to big/little endian
             .clkb(clk),
             .doutb(key_offset),
             .enb(1'b1)
         );
 
         blk_mem_gen_3
-        mask_ram_197w_16d
+        mask_ram_193w_16d
         (
-            .addra(c_index[3:0]),
+            .addra(c_index[4:0]),
             .clka(clk),
             .dina(key_mask_entry_reg),
             .ena(1'b1),
             .wea(c_wr_en_mask),
 
             //only [3:0] is needed for addressing
-            .addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
+            .addrb(vlan_id[8:4]), // TODO: we may need to change this logic due to big/little endian
             .clkb(clk),
             .doutb(key_mask_out_w),
             .enb(1'b1)

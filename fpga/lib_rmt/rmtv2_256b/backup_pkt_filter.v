@@ -66,6 +66,9 @@ reg [3:0] state, state_next;
 
 // 1 for control, 0 for data;
 reg								c_switch, c_switch_next;
+wire 							w_c_switch;
+
+assign w_c_switch = c_switch;
 
 //
 
@@ -180,8 +183,7 @@ always @(*) begin
 			end
 		end
 		FLUSH_DATA: begin
-			c_switch_next = 0;
-			if (m_axis_tready && !pkt_fifo_empty) begin
+			if (m_axis_tready) begin
 				r_tdata = tdata_fifo;
 				r_tkeep = tkeep_fifo;
 				r_tuser = tuser_fifo;
@@ -195,29 +197,24 @@ always @(*) begin
 			end
 		end
 		FLUSH_CTL: begin
-			c_switch_next = 1;
-			if (!pkt_fifo_empty) begin
-				r_tdata = tdata_fifo;
-				r_tkeep = tkeep_fifo;
-				r_tuser = tuser_fifo;
-				r_tlast = tlast_fifo;
-				r_tvalid = 1;
+			r_tdata = tdata_fifo;
+			r_tkeep = tkeep_fifo;
+			r_tuser = tuser_fifo;
+			r_tlast = tlast_fifo;
+			r_tvalid = 1;
 
-				pkt_fifo_rd_en = 1;
-				if (tlast_fifo) begin
-					state_next = WAIT_FIRST_PKT;
-				end
+			pkt_fifo_rd_en = 1;
+			if (tlast_fifo) begin
+				state_next = WAIT_FIRST_PKT;
 			end
 		end
 		DROP_PKT: begin
 			//
-			c_switch_next = 0;
 			r_tvalid = 0;
-			if (!pkt_fifo_empty) begin
-				pkt_fifo_rd_en = 1;
-				if (tlast_fifo) begin
-					state_next = WAIT_FIRST_PKT;
-				end
+			pkt_fifo_rd_en = 1;
+			if (tlast_fifo) begin
+				c_switch_next = 0;
+				state_next = WAIT_FIRST_PKT;
 			end
 		end
 	endcase
@@ -247,7 +244,7 @@ always @(posedge clk or negedge aresetn) begin
 		state <= state_next;
 		c_switch <= c_switch_next;
 
-		if (!c_switch) begin
+		if (!w_c_switch) begin
 			m_axis_tdata <= r_tdata;
 			m_axis_tkeep <= r_tkeep;
 			m_axis_tuser <= r_tuser;
@@ -297,13 +294,10 @@ end
 
 // debug
 (* mark_debug="true" *) wire[3:0] dbg_state;
-(* mark_debug="true" *) wire[31:0] dbg_ctrl_data;
-(* mark_debug="true" *) wire dbg_in_ready, dbg_out_ready;
+(* mark_debug="true" *) wire dbg_ready;
 
 
 assign dbg_state = state;
-assign dbg_in_ready = m_axis_tready;
-assign dbg_out_ready = s_axis_tready;
-assign dbg_ctrl_data = ctrl_m_axis_tdata[255-:32];
+assign dbg_ready = m_axis_tready;
 
 endmodule

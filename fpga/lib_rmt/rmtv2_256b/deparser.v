@@ -30,7 +30,7 @@ module deparser #(
 	//in corundum with 100g ports, data width is 512b
 	parameter	C_AXIS_DATA_WIDTH = 256,
 	parameter	C_AXIS_TUSER_WIDTH = 128,
-	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256,
+	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+256,
 	parameter	DEPARSER_MOD_ID = 3'b101
 )
 (
@@ -97,7 +97,7 @@ reg [7:0] state, state_next;
 
 wire [11:0] vlan_id; // vlan id
 assign vlan_id = phv_fifo_out[129+:12];
-wire [259:0] bram_out;
+wire [159:0] bram_out;
 wire [6:0] parse_action_ind [0:9];
 wire [9:0] parse_action_ind_10b [0:9];
 wire discard_signal;
@@ -106,16 +106,16 @@ assign discard_signal = phv_fifo_out[128];
 
 wire [15:0] parse_action [0:9];		// we have 10 parse action
 
-assign parse_action[9] = bram_out[100+:16];
-assign parse_action[8] = bram_out[116+:16];
-assign parse_action[7] = bram_out[132+:16];
-assign parse_action[6] = bram_out[148+:16];
-assign parse_action[5] = bram_out[164+:16];
-assign parse_action[4] = bram_out[180+:16];
-assign parse_action[3] = bram_out[196+:16];
-assign parse_action[2] = bram_out[212+:16];
-assign parse_action[1] = bram_out[228+:16];
-assign parse_action[0] = bram_out[244+:16];
+assign parse_action[9] = bram_out[0+:16];
+assign parse_action[8] = bram_out[16+:16];
+assign parse_action[7] = bram_out[32+:16];
+assign parse_action[6] = bram_out[48+:16];
+assign parse_action[5] = bram_out[64+:16];
+assign parse_action[4] = bram_out[80+:16];
+assign parse_action[3] = bram_out[96+:16];
+assign parse_action[2] = bram_out[112+:16];
+assign parse_action[1] = bram_out[128+:16];
+assign parse_action[0] = bram_out[144+:16];
 
 assign parse_action_ind[0] = parse_action[0][12:6];
 assign parse_action_ind[1] = parse_action[1][12:6];
@@ -139,13 +139,8 @@ assign parse_action_ind_10b[7] = parse_action_ind[7];
 assign parse_action_ind_10b[8] = parse_action_ind[8];
 assign parse_action_ind_10b[9] = parse_action_ind[9];
 
-localparam PHV_2B_START_POS = 20*5+256;
-localparam PHV_4B_START_POS = 20*5+256+16*8;
-localparam PHV_6B_START_POS = 20*5+256+16*8+32*8;
 
-reg	[C_PKT_VEC_WIDTH-1:0]	sub_depar_phv_fifo_out_r;
 reg	[9:0]					sub_depar_act_valid;
-reg [5:0]					sub_depar_act[0:9];
 
 wire [47:0]					sub_depar_val_out [0:9];
 reg [47:0]					sub_depar_val_out_r [0:9];
@@ -154,28 +149,6 @@ wire [1:0]					sub_depar_val_out_type [0:9];
 reg [1:0]					sub_depar_val_out_type_r [0:9];
 wire [9:0]					sub_depar_val_out_valid;
 
-// for debug
-reg [7:0] cnt, cnt_next;
-(* mark_debug = "true" *) wire dbg_val_valid;
-(* mark_debug = "true" *) wire [31:0] dbg_val_2b_0;
-(* mark_debug = "true" *) wire [31:0] dbg_val_2b_3;
-(* mark_debug = "true" *) wire [31:0] dbg_val_2b_7;
-(* mark_debug = "true" *) wire [7:0] dbg_dst_port;
-(* mark_debug = "true" *) wire [7:0] dbg_cnt;
-(* mark_debug = "true" *) wire [5:0] dbg_sub_depar_act;
-
-
-assign dbg_val_valid = sub_depar_val_out_valid[0];
-assign dbg_val_2b_0 = phv_fifo_out[PHV_4B_START_POS+0 +: 32];
-assign dbg_val_2b_3 = phv_fifo_out[PHV_4B_START_POS+32*2 +: 32];
-assign dbg_val_2b_7 = phv_fifo_out[PHV_4B_START_POS+32*7 +: 32];
-assign dbg_dst_port = phv_fifo_out[24+:8];
-assign dbg_cnt = cnt;
-// assign dbg_sub_depar_act = sub_depar_act[0];
-assign dbg_sub_depar_act = parse_action[0][5:0];
-
-
-//
 
 `SWAP_BYTE_ORDER(0)
 `SWAP_BYTE_ORDER(1)
@@ -210,10 +183,8 @@ always @(*) begin
 	pkts_tlast_stored_r_2p = pkts_tlast_stored_2p;
 
 	sub_depar_act_valid = 10'b0;
-	// sub_depar_phv_fifo_out_r = phv_fifo_out;
 
 	state_next = state;
-	cnt_next = cnt;
 	//
 	case (state)
 		WAIT_TILL_PARSE_DONE: begin // later will be modifed to PROCESSING done
@@ -278,17 +249,6 @@ always @(*) begin
 		BEGIN_SUB_DEPARSER: begin
 			sub_depar_act_valid = 10'b1111111111;
 
-			// sub_depar_act[0] = parse_action[0][5:0];
-			// sub_depar_act[1] = parse_action[1][5:0];
-			// sub_depar_act[2] = parse_action[2][5:0];
-			// sub_depar_act[3] = parse_action[3][5:0];
-			// sub_depar_act[4] = parse_action[4][5:0];
-			// sub_depar_act[5] = parse_action[5][5:0];
-			// sub_depar_act[6] = parse_action[6][5:0];
-			// sub_depar_act[7] = parse_action[7][5:0];
-			// sub_depar_act[8] = parse_action[8][5:0];
-			// sub_depar_act[9] = parse_action[9][5:0];
-
 			state_next = EMPTY_FINISH;
 		end
 
@@ -329,7 +289,6 @@ always @(*) begin
 			depar_out_tlast = pkts_tlast_stored_1p[0];
 			depar_out_tvalid = 1;
 
-			cnt_next = cnt+1;
 
 			if (depar_out_tready) begin
 				if (pkts_tlast_stored_1p[0]) begin
@@ -419,7 +378,6 @@ end
 always @(posedge clk) begin
 	if (~aresetn) begin
 		state <= WAIT_TILL_PARSE_DONE;
-		cnt <= 0;
 
 		pkts_tdata_stored_1p <= 0;
 		pkts_tuser_stored_1p <= 0;
@@ -433,7 +391,6 @@ always @(posedge clk) begin
 	end
 	else begin
 		state <= state_next;
-		cnt <= cnt_next;
 
 		pkts_tdata_stored_1p <= pkts_tdata_stored_r_1p;
 		pkts_tuser_stored_1p <= pkts_tuser_stored_r_1p;
@@ -510,9 +467,7 @@ generate
 			.clk				(clk),
 			.aresetn			(aresetn),
 			.parse_act_valid	(sub_depar_act_valid[index]),
-			// .parse_act			(sub_depar_act[index]),
 			.parse_act			(parse_action[index][5:0]),
-			// .phv_in				(sub_depar_phv_fifo_out_r),
 			.phv_in				(phv_fifo_out),
 			.val_out_valid		(sub_depar_val_out_valid[index]),
 			.val_out			(sub_depar_val_out[index]),
@@ -559,7 +514,7 @@ assign ctrl_s_axis_tdata_swapped = {	ctrl_s_axis_tdata[0+:8],
 
 
 reg	[7:0]						ctrl_wr_ram_addr, ctrl_wr_ram_addr_next;
-reg	[259:0]						ctrl_wr_ram_data, ctrl_wr_ram_data_next;
+reg	[159:0]						ctrl_wr_ram_data, ctrl_wr_ram_data_next;
 reg								ctrl_wr_ram_en, ctrl_wr_ram_en_next;
 wire [7:0]						ctrl_mod_id;
 
@@ -602,7 +557,7 @@ always @(*) begin
 		WAIT_THIRD_PKT: begin // first half of ctrl_wr_ram_data
 			if (ctrl_s_axis_tvalid) begin
 				ctrl_state_next = WRITE_RAM;
-				ctrl_wr_ram_data_next[259:4] = ctrl_s_axis_tdata_swapped[255:0];
+				ctrl_wr_ram_data_next = ctrl_s_axis_tdata_swapped[255-:160];
 			end
 		end
 		WRITE_RAM: begin // second half of ctrl_wr_ram_data
@@ -612,7 +567,6 @@ always @(*) begin
 				else
 					ctrl_state_next = FLUSH_REST_C;
 				ctrl_wr_ram_en_next = 1;
-				ctrl_wr_ram_data_next[3:0] = ctrl_s_axis_tdata_swapped[255:252];
 			end
 		end
 		FLUSH_REST_C: begin
@@ -649,14 +603,14 @@ parse_act_ram
 (
 	// write port
 	.clka		(clk),
-	.addra		(ctrl_wr_ram_addr[3:0]),
+	.addra		(ctrl_wr_ram_addr[4:0]),
 	.dina		(ctrl_wr_ram_data),
 	.ena		(1'b1),
 	.wea		(ctrl_wr_ram_en),
 
 	//
 	.clkb		(clk),
-	.addrb		(vlan_id[7:4]),
+	.addrb		(vlan_id[8:4]),
 	.doutb		(bram_out),
 	.enb		(1'b1) // always set to 1
 );

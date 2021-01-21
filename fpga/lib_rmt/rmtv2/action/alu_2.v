@@ -206,7 +206,7 @@ always @(*) begin
                 else begin
                     overflow_r = 1'b0;
                     //checkme: its the right time to write for `store`
-                    if(action_type == 4'b1000) begin
+                    if(action_type == 4'b1000 || action_type == 4'b0111) begin
                         store_addr_r = base_addr + op2_imm;
                         //store_din_r = operand_1_in;
                         store_en_r = 1'b1;
@@ -474,18 +474,18 @@ generate
 		
 		
 		//checkme: page table
-		page_tbl_16w_16d
-		page_tbl_16w_16d
+		page_tbl_16w_32d
+		page_tbl_16w_32d
 		(
 		    //write
-		    .addra(c_index[3:0]),
+		    .addra(c_index[4:0]),
 		    .clka(clk),
 		    .dina(entry_reg),
 		    .ena(1'b1),
 		    .wea(c_wr_en),
 		
 		    //match
-		    .addrb(vlan_id[7:4]),
+		    .addrb(vlan_id[8:4]),
 		    .clkb(clk),
 		    .doutb({addr_len,base_addr}),
 		    .enb(1'b1)
@@ -708,18 +708,18 @@ generate
 			end
 		end
 		//checkme: page table
-		page_tbl_16w_16d
-		page_tbl_16w_16d
+		page_tbl_16w_32d
+		page_tbl_16w_32d
 		(
 		    //write
-		    .addra(c_index),
+		    .addra(c_index[4:0]),
 		    .clka(clk),
 		    .dina(c_wr_data),
 		    .ena(1'b1),
 		    .wea(c_wr_en),
 		
 		    //match
-		    .addrb(vlan_id[7:4]),
+		    .addrb(vlan_id[8:4]),
 		    .clkb(clk),
 		    .doutb({addr_len,base_addr}),
 		    .enb(1'b1)

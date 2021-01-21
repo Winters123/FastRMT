@@ -35,7 +35,7 @@
 module parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 256,
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
-	parameter PKT_HDR_LEN = (6+4+2)*8*8+20*5+256, // check with the doc
+	parameter PKT_HDR_LEN = (6+4+2)*8*8+256, // check with the doc
 	parameter PARSER_MOD_ID = 3'b0
 )
 (
@@ -91,7 +91,7 @@ localparam	IDLE=0,
 			GET_PHV_OUTPUT=6,
 			OUTPUT=7;
 
-wire [259:0] bram_out;
+wire [159:0] bram_out;
 reg [3:0] state, state_next;
 
 // common headers
@@ -100,24 +100,17 @@ assign vlan_id = pkt_hdr_field_next[116+:12];
 
 // parsing actions
 wire [15:0] parse_action [0:9];		// we have 10 parse action
-wire [19:0] cond_action [0:4];		// we have 5 conditonal 
 
-assign parse_action[9] = bram_out[100+:16];
-assign parse_action[8] = bram_out[116+:16];
-assign parse_action[7] = bram_out[132+:16];
-assign parse_action[6] = bram_out[148+:16];
-assign parse_action[5] = bram_out[164+:16];
-assign parse_action[4] = bram_out[180+:16];
-assign parse_action[3] = bram_out[196+:16];
-assign parse_action[2] = bram_out[212+:16];
-assign parse_action[1] = bram_out[228+:16];
-assign parse_action[0] = bram_out[244+:16];
-
-assign cond_action[0] = bram_out[0+:20];
-assign cond_action[1] = bram_out[20+:20];
-assign cond_action[2] = bram_out[40+:20];
-assign cond_action[3] = bram_out[60+:20];
-assign cond_action[4] = bram_out[80+:20];
+assign parse_action[9] = bram_out[0+:16];
+assign parse_action[8] = bram_out[16+:16];
+assign parse_action[7] = bram_out[32+:16];
+assign parse_action[6] = bram_out[48+:16];
+assign parse_action[5] = bram_out[64+:16];
+assign parse_action[4] = bram_out[80+:16];
+assign parse_action[3] = bram_out[96+:16];
+assign parse_action[2] = bram_out[112+:16];
+assign parse_action[1] = bram_out[128+:16];
+assign parse_action[0] = bram_out[144+:16];
 
 reg [9:0] sub_parse_act_valid;
 reg [15:0] sub_parse_act [0:9];
@@ -268,10 +261,10 @@ always@(*) begin
 			pkt_hdr_vec_next ={val_6B_swapped[7], val_6B_swapped[6], val_6B_swapped[5], val_6B_swapped[4], val_6B_swapped[3], val_6B_swapped[2], val_6B_swapped[1], val_6B_swapped[0],
 							val_4B_swapped[7], val_4B_swapped[6], val_4B_swapped[5], val_4B_swapped[4], val_4B_swapped[3], val_4B_swapped[2], val_4B_swapped[1], val_4B_swapped[0],
 							val_2B_swapped[7], val_2B_swapped[6], val_2B_swapped[5], val_2B_swapped[4], val_2B_swapped[3], val_2B_swapped[2], val_2B_swapped[1], val_2B_swapped[0],
-							cond_action[0], cond_action[1], cond_action[2], cond_action[3], cond_action[4],
 							// Tao: manually set output port to 1 for eazy test
 							// {115{1'b0}}, vlan_id, 1'b0, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
-							{115{1'b0}}, vlan_id, 1'b0, tuser_1st};
+							{115{1'b0}}, vlan_id, 1'b0, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
+							// {115{1'b0}}, vlan_id, 1'b0, tuser_1st};
 							// {128{1'b0}}, tuser_1st[127:32], 8'h04, tuser_1st[23:0]};
 		end
 		OUTPUT: begin
@@ -460,8 +453,8 @@ assign ctrl_s_axis_tdata_swapped = {	ctrl_s_axis_tdata[0+:8],
 
 reg	[7:0]						ctrl_wr_ram_addr_next;
 reg [7:0]						ctrl_wr_ram_addr;
-reg	[259:0]						ctrl_wr_ram_data;
-reg	[259:0]						ctrl_wr_ram_data_next;
+reg	[159:0]						ctrl_wr_ram_data;
+reg	[159:0]						ctrl_wr_ram_data_next;
 reg								ctrl_wr_ram_en_next;
 reg								ctrl_wr_ram_en;
 wire [7:0]						ctrl_mod_id;
@@ -511,7 +504,7 @@ always @(*) begin
 		WAIT_THIRD_PKT: begin // first half of ctrl_wr_ram_data
 			if (ctrl_s_axis_tvalid) begin
 				ctrl_state_next = WRITE_RAM;
-				ctrl_wr_ram_data_next[259:4] = ctrl_s_axis_tdata_swapped[255:0];
+				ctrl_wr_ram_data_next = ctrl_s_axis_tdata_swapped[255-:160];
 			end
 		end
 		WRITE_RAM: begin // second half of ctrl_wr_ram_data
@@ -520,7 +513,6 @@ always @(*) begin
 					ctrl_state_next = WAIT_FIRST_PKT;
 				else
 					ctrl_state_next = FLUSH_REST_C;
-				ctrl_wr_ram_data_next[3:0] = ctrl_s_axis_tdata_swapped[255:252];
 				ctrl_wr_ram_en_next = 1;
 			end
 		end
@@ -574,33 +566,16 @@ parse_act_ram
 (
 	// write port
 	.clka		(axis_clk),
-	.addra		(ctrl_wr_ram_addr[3:0]),
+	.addra		(ctrl_wr_ram_addr[4:0]),
 	.dina		(ctrl_wr_ram_data),
 	.ena		(1'b1),
 	.wea		(ctrl_wr_ram_en),
 
 	//
 	.clkb		(axis_clk),
-	.addrb		(vlan_id[7:4]), // TODO: note that we may change due to little or big endian
+	.addrb		(vlan_id[8:4]), // TODO: note that we may change due to little or big endian
 	.doutb		(bram_out),
 	.enb		(1'b1) // always set to 1
 );
-
-// debug
-(* mark_debug="true" *) wire dbg_parser_valid;
-(* mark_debug="true" *) wire dbg_ctrl_wr_ram_en;
-(* mark_debug="true" *) wire[3:0] dbg_ctrl_wr_ram_addr;
-(* mark_debug="true" *) wire[11:0] dbg_vid;
-(* mark_debug="true" *) wire[15:0] dbg_pat_0;
-(* mark_debug="true" *) wire[15:0] dbg_pat_1;
-(* mark_debug="true" *) wire[2:0] dbg_state;
-
-assign dbg_parser_valid = parser_valid;
-assign dbg_ctrl_wr_ram_en = ctrl_wr_ram_en;
-assign dbg_ctrl_wr_ram_addr = ctrl_wr_ram_addr[3:0];
-assign dbg_vid = pkt_hdr_vec[140:129];
-assign dbg_pat_0 = ctrl_wr_ram_data[244+:16];
-assign dbg_pat_1 = ctrl_wr_ram_data[228+:16];
-assign dbg_state = state;
 
 endmodule

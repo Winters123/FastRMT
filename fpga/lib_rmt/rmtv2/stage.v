@@ -11,10 +11,10 @@ module stage #(
     parameter C_S_AXIS_DATA_WIDTH = 512,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter STAGE_ID = 0,  //valid: 0-4
-    parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
-    parameter KEY_LEN = 48*2+32*2+16*2+5,
+    parameter PHV_LEN = 48*8+32*8+16*8+256,
+    parameter KEY_LEN = 48*2+32*2+16*2+1,
     parameter ACT_LEN = 25,
-    parameter KEY_OFF = 6*3
+    parameter KEY_OFF = 6*3+20
 )
 (
     input                        axis_clk,
@@ -98,7 +98,7 @@ key_extract_2 #(
 
     .phv_out(key2lookup_phv),
     .phv_valid_out(key2lookup_phv_valid),
-    .key_out(key2lookup_key),
+    .key_out_masked(key2lookup_key),
     .key_valid_out(key2lookup_key_valid),
     .key_mask_out(key2lookup_key_mask),
     .ready_in(lookup2key_ready),
