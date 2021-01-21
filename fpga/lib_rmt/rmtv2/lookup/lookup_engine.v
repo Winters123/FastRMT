@@ -170,7 +170,7 @@ reg  [7:0]          c_index_act;
 reg                 c_wr_en_act;
 reg  [ACT_LEN-1:0]  act_entry_tmp;             
 reg                 continous_flag;
-reg [200:0]         cam_entry_reg;
+reg [204:0]         cam_entry_reg;
 
 
 reg [2:0]           c_state;
@@ -349,7 +349,7 @@ generate
 
                     CAM_TMP_ENTRY: begin
                         if(c_s_axis_tvalid) begin
-                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 201];
+                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 205];
                             c_wr_en_cam <= 1'b1;
                             if(c_s_axis_tlast) begin
                                 c_state <= IDLE_C;
@@ -365,7 +365,7 @@ generate
 
                     SU_CAM_TMP_ENTRY: begin
                         if(c_s_axis_tvalid) begin
-                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 201];
+                            cam_entry_reg <= c_s_axis_tdata_swapped[511 -: 205];
                             c_wr_en_cam <= 1'b1;
                             c_index_cam <= c_index_cam + 1'b1;
                             if(c_s_axis_tlast) begin
@@ -427,16 +427,16 @@ generate
         	cam_top # ( 
         	    .C_DEPTH			(256),
         	    // .C_WIDTH			(256),
-        	    .C_WIDTH			(201),
+        	    .C_WIDTH			(205),
         	    .C_MEM_INIT			(1),
         	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
         	cam_0
         	(
         	    .CLK				(clk),
-        	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b1111, extract_mask}),
-        	    //.CMP_DATA_MASK      (),
+        	    .CMP_DIN			({vlan_id[3:0], vlan_id[11:4], extract_key}),
+        	    //.CMP_DATA_MASK		({4'b1111, extract_mask}),
+        	    .CMP_DATA_MASK      (),
 				.BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr[3:0]),
@@ -458,16 +458,16 @@ generate
         	cam_top # ( 
         	    .C_DEPTH			(256),
         	    // .C_WIDTH			(256),
-        	    .C_WIDTH			(201),
+        	    .C_WIDTH			(205),
         	    .C_MEM_INIT			(1),
         	    .C_MEM_INIT_FILE	("./cam_init_file.mif")
         	)
         	cam_0
         	(
         	    .CLK				(clk),
-        	    .CMP_DIN			({vlan_id[7:4], extract_key}),
-        	    .CMP_DATA_MASK		({4'b0000, extract_mask}),
-        	    //.CMP_DATA_MASK      (),
+        	    .CMP_DIN			({vlan_id[3:0], vlan_id[11:4], extract_key}),
+        	    //.CMP_DATA_MASK		({4'b0000, extract_mask}),
+        	    .CMP_DATA_MASK      (),
         	    .BUSY				(),
         	    .MATCH				(match),
         	    .MATCH_ADDR			(match_addr[3:0]),

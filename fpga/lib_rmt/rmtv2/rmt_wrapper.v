@@ -14,10 +14,10 @@ module rmt_wrapper #(
 	parameter C_S_AXIS_TUSER_WIDTH = 128,
 	// Master
 	// self-defined
-    parameter PHV_LEN = 48*8+32*8+16*8+5*20+256,
-    parameter KEY_LEN = 48*2+32*2+16*2+5,
+    parameter PHV_LEN = 48*8+32*8+16*8+256,
+    parameter KEY_LEN = 48*2+32*2+16*2+1,
     parameter ACT_LEN = 25,
-    parameter KEY_OFF = 6*3
+    parameter KEY_OFF = 6*3+20
 
 )
 (
@@ -76,7 +76,7 @@ module rmt_wrapper #(
 integer idx;
 
 /*=================================================*/
-localparam PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256;
+localparam PKT_VEC_WIDTH = (6+4+2)*8*8+256;
 //the number of cycles for a PHV
 localparam SEG_NUM = 1024/C_S_AXIS_DATA_WIDTH;
 
@@ -136,7 +136,7 @@ wire 								stg4_ready;
 
 
 //TODO for bug fix
-wire [521:0] high_phv_out;
+wire [511:0] high_phv_out;
 wire [511:0] low_phv_out;
 
 assign phv_fifo_out_w = {high_phv_out, low_phv_out};
@@ -163,18 +163,18 @@ wire										c_s_axis_tlast_1;
 assign s_axis_tready_f = !pkt_fifo_nearly_full;
 
 //set up a timer here
-// reg [95:0] fake_timer;
-// localparam FAKE_SEED = 96'hcecc666;
+reg [95:0] fake_timer;
+localparam FAKE_SEED = 96'hcecc666;
 
-// always @(posedge clk or negedge aresetn) begin
-// 	if(~aresetn) begin
-// 		fake_timer <= FAKE_SEED + 1'b1;
-// 	end
-// 	else begin
-// 		fake_timer <= fake_timer + 1'b1;
-// 	end
+always @(posedge clk or negedge aresetn) begin
+	if(~aresetn) begin
+		fake_timer <= FAKE_SEED + 1'b1;
+	end
+	else begin
+		fake_timer <= fake_timer + 1'b1;
+	end
 
-// end
+end
 
 
 pkt_filter #(
@@ -184,10 +184,10 @@ pkt_filter #(
 (
 	.clk(clk),
 	.aresetn(aresetn),
-	// .time_stamp(fake_timer),
-	// .vlan_drop_flags(vlan_drop_flags),
-	// .cookie_val(cookie_val),
-	// .ctrl_token(ctrl_token),
+	.time_stamp(fake_timer),
+	.vlan_drop_flags(vlan_drop_flags),
+	.cookie_val(cookie_val),
+	.ctrl_token(ctrl_token),
 
 	// input Slave AXI Stream
 	.s_axis_tdata(s_axis_tdata),
@@ -241,10 +241,10 @@ fifo_generator_512b phv_fifo_1 (
   .rd_rst_busy()  // output wire rd_rst_busy
 );
 
-fifo_generator_612b phv_fifo_2 (
+fifo_generator_512b phv_fifo_2 (
   .clk(clk),                  // input wire clk
   .srst(~aresetn),                // input wire srst
-  .din(stg4_phv_out[1123:512]),                  // input wire [521 : 0] din
+  .din(stg4_phv_out[1023:512]),                  // input wire [521 : 0] din
   .wr_en(stg4_phv_out_valid_w),              // input wire wr_en
   .rd_en(phv_fifo_rd_en),              // input wire rd_en
   .dout(high_phv_out),                // output wire [521 : 0] dout
@@ -576,96 +576,6 @@ assign stg1_phv_out_valid_w = stg1_phv_out_valid ;//& ~stg1_phv_out_valid_r;
 assign stg2_phv_out_valid_w = stg2_phv_out_valid ;//& ~stg2_phv_out_valid_r;
 assign stg3_phv_out_valid_w = stg3_phv_out_valid ;//& ~stg3_phv_out_valid_r;
 assign stg4_phv_out_valid_w = stg4_phv_out_valid ;//& ~stg4_phv_out_valid_r;
-
-
-// // Port control registers
-// reg axil_rmt_awready_reg = 1'b0;
-// reg axil_rmt_wready_reg = 1'b0;
-// reg axil_rmt_bvalid_reg = 1'b0;
-// reg axil_rmt_arready_reg = 1'b0;
-// reg [AXIL_DATA_WIDTH-1:0] axil_rmt_rdata_reg = {AXIL_DATA_WIDTH{1'b0}};
-// reg axil_rmt_rvalid_reg = 1'b0;
-
-
-// // AXI lite connections
-// wire [AXIL_ADDR_WIDTH-1:0] axil_rmt_awaddr;
-// wire [2:0]                 axil_rmt_awprot;
-// wire                       axil_rmt_awvalid;
-// wire                       axil_rmt_awready;
-// wire [AXIL_DATA_WIDTH-1:0] axil_rmt_wdata;
-// wire [AXIL_STRB_WIDTH-1:0] axil_rmt_wstrb;
-// wire                       axil_rmt_wvalid;
-// wire                       axil_rmt_wready;
-// wire [1:0]                 axil_rmt_bresp;
-// wire                       axil_rmt_bvalid;
-// wire                       axil_rmt_bready;
-
-// wire [AXIL_ADDR_WIDTH-1:0] axil_rmt_araddr;
-// wire [2:0]                 axil_rmt_arprot;
-// wire                       axil_rmt_arvalid;
-// wire                       axil_rmt_arready;
-// wire [AXIL_DATA_WIDTH-1:0] axil_rmt_rdata;
-// wire [1:0]                 axil_rmt_rresp;
-// wire                       axil_rmt_rvalid;
-// wire                       axil_rmt_rready;
-
-// assign s_axil_awready = axil_rmt_awready_reg;
-// assign s_axil_wready = axil_rmt_wready_reg;
-// assign s_axil_bresp = 2'b00;
-// assign s_axil_bvalid = axil_rmt_bvalid_reg;
-// assign s_axil_arready = axil_rmt_arready_reg;
-// assign s_axil_rdata = axil_rmt_rdata_reg;
-// assign s_axil_rresp = 2'b00;
-// assign s_axil_rvalid = axil_rmt_rvalid_reg;
-
-// /*
-// 	*control path of AXI-Lite
-// */
-// always @(posedge clk or negedge aresetn) begin
-
-//     if (~aresetn) begin
-//         axil_rmt_awready_reg <= 1'b0;
-//         axil_rmt_wready_reg <= 1'b0;
-//         axil_rmt_bvalid_reg <= 1'b0;
-//         axil_rmt_arready_reg <= 1'b0;
-//         axil_rmt_rvalid_reg <= 1'b0;
-//     end
-
-// 	else begin
-// 		axil_rmt_awready_reg <= 1'b0;
-// 		axil_rmt_wready_reg <= 1'b0;
-// 		axil_rmt_bvalid_reg <= axil_rmt_bvalid_reg && !s_axil_bready;
-// 		axil_rmt_arready_reg <= 1'b0;
-// 		axil_rmt_rvalid_reg <= axil_rmt_rvalid_reg && !s_axil_rready;
-// 		// if (axil_rmt_awvalid && axil_rmt_wvalid && !axil_rmt_bvalid) begin
-//     //     // write operation
-// 		//     axil_rmt_awready_reg <= 1'b1;
-// 		//     axil_rmt_wready_reg <= 1'b1;
-// 		//     axil_rmt_bvalid_reg <= 1'b1;
-
-// 		//     case ({axil_rmt_awaddr[15:2], 2'b00})
-// 		//     endcase
-// 		// end
-
-// 		if (s_axil_arvalid && !s_axil_rvalid) begin
-// 			// read operation
-// 			axil_rmt_arready_reg <= 1'b1;
-// 			axil_rmt_rvalid_reg <= 1'b1;
-// 			axil_rmt_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
-
-// 			case ({s_axil_araddr[15:2], 2'b00})
-// 				16'h2020: begin
-// 					axil_rmt_rdata_reg <= cookie_val;
-// 				end
-// 				16'h2024: begin
-// 					axil_rmt_rdata_reg <= ctrl_token;
-// 				end
-// 			endcase
-// 		end
-// 	end
-
-
-// end
 
 
 endmodule

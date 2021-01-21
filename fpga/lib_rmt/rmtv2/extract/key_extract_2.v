@@ -390,8 +390,8 @@ generate
         assign resv = c_s_axis_tdata[376+:4];
         assign control_flag = c_s_axis_tdata[335:320];
 
-        reg [17:0]                    key_off_entry_reg;
-        reg [196:0]                   key_mask_entry_reg;
+        reg [37:0]                    key_off_entry_reg;
+        reg [192:0]                   key_mask_entry_reg;
         //LE to BE switching
         wire[C_S_AXIS_DATA_WIDTH-1:0] c_s_axis_tdata_swapped;
 
@@ -519,7 +519,7 @@ generate
                     //support full table flush
                     WRITE_OFF_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 18];
+                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 38];
                             c_wr_en_mask <= 1'b1;
                             if(c_s_axis_tlast) begin
                                 c_state <= IDLE_C;
@@ -535,7 +535,7 @@ generate
 
                     SU_WRITE_OFF_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 18];
+                            key_off_entry_reg <= c_s_axis_tdata_swapped[511 -: 38];
                             c_wr_en_off <= 1'b1;
                             c_index <= c_index + 1'b1;
                             if(c_s_axis_tlast) begin
@@ -552,7 +552,7 @@ generate
 
                     WRITE_MASK_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 197];
+                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 192];
                             c_wr_en_mask <= 1'b1;
                             if(c_s_axis_tlast) begin
                                 c_state <= IDLE_C;
@@ -568,7 +568,7 @@ generate
 
                     SU_WRITE_MASK_C: begin
                         if(c_s_axis_tvalid) begin
-                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 197];
+                            key_mask_entry_reg <= c_s_axis_tdata_swapped[511 -: 192];
                             c_wr_en_mask <= 1'b1;
                             c_index <= c_index + 1'b1;
                             if(c_s_axis_tlast) begin
@@ -604,32 +604,32 @@ generate
         // 	.C_LOAD_INIT_FILE	(1)
         // )
         blk_mem_gen_2
-        key_ram_18w_16d
+        key_ram_38w_32d
         (
-            .addra(c_index[3:0]),
+            .addra(c_index[4:0]),
             .clka(clk),
             .dina(key_off_entry_reg),
             .ena(1'b1),
             .wea(c_wr_en_off),
 
             //only [3:0] is needed for addressing
-            .addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
+            .addrb(vlan_id[8:4]), // TODO: we may need to change this logic due to big/little endian
             .clkb(clk),
             .doutb(key_offset),
             .enb(1'b1)
         );
 
         blk_mem_gen_3
-        mask_ram_197w_16d
+        mask_ram_193w_32d
         (
-            .addra(c_index[3:0]),
+            .addra(c_index[4:0]),
             .clka(clk),
             .dina(key_mask_entry_reg),
             .ena(1'b1),
             .wea(c_wr_en_mask),
 
             //only [3:0] is needed for addressing
-            .addrb(vlan_id[7:4]), // TODO: we may need to change this logic due to big/little endian
+            .addrb(vlan_id[8:4]), // TODO: we may need to change this logic due to big/little endian
             .clkb(clk),
             .doutb(key_mask_out_w),
             .enb(1'b1)

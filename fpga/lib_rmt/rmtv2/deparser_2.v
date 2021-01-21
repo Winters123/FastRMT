@@ -4,7 +4,7 @@ module deparser #(
 	//in corundum with 100g ports, data width is 512b
 	parameter	C_S_AXIS_DATA_WIDTH = 512,
 	parameter	C_S_AXIS_TUSER_WIDTH = 128,
-	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+20*5+256,
+	parameter	C_PKT_VEC_WIDTH = (6+4+2)*8*8+256,
     parameter   DEPARSER_ID = 3'b101
 )
 (
@@ -54,7 +54,7 @@ module deparser #(
 wire  [11:0]   vlan_id;
 // reg [11:0]   vlan_id;
 
-wire [259:0]  bram_out;
+wire [159:0]  bram_out;
 
 // wire [6:0]    parse_action_ind [0:9];
 // wire [15:0]   parse_action [0:9];		// we have 10 parse action
@@ -103,16 +103,16 @@ assign vlan_id = pkt_fifo_tdata[116 +: 12];
 
 always @(posedge clk) begin
     // vlan_id <= phv_fifo_out[129+:12];
-    parse_action[9] <= bram_out[100+:16];
-    parse_action[8] <= bram_out[116+:16];
-    parse_action[7] <= bram_out[132+:16];
-    parse_action[6] <= bram_out[148+:16];
-    parse_action[5] <= bram_out[164+:16];
-    parse_action[4] <= bram_out[180+:16];
-    parse_action[3] <= bram_out[196+:16];
-    parse_action[2] <= bram_out[212+:16];
-    parse_action[1] <= bram_out[228+:16];
-    parse_action[0] <= bram_out[244+:16];
+    parse_action[9] <= bram_out[0 +:16];
+    parse_action[8] <= bram_out[16+:16];
+    parse_action[7] <= bram_out[32+:16];
+    parse_action[6] <= bram_out[48+:16];
+    parse_action[5] <= bram_out[64+:16];
+    parse_action[4] <= bram_out[80+:16];
+    parse_action[3] <= bram_out[96+:16];
+    parse_action[2] <= bram_out[112+:16];
+    parse_action[1] <= bram_out[128+:16];
+    parse_action[0] <= bram_out[144+:16];
 
     parse_action_ind_0 <= {parse_action[0][11:6],3'b0};
     parse_action_ind_1 <= {parse_action[1][11:6],3'b0};
@@ -555,7 +555,7 @@ generate
             (
             	.clk(clk),
             	.aresetn(aresetn),
-                .deparse_phv_reg_in(deparse_phv_stored_r[1123:356]),
+                .deparse_phv_reg_in(deparse_phv_stored_r[1023:256]),
                 .deparse_phv_reg_valid_in(deparse_phv_reg_valid_in[index]),
                 .parse_action(parse_action[index][5:0]),
                 .parse_action_valid_in(sub_parse_action_valid_in[index]),
@@ -574,7 +574,7 @@ wire [15:0]         control_flag; //dst udp port num
 reg  [7:0]          c_index; //table index(addr)
 reg                 c_wr_en; //enable table write(wen)
 
-reg [259:0]         entry_reg;
+reg [159:0]         entry_reg;
 
 reg [2:0]           c_state;
 
@@ -683,7 +683,7 @@ always @(posedge clk or negedge aresetn) begin
             WRITE_C: begin
                 if(c_s_axis_tvalid) begin
                     c_wr_en <= 1'b1;
-                    entry_reg <= c_s_axis_tdata_swapped[511 -: 260];
+                    entry_reg <= c_s_axis_tdata_swapped[511 -: 160];
                     if(c_s_axis_tlast) begin
                         c_state <= IDLE_C;
                     end
@@ -698,7 +698,7 @@ always @(posedge clk or negedge aresetn) begin
 
             SU_WRITE_C: begin
                 if(c_s_axis_tvalid) begin
-                    entry_reg <= c_s_axis_tdata_swapped[511 -: 260];
+                    entry_reg <= c_s_axis_tdata_swapped[511 -: 160];
                     c_wr_en <= 1'b1;
                     c_index <= c_index + 1'b1;
                     if(c_s_axis_tlast) begin
@@ -723,14 +723,14 @@ parse_act_ram
 (
 	// write port
 	.clka		(clk),
-	.addra		(c_index[3:0]),
+	.addra		(c_index[4:0]),
 	.dina		(entry_reg),
 	.ena		(1'b1),
 	.wea		(c_wr_en),
 
 	//
 	.clkb		(clk),
-	.addrb		(vlan_id[7:4]), // TODO: note that we may change due to little or big endian
+	.addrb		(vlan_id[8:4]), // TODO: note that we may change due to little or big endian
 	.doutb		(bram_out),
 	.enb		(1'b1) // always set to 1
 );
