@@ -76,13 +76,13 @@ wire								stg0_phv_in_valid;
 wire								stg0_phv_in_valid_w;
 reg									stg0_phv_in_valid_r;
 wire [PKT_VEC_WIDTH-1:0]			stg0_phv_in;
-wire 								stg0_ready;
+
 // stage-related
 wire [PKT_VEC_WIDTH-1:0]			stg0_phv_out;
 wire								stg0_phv_out_valid;
 wire								stg0_phv_out_valid_w;
 reg									stg0_phv_out_valid_r;
-wire 								stg1_ready;
+wire 								stg0_ready;
 
 
 wire [PKT_VEC_WIDTH-1:0]			stg1_phv_out;
@@ -546,12 +546,12 @@ always @(posedge clk) begin
 	end
 end
 
-assign stg0_phv_in_valid_w = stg0_phv_in_valid ;  //& ~stg0_phv_in_valid_r;
-assign stg0_phv_out_valid_w = stg0_phv_out_valid ;//& ~stg0_phv_out_valid_r;
-assign stg1_phv_out_valid_w = stg1_phv_out_valid ;//& ~stg1_phv_out_valid_r;
-assign stg2_phv_out_valid_w = stg2_phv_out_valid ;//& ~stg2_phv_out_valid_r;
-assign stg3_phv_out_valid_w = stg3_phv_out_valid ;//& ~stg3_phv_out_valid_r;
-assign stg4_phv_out_valid_w = stg4_phv_out_valid ;//& ~stg4_phv_out_valid_r;
+assign stg0_phv_in_valid_w = stg0_phv_in_valid & ~stg0_phv_in_valid_r;
+assign stg0_phv_out_valid_w = stg0_phv_out_valid & ~stg0_phv_out_valid_r;
+assign stg1_phv_out_valid_w = stg1_phv_out_valid & ~stg1_phv_out_valid_r;
+assign stg2_phv_out_valid_w = stg2_phv_out_valid & ~stg2_phv_out_valid_r;
+assign stg3_phv_out_valid_w = stg3_phv_out_valid & ~stg3_phv_out_valid_r;
+assign stg4_phv_out_valid_w = stg4_phv_out_valid & ~stg4_phv_out_valid_r;
 
 
 endmodule
