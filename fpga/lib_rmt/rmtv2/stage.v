@@ -71,7 +71,7 @@ wire                         action2lookup_ready;
 
 
 
-key_extract #(
+key_extract_2 #(
     .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
     .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
     .STAGE_ID(STAGE_ID),
