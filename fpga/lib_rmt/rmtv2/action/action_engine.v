@@ -1,10 +1,4 @@
-/****************************************************/
-//	Module name: action_engine.v
-//	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
-//	Last edited time: 2020/09/25
-//	Function outline: the action execution engine in RMT
-/****************************************************/
-
+`timescale 1ns / 1ps
 module action_engine #(
     parameter STAGE_ID = 0,
     parameter PHV_LEN = 48*8+32*8+16*8+256,
@@ -67,9 +61,6 @@ wire                        alu_in_action_valid;
 
 wire                        alu_ready_out;
 
-// assign                      ready_out = alu_ready_out;
-
-// assign phv_valid_out = phv_valid_bit[7];
 /********intermediate variables declared here********/
 
 /********IPs instancilzed here*********/
@@ -97,7 +88,6 @@ crossbar #(
     .action_in(action_in),
     .action_in_valid(action_valid_in),
     .ready_out(ready_out),
-    //checkme: vlan id
     .vlan_id(vlan_id),
     //output to the ALU
     .alu_in_valid(alu_in_valid),
@@ -155,7 +145,6 @@ generate
 	end
 endgenerate
 
-//checkme: adapted for multi-tenancy
 alu_2 #(
     .STAGE_ID(STAGE_ID),
     .ACTION_LEN(),
@@ -172,14 +161,12 @@ alu_2 #(
     .operand_2_in(alu_in_4B_2[(7+1) * width_4B -1 -: width_4B]),
     .operand_3_in(alu_in_4B_3[(7+1) * width_4B -1 -: width_4B]),
     .ready_out(alu_ready_out),
-    //checkme: vlan_id is for multi-tenancy
     .vlan_id(vlan_id),
     //output to form PHV
     .container_out(output_4B[7]),
     .container_out_valid(),
     .ready_in(ready_in),
     
-    //checkme: 
     .c_s_axis_tdata(c_s_axis_tdata),
     .c_s_axis_tuser(c_s_axis_tuser),
     .c_s_axis_tkeep(c_s_axis_tkeep),

@@ -1,10 +1,3 @@
-/****************************************************/
-//	Module name: lookup_engine.v
-//	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
-//	Last edited time: 2020/09/24
-//	Function outline: perform match action with 197b key
-/****************************************************/
-
 `timescale 1ns / 1ps
 
 module lookup_engine #(
@@ -505,35 +498,6 @@ generate
             .doutb(action_wire),
             .enb(1'b1)
         );
-
-        //(*mark_debug = "true"*) wire        c_wr_en_cam_dbg;
-        // (*mark_debug = "true"*) wire        c_wr_en_act_dbg;
-        // (*mark_debug = "true"*) wire [3:0]  c_index_act_dbg;
-        //(* mark_debug= "true"*) wire [3:0]  c_index_cam_dbg;
-        //(* mark_debug= "true"*) wire [15:0] cam_entry_reg_dbg;
-        //(* mark_debug= "true"*) wire [24:0] dbg_action_in;
-        
-        // (* mark_debug= "true"*) wire [24:0]   dbg_action_out;
-        // (* mark_debug= "true"*) wire          dbg_action_out_valid;
-        
-        // assign c_wr_en_act_dbg = c_wr_en_act;
-        //assign c_wr_en_cam_dbg = c_wr_en_cam;
-        // assign c_index_act_dbg = c_index_act;
-        //assign c_index_cam_dbg = c_index_cam;
-        //assign cam_entry_reg_dbg = cam_entry_reg[36 -: 16];
-        //assign dbg_action_in = act_entry_tmp[275 +: 25];
-        
-
-        // (*mark_debug = "true"*) wire            match_dbg;
-        // (*mark_debug = "true"*) wire [3:0]      match_addr_dbg;
-        // (*mark_debug = "true"*) wire [3:0]      vlan_id_dbg;
-
-        // assign match_dbg = match;
-        // assign match_addr_dbg = match_addr;
-        // assign vlan_id_dbg = vlan_id[7:4];
-        // assign dbg_action_out_valid= action_valid;
-        // assign dbg_action_out = action_wire[275 +: 25];
-
 
     end
     //NOTE: data width is 256b

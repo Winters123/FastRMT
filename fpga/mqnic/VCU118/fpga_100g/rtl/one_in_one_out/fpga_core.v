@@ -2129,8 +2129,8 @@ generate
             .MAX_RX_SIZE(MAX_RX_SIZE),
             .TX_RAM_SIZE(TX_RAM_SIZE),
             .RX_RAM_SIZE(RX_RAM_SIZE),
-            //enable RMT in interface 1
-            //disable RMT in interface 0
+            //enable RMT in interface 0
+            //disable RMT in interface 1
             .RMT_TX_ENABLE(!n)
         )
         interface_inst (

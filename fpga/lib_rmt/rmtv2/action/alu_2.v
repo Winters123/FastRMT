@@ -1,10 +1,3 @@
-/****************************************************/
-//	Module name: alu_2
-//	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
-//	Last edited time: 2020/09/23
-//	Function outline: 2st type ALU (with load/store) module in RMT
-/****************************************************/
-
 `timescale 1ns / 1ps
 
 module alu_2 #(
@@ -72,13 +65,13 @@ reg [DATA_WIDTH-1:0]		container_out_r;
 reg							container_out_valid_next;
 
 
-//checkme: regs/wires for isolation
+//regs/wires for isolation
 wire [7:0]                  base_addr;
 wire [7:0]                  addr_len;
 
 reg                         overflow, overflow_r;
 
-//checkme: this is for load/loadd
+//this is for load/loadd
 reg [4:0]                   op2_imm, op2_imm_r;
 
 reg 						ready_out_next;
@@ -168,10 +161,8 @@ always @(*) begin
                     end
                     //load op (interact with RAM)
                     4'b1011: begin
-						//checkme
                         container_out_r = operand_3_in;
                     end
-                    //checkme: loadd operation added
                     4'b0111: begin
                         // do nothing now
                         //checkme
@@ -205,7 +196,7 @@ always @(*) begin
                 end
                 else begin
                     overflow_r = 1'b0;
-                    //checkme: its the right time to write for `store`
+                    //its the right time to write for `store`
                     if(action_type == 4'b1000 || action_type == 4'b0111) begin
                         store_addr_r = base_addr + op2_imm;
                         //store_din_r = operand_1_in;
@@ -214,7 +205,7 @@ always @(*) begin
                 end
             end
             else begin
-                //I think we shoud do nothing, no?
+                //do nothing
             end
             alu_state_next = EMPTY2_S;
         end
@@ -241,7 +232,7 @@ always @(*) begin
                 //loadd
                 4'b0111: begin
                     container_out_r = load_data + 32'b1;
-                    //checkme: we need to write the data back
+                    //we need to write the data back
                     store_en_r = 1'b1;
                     store_din_r = load_data + 32'b1;
                 end
@@ -301,7 +292,7 @@ end
 
 
 /*
-    checkme: CONTROL PATH
+    CONTROL PATH
 */
 
 generate 
@@ -473,7 +464,7 @@ generate
 		end
 		
 		
-		//checkme: page table
+		//page table
 		page_tbl_16w_32d
 		page_tbl_16w_32d
 		(
@@ -707,7 +698,7 @@ generate
 				r_1st_tvalid <= r_1st_tvalid_next;
 			end
 		end
-		//checkme: page table
+		//page table
 		page_tbl_16w_32d
 		page_tbl_16w_32d
 		(

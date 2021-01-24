@@ -319,7 +319,7 @@ initial begin
 end
 
 
-key_extract_2 #(
+key_extract #(
     .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
     .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
     .STAGE_ID(STAGE_ID),

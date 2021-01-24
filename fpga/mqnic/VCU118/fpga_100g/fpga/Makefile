@@ -59,13 +59,13 @@ SYN_FILES += lib/pcie/rtl/pulse_merge.v
 
 
 # RMT-related rtl files
-SYN_FILES += lib_rmt/rmtv2/deparser_2.v
+SYN_FILES += lib_rmt/rmtv2/deparser.v
 SYN_FILES += lib_rmt/rmtv2/sub_deparser.v
 SYN_FILES += lib_rmt/rmtv2/parser.v
 SYN_FILES += lib_rmt/rmtv2/sub_parser.v
 SYN_FILES += lib_rmt/rmtv2/rmt_wrapper.v
 SYN_FILES += lib_rmt/rmtv2/stage.v
-SYN_FILES += lib_rmt/rmtv2/extract/key_extract_2.v
+SYN_FILES += lib_rmt/rmtv2/extract/key_extract.v
 SYN_FILES += lib_rmt/rmtv2/lookup/lookup_engine.v
 SYN_FILES += lib_rmt/rmtv2/action/action_engine.v
 SYN_FILES += lib_rmt/rmtv2/action/alu_1.v
@@ -95,11 +95,10 @@ IP_TCL_FILES += ip/rmt/blk_mem_gen_1.tcl
 IP_TCL_FILES += ip/rmt/blk_mem_gen_2.tcl
 IP_TCL_FILES += ip/rmt/blk_mem_gen_3.tcl
 IP_TCL_FILES += ip/rmt/fifo_generator_512b.tcl
-IP_TCL_FILES += ip/rmt/fifo_generator_612b.tcl
 IP_TCL_FILES += ip/rmt/fifo_generator_705b.tcl
 IP_TCL_FILES += ip/rmt/parse_act_ram_ip.tcl
 IP_TCL_FILES += ip/rmt/tcam_generator.tcl
-IP_TCL_FILES += ip/rmt/page_tbl_16w_16d.tcl
+IP_TCL_FILES += ip/rmt/page_tbl_16w_32d.tcl
 
 
 include ../common/vivado.mk

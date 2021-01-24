@@ -1,10 +1,3 @@
-/****************************************************/
-//	Module name: stage.v
-//	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
-//	Last edited time: 2020/09/26
-//	Function outline: a stage wrapper for RMT pipeline
-/****************************************************/
-
 `timescale 1ns / 1ps
 
 module stage #(
@@ -78,7 +71,7 @@ wire                         action2lookup_ready;
 
 
 
-key_extract_2 #(
+key_extract #(
     .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
     .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
     .STAGE_ID(STAGE_ID),

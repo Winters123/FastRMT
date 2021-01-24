@@ -1,10 +1,3 @@
-/****************************************************/
-//	Module name: alu_1
-//	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
-//	Last edited time: 2020/09/23
-//	Function outline: 1st type ALU (no load/store) module in RMT
-/****************************************************/
-
 `timescale 1ns / 1ps
 
 module alu_1 #(

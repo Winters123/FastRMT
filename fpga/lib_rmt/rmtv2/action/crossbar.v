@@ -1,10 +1,3 @@
-/****************************************************/
-//	Module name: crossbar.v
-//	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
-//	Last edited time: 2020/09/24
-//	Function outline: crossbar used exclusively for RMT
-/****************************************************/
-
 `timescale 1ns / 1ps
 module crossbar #(
     parameter STAGE_ID = 0,
@@ -215,7 +208,7 @@ always @(posedge clk or negedge rst_n) begin
         		                alu_in_4B_1[(i+1)*width_4B-1 -: width_4B] <= 32'b0;
         		                alu_in_4B_2[(i+1)*width_4B-1 -: width_4B] <= {16'b0,sub_action[8+i+1][15:0]};
 							end
-        		            //checkme: loadd put here
+        		            //loadd put here
         		            4'b1011, 4'b1000, 4'b0111: begin
         		                alu_in_4B_1[(i+1)*width_4B-1 -: width_4B] <= cont_4B[sub_action[8+i+1][18:16]];
         		                //alu_in_4B_2[(i+1)*width_4B-1 -: width_4B] <= {16'b0,sub_action[8+i+1][15:0]};

@@ -47,29 +47,6 @@ module rmt_wrapper #(
 	input										m_axis_tready,
 	output  									m_axis_tlast
 
-	// /*
-    //  * AXI-Lite slave interface
-    //  */
-    // input  wire [AXIL_ADDR_WIDTH-1:0]           s_axil_awaddr,
-    // input  wire [2:0]                           s_axil_awprot,
-    // input  wire                                 s_axil_awvalid,
-    // output wire                                 s_axil_awready,
-    // input  wire [AXIL_DATA_WIDTH-1:0]           s_axil_wdata,
-    // input  wire [AXIL_STRB_WIDTH-1:0]           s_axil_wstrb,
-    // input  wire                                 s_axil_wvalid,
-    // output wire                                 s_axil_wready,
-    // output wire [1:0]                           s_axil_bresp,
-    // output wire                                 s_axil_bvalid,
-    // input  wire                                 s_axil_bready,
-
-    // input  wire [AXIL_ADDR_WIDTH-1:0]           s_axil_araddr,
-    // input  wire [2:0]                           s_axil_arprot,
-    // input  wire                                 s_axil_arvalid,
-    // output wire                                 s_axil_arready,
-    // output wire [AXIL_DATA_WIDTH-1:0]           s_axil_rdata,
-    // output wire [1:0]                           s_axil_rresp,
-    // output wire                                 s_axil_rvalid,
-    // input  wire                                 s_axil_rready
 	
 );
 
@@ -135,7 +112,6 @@ wire 								stg4_ready;
 
 
 
-//TODO for bug fix
 wire [511:0] high_phv_out;
 wire [511:0] low_phv_out;
 

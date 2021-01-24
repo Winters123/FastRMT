@@ -1,9 +1,3 @@
-/****************************************************/
-//	Module name: alu_3
-//	Authority @ yangxiangrui (yangxiangrui11@nudt.edu.cn)
-//	Last edited time: 2020/09/25
-//	Function outline: 3rd type ALU (metadata modification) in RMT
-/****************************************************/
 `timescale 1ns / 1ps
 module alu_3 #(
     parameter STAGE_ID = 0,
@@ -13,13 +7,13 @@ module alu_3 #(
     input                               clk,
     input                               rst_n,
     //the input data shall be metadata & com_ins
-    input [META_LEN-1:0]       comp_meta_data_in,
+    input [META_LEN-1:0]       			comp_meta_data_in,
     input                               comp_meta_data_valid_in,
     input [ACTION_LEN-1:0]              action_in,
     input                               action_valid_in,
 
     //output is the modified metadata plus comp_ins
-    output reg [META_LEN-1:0]  comp_meta_data_out,
+    output reg [META_LEN-1:0]  			comp_meta_data_out,
     output reg                          comp_meta_data_valid_out     
 );
 
