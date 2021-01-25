@@ -151,7 +151,7 @@ module port #
     // DMA RX RAM size
     parameter RX_RAM_SIZE = RX_PKT_TABLE_SIZE*MAX_RX_SIZE,
     // Enable RMT pipeline on TX
-    parameter TX_RMT_ENABLE = 1
+    parameter RMT_TX_ENABLE = 1
 )
 (
     input  wire                                 clk,
@@ -616,10 +616,10 @@ reg tdma_enable_reg = 1'b0;
 wire tdma_locked;
 wire tdma_error;
 
-// wire [31:0] cookie_val;
-// wire [31:0] ctrl_token;
+wire [31:0] cookie_val;
+wire [31:0] ctrl_token;
 
-// reg [15:0] vlan_drop_flags;
+reg [15:0] vlan_drop_flags;
 
 reg [79:0] set_tdma_schedule_start_reg = 0;
 reg set_tdma_schedule_start_valid_reg = 0;
@@ -657,59 +657,111 @@ always @(posedge clk) begin
     set_tdma_timeslot_period_valid_reg <= 1'b0;
     set_tdma_active_period_valid_reg <= 1'b0;
 
+
     if (axil_ctrl_awvalid && axil_ctrl_wvalid && !axil_ctrl_bvalid) begin
         // write operation
         axil_ctrl_awready_reg <= 1'b1;
         axil_ctrl_wready_reg <= 1'b1;
         axil_ctrl_bvalid_reg <= 1'b1;
 
-        case ({axil_ctrl_awaddr[15:2], 2'b00})
-            16'h0040: begin
-                // Scheduler enable
-                if (axil_ctrl_wstrb[0]) begin
-                    sched_enable_reg <= axil_ctrl_wdata[0];
+        if(RMT_TX_ENABLE) begin
+            case ({axil_ctrl_awaddr[15:2], 2'b00})
+                16'h0040: begin
+                    // Scheduler enable
+                    if (axil_ctrl_wstrb[0]) begin
+                        sched_enable_reg <= axil_ctrl_wdata[0];
+                    end
                 end
-            end
-            16'h0080: rss_mask_reg <= axil_ctrl_wdata; // RSS mask
-            16'h0100: tx_mtu_reg <= axil_ctrl_wdata; // TX MTU
-            16'h0200: rx_mtu_reg <= axil_ctrl_wdata; // RX MTU
-            16'h1000: begin
-                // TDMA control
-                if (axil_ctrl_wstrb[0]) begin
-                    tdma_enable_reg <= axil_ctrl_wdata[0];
+                16'h0080: rss_mask_reg <= axil_ctrl_wdata; // RSS mask
+                16'h0100: tx_mtu_reg <= axil_ctrl_wdata; // TX MTU
+                16'h0200: rx_mtu_reg <= axil_ctrl_wdata; // RX MTU
+                16'h1000: begin
+                    // TDMA control
+                    if (axil_ctrl_wstrb[0]) begin
+                        tdma_enable_reg <= axil_ctrl_wdata[0];
+                    end
                 end
-            end
-            16'h1014: set_tdma_schedule_start_reg[29:0] <= axil_ctrl_wdata; // TDMA schedule start ns
-            16'h1018: set_tdma_schedule_start_reg[63:32] <= axil_ctrl_wdata; // TDMA schedule start sec l
-            16'h101C: begin
-                // TDMA schedule start sec h
-                set_tdma_schedule_start_reg[79:64] <= axil_ctrl_wdata;
-                set_tdma_schedule_start_valid_reg <= 1'b1;
-            end
-            16'h1024: set_tdma_schedule_period_reg[29:0] <= axil_ctrl_wdata; // TDMA schedule period ns
-            16'h1028: set_tdma_schedule_period_reg[63:32] <= axil_ctrl_wdata; // TDMA schedule period sec l
-            16'h102C: begin
-                // TDMA schedule period sec h
-                set_tdma_schedule_period_reg[79:64] <= axil_ctrl_wdata;
-                set_tdma_schedule_period_valid_reg <= 1'b1;
-            end
-            16'h1034: set_tdma_timeslot_period_reg[29:0] <= axil_ctrl_wdata; // TDMA timeslot period ns
-            16'h1038: set_tdma_timeslot_period_reg[63:32] <= axil_ctrl_wdata; // TDMA timeslot period sec l
-            16'h103C: begin
-                // TDMA timeslot period sec h
-                set_tdma_timeslot_period_reg[79:64] <= axil_ctrl_wdata;
-                set_tdma_timeslot_period_valid_reg <= 1'b1;
-            end
-            16'h1044: set_tdma_active_period_reg[29:0] <= axil_ctrl_wdata; // TDMA active period ns
-            16'h1048: set_tdma_active_period_reg[63:32] <= axil_ctrl_wdata; // TDMA active period sec l
-            16'h104C: begin
-                // TDMA active period sec h
-                set_tdma_active_period_reg[79:64] <= axil_ctrl_wdata;
-                set_tdma_active_period_valid_reg <= 1'b1;
-            end
-            //checkme: for sync while RMT reconf
-            // 16'h2028: vlan_drop_flags <= axil_ctrl_wdata;
-        endcase
+                16'h1014: set_tdma_schedule_start_reg[29:0] <= axil_ctrl_wdata; // TDMA schedule start ns
+                16'h1018: set_tdma_schedule_start_reg[63:32] <= axil_ctrl_wdata; // TDMA schedule start sec l
+                16'h101C: begin
+                    // TDMA schedule start sec h
+                    set_tdma_schedule_start_reg[79:64] <= axil_ctrl_wdata;
+                    set_tdma_schedule_start_valid_reg <= 1'b1;
+                end
+                16'h1024: set_tdma_schedule_period_reg[29:0] <= axil_ctrl_wdata; // TDMA schedule period ns
+                16'h1028: set_tdma_schedule_period_reg[63:32] <= axil_ctrl_wdata; // TDMA schedule period sec l
+                16'h102C: begin
+                    // TDMA schedule period sec h
+                    set_tdma_schedule_period_reg[79:64] <= axil_ctrl_wdata;
+                    set_tdma_schedule_period_valid_reg <= 1'b1;
+                end
+                16'h1034: set_tdma_timeslot_period_reg[29:0] <= axil_ctrl_wdata; // TDMA timeslot period ns
+                16'h1038: set_tdma_timeslot_period_reg[63:32] <= axil_ctrl_wdata; // TDMA timeslot period sec l
+                16'h103C: begin
+                    // TDMA timeslot period sec h
+                    set_tdma_timeslot_period_reg[79:64] <= axil_ctrl_wdata;
+                    set_tdma_timeslot_period_valid_reg <= 1'b1;
+                end
+                16'h1044: set_tdma_active_period_reg[29:0] <= axil_ctrl_wdata; // TDMA active period ns
+                16'h1048: set_tdma_active_period_reg[63:32] <= axil_ctrl_wdata; // TDMA active period sec l
+                16'h104C: begin
+                    // TDMA active period sec h
+                    set_tdma_active_period_reg[79:64] <= axil_ctrl_wdata;
+                    set_tdma_active_period_valid_reg <= 1'b1;
+                end
+                //checkme: for sync while RMT reconf
+                16'h2028: vlan_drop_flags <= axil_ctrl_wdata;
+            endcase
+        end
+        else begin
+            case ({axil_ctrl_awaddr[15:2], 2'b00})
+                16'h0040: begin
+                    // Scheduler enable
+                    if (axil_ctrl_wstrb[0]) begin
+                        sched_enable_reg <= axil_ctrl_wdata[0];
+                    end
+                end
+                16'h0080: rss_mask_reg <= axil_ctrl_wdata; // RSS mask
+                16'h0100: tx_mtu_reg <= axil_ctrl_wdata; // TX MTU
+                16'h0200: rx_mtu_reg <= axil_ctrl_wdata; // RX MTU
+                16'h1000: begin
+                    // TDMA control
+                    if (axil_ctrl_wstrb[0]) begin
+                        tdma_enable_reg <= axil_ctrl_wdata[0];
+                    end
+                end
+                16'h1014: set_tdma_schedule_start_reg[29:0] <= axil_ctrl_wdata; // TDMA schedule start ns
+                16'h1018: set_tdma_schedule_start_reg[63:32] <= axil_ctrl_wdata; // TDMA schedule start sec l
+                16'h101C: begin
+                    // TDMA schedule start sec h
+                    set_tdma_schedule_start_reg[79:64] <= axil_ctrl_wdata;
+                    set_tdma_schedule_start_valid_reg <= 1'b1;
+                end
+                16'h1024: set_tdma_schedule_period_reg[29:0] <= axil_ctrl_wdata; // TDMA schedule period ns
+                16'h1028: set_tdma_schedule_period_reg[63:32] <= axil_ctrl_wdata; // TDMA schedule period sec l
+                16'h102C: begin
+                    // TDMA schedule period sec h
+                    set_tdma_schedule_period_reg[79:64] <= axil_ctrl_wdata;
+                    set_tdma_schedule_period_valid_reg <= 1'b1;
+                end
+                16'h1034: set_tdma_timeslot_period_reg[29:0] <= axil_ctrl_wdata; // TDMA timeslot period ns
+                16'h1038: set_tdma_timeslot_period_reg[63:32] <= axil_ctrl_wdata; // TDMA timeslot period sec l
+                16'h103C: begin
+                    // TDMA timeslot period sec h
+                    set_tdma_timeslot_period_reg[79:64] <= axil_ctrl_wdata;
+                    set_tdma_timeslot_period_valid_reg <= 1'b1;
+                end
+                16'h1044: set_tdma_active_period_reg[29:0] <= axil_ctrl_wdata; // TDMA active period ns
+                16'h1048: set_tdma_active_period_reg[63:32] <= axil_ctrl_wdata; // TDMA active period sec l
+                16'h104C: begin
+                    // TDMA active period sec h
+                    set_tdma_active_period_reg[79:64] <= axil_ctrl_wdata;
+                    set_tdma_active_period_valid_reg <= 1'b1;
+                end
+            endcase
+        end
+
+        
     end
 
     if (axil_ctrl_arvalid && !axil_ctrl_rvalid) begin
@@ -717,7 +769,7 @@ always @(posedge clk) begin
         axil_ctrl_arready_reg <= 1'b1;
         axil_ctrl_rvalid_reg <= 1'b1;
         axil_ctrl_rdata_reg <= {AXIL_DATA_WIDTH{1'b0}};
-        if(TX_RMT_ENABLE) begin
+        if(RMT_TX_ENABLE) begin
             case ({axil_ctrl_araddr[15:2], 2'b00})
                 16'h0000: axil_ctrl_rdata_reg <= 32'd0;       // port_id
                 16'h0004: begin
@@ -762,15 +814,15 @@ always @(posedge clk) begin
                 16'h1044: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[29:0]; // TDMA active period ns
                 16'h1048: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[63:32]; // TDMA active period sec l
                 16'h104C: axil_ctrl_rdata_reg <= set_tdma_active_period_reg[79:64]; // TDMA active period sec h
-                // 16'h2020: begin
-                //     axil_ctrl_rdata_reg <= cookie_val;
-                // end
-                // 16'h2024: begin
-                //     axil_ctrl_rdata_reg <= ctrl_token;
-                // end
-                // 16'h2028: begin
-                //     axil_ctrl_rdata_reg <= vlan_drop_flags;
-                // end
+                16'h2020: begin
+                    axil_ctrl_rdata_reg <= cookie_val;
+                end
+                16'h2024: begin
+                    axil_ctrl_rdata_reg <= ctrl_token;
+                end
+                16'h2028: begin
+                    axil_ctrl_rdata_reg <= vlan_drop_flags;
+                end
             endcase
         end
         else begin
@@ -1943,9 +1995,9 @@ end else begin
 
 end
 
-//TODO add RMT plugins for tx path.
+//added RMT plugins for tx path.
 
-if (TX_RMT_ENABLE) begin
+if (RMT_TX_ENABLE) begin
 
     rmt_wrapper
     rmt_wrapper_tx
@@ -2008,8 +2060,6 @@ else begin
     assign tx_axis_tready_int_2 = tx_axis_tready;
     assign tx_axis_tlast = tx_axis_tlast_int_2;
     assign tx_axis_tuser = tx_axis_tuser_int_2;
-
-    //assign tx_csum_cmd_ready = 1'b1;
 
 end
 

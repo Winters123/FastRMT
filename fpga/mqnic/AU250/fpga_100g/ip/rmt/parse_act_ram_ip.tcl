@@ -3,12 +3,13 @@ create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.4 -module_
 set_property -dict [list \
 	CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
 	CONFIG.Load_Init_File {true} \
-	CONFIG.Coe_File {/../../../../../../lib_rmt/rmtv2/parse_act_ram_init_file.coe} \
-	CONFIG.Write_Width_A {260} \
-	CONFIG.Read_Width_A {260} \
+	CONFIG.Coe_File {/../../../../../../lib_rmt/rmtv2/memory_init_files/parse_act_ram_init_file.coe} \
+	CONFIG.Write_Depth_A {32} \
+	CONFIG.Write_Width_A {160} \
+	CONFIG.Read_Width_A {160} \
 	CONFIG.Operating_Mode_A {NO_CHANGE} \
-	CONFIG.Write_Width_B {260} \
-	CONFIG.Read_Width_B {260} \
+	CONFIG.Write_Width_B {160} \
+	CONFIG.Read_Width_B {160} \
 	CONFIG.Enable_B {Use_ENB_Pin} \
 	CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
 	CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \

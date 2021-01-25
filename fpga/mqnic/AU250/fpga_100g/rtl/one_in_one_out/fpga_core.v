@@ -2038,7 +2038,7 @@ generate
             .RX_RAM_SIZE(RX_RAM_SIZE),
             //enable RMT in interface 1
             //disable RMT in interface 0
-            .TX_RMT_ENABLE(n)
+            .TX_RMT_ENABLE(!n)
         )
         interface_inst (
             .clk(clk_250mhz),
