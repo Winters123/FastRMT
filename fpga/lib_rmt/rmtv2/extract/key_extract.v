@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module key_extract_2 #(
+module key_extract #(
     parameter C_S_AXIS_DATA_WIDTH = 512,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
     parameter STAGE_ID = 0,
