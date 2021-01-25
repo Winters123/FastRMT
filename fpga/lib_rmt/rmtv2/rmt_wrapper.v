@@ -546,12 +546,12 @@ always @(posedge clk) begin
 	end
 end
 
-assign stg0_phv_in_valid_w = stg0_phv_in_valid & ~stg0_phv_in_valid_r;
-assign stg0_phv_out_valid_w = stg0_phv_out_valid & ~stg0_phv_out_valid_r;
-assign stg1_phv_out_valid_w = stg1_phv_out_valid & ~stg1_phv_out_valid_r;
-assign stg2_phv_out_valid_w = stg2_phv_out_valid & ~stg2_phv_out_valid_r;
-assign stg3_phv_out_valid_w = stg3_phv_out_valid & ~stg3_phv_out_valid_r;
-assign stg4_phv_out_valid_w = stg4_phv_out_valid & ~stg4_phv_out_valid_r;
+assign stg0_phv_in_valid_w = stg0_phv_in_valid; // & ~stg0_phv_in_valid_r;
+assign stg0_phv_out_valid_w = stg0_phv_out_valid; // & ~stg0_phv_out_valid_r;
+assign stg1_phv_out_valid_w = stg1_phv_out_valid; // & ~stg1_phv_out_valid_r;
+assign stg2_phv_out_valid_w = stg2_phv_out_valid; // & ~stg2_phv_out_valid_r;
+assign stg3_phv_out_valid_w = stg3_phv_out_valid; // & ~stg3_phv_out_valid_r;
+assign stg4_phv_out_valid_w = stg4_phv_out_valid; // & ~stg4_phv_out_valid_r;
 
 
 endmodule
