@@ -36,6 +36,8 @@ lappend SYN_FILES  rtl/common/rx_engine.v
 lappend SYN_FILES  rtl/common/tx_checksum.v
 lappend SYN_FILES  rtl/common/rx_hash.v
 lappend SYN_FILES  rtl/common/rx_checksum.v
+lappend SYN_FILES  rtl/common/cmac_pad.v
+
 lappend SYN_FILES  lib/eth/rtl/eth_mac_10g.v
 lappend SYN_FILES  lib/eth/rtl/eth_mac_10g_fifo.v
 lappend SYN_FILES  lib/eth/rtl/axis_xgmii_rx_64.v
